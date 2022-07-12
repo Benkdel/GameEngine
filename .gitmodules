@@ -1,0 +1,6 @@
+[submodule "Resurge/vendor/spdlog"]
+	path = Resurge/vendor/spdlog
+	url = git@github.com:gabime/spdlog.git
+[submodule "Resurge/vendor/GLM"]
+	path = Resurge/vendor/GLM
+	url = git@github.com:g-truc/glm.git
