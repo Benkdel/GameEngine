@@ -1,15 +1,13 @@
-
-
-#include "application/Application.h"
-
+#include "game/GameApp.h"
 
 int main(int argc, char** argv)
 {
 
-	Application *game = new Application();
+	GameApp *game = new GameApp();
 
 	game->Run();
 
+	delete game;
 
 	return 0;
 }
