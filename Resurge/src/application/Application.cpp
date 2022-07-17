@@ -18,24 +18,42 @@ namespace Amba {
 		m_Window = new Amba::Window("Resurge", 1280, 760);
 	}
 
-	// test opengl and GLFW, glad with tutorial https://www.glfw.org/docs/latest/quick_guide.html
-	// OR CHECK IT IN NOTES folder
-
+	// method to be override by user
 	void Application::OnUserCreate()
 	{
-
 	}
 
+	// method to be override by user
 	void Application::OnUserUpdate()
 	{
+	}
 
+	bool Application::AB_keyPressed(unsigned int GLFW_KEY_CODE)
+	{
+		if (glfwGetKey(m_Window->getWindow(), GLFW_KEY_CODE) == GLFW_PRESS)
+			return true;
+		else
+			return false;
+	}
+
+	bool Application::AB_keyReleased(unsigned int GLFW_KEY_CODE)
+	{
+		if (glfwGetKey(m_Window->getWindow(), GLFW_KEY_CODE) == GLFW_RELEASE)
+			return true;
+		else
+			return false;
+	}
+
+	void Application::SetWindowShouldClose()
+	{
+		m_Window->SetWindowShouldClose();
 	}
 
 	void Application::Run()
 	{
-		double currentTime = 0.0f;
 		double lastTime = 0.0f;
 
+		// method used by user
 		OnUserCreate();
 	
 		while (!m_Window->WindowShouldClose())
@@ -44,9 +62,9 @@ namespace Amba {
 			glClear(GL_COLOR_BUFFER_BIT);
 
 			// Compute delta time and store it as class member for user to use
-			currentTime = glfwGetTime();
-			AB_deltaTime = currentTime - lastTime;
-			lastTime = currentTime;
+			AB_timeElapsed = glfwGetTime();
+			AB_deltaTime = AB_timeElapsed - lastTime;
+			lastTime = AB_timeElapsed;
 		
 			// method used by user
 			OnUserUpdate();
@@ -57,5 +75,3 @@ namespace Amba {
 		delete m_Window;
 	}
 }
-
-

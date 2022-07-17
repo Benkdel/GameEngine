@@ -2,6 +2,9 @@
 #include "Log.h"
 #include "core.h"
 
+#include "engine/io/Keyboard.h"
+#include "engine/io/Mouse.h"
+
 namespace Amba {
 
 	void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -34,9 +37,14 @@ namespace Amba {
 		}
 		glfwMakeContextCurrent(m_Window);
 
+		// set callbacks
 		glfwSetFramebufferSizeCallback(m_Window, framebuffer_size_callback);
-		
-		//initialize GLAD
+		glfwSetKeyCallback(m_Window, KeyBoard::KeyCallback);
+		glfwSetCursorPosCallback(m_Window, Mouse::CursorPosCallback);
+		glfwSetMouseButtonCallback(m_Window, Mouse::MouseButtonCallback);
+		glfwSetScrollCallback(m_Window, Mouse::MouseWheelCallback);
+
+		// initialize GLAD
 		int success = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		AB_ASSERT(success, "Could not load GLAD!\n");
 	}
@@ -45,10 +53,13 @@ namespace Amba {
 
 	void Window::OnUpdate()
 	{
-		glfwPollEvents();
 		glfwSwapBuffers(m_Window);
+		glfwPollEvents();
+	}
 
-		ProcessInput();
+	void Window::SetWindowShouldClose()
+	{
+		m_WindowShouldClose = true;
 	}
 
 	void Window::ShutDown()
@@ -59,11 +70,4 @@ namespace Amba {
 			glfwDestroyWindow(m_Window);
 		}
 	}
-
-	void Window::ProcessInput()
-	{
-		if (glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-			ShutDown();
-	}
-
 }

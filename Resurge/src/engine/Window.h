@@ -18,11 +18,12 @@ namespace Amba {
 		void OnUpdate();
 		void ShutDown();
 
-		void ProcessInput();
+		void SetWindowShouldClose();
 
 		inline unsigned int GetWidth() const { return m_Width;  };
 		inline unsigned int GetHeight() const { return m_Height; };
 		inline bool WindowShouldClose() const { return m_WindowShouldClose; }
+		GLFWwindow* getWindow() const { return m_Window; }
 
 	private:
 		GLFWwindow* m_Window;
