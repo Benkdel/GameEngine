@@ -47,6 +47,9 @@ namespace Amba {
 		// initialize GLAD
 		int success = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		AB_ASSERT(success, "Could not load GLAD!\n");
+
+		// enable depth testing
+		glEnable(GL_DEPTH_TEST);
 	}
 
 	Window::~Window() {}

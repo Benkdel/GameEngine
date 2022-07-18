@@ -8,6 +8,13 @@ void Renderer::Draw(const VertexArray* va, const IndexBuffer* ib, const Shader* 
 	glDrawElements(GL_TRIANGLES, ib->GetCount(), GL_UNSIGNED_INT, nullptr);
 }
 
+void Renderer::DrawTriangles(const VertexArray* va, const Shader* shader)
+{
+	shader->Bind();
+	va->Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+}
+
 void Renderer::Clear()
 {
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
