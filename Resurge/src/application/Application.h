@@ -5,7 +5,8 @@
 #include <engine/core.h>
 #include <engine/io/Keyboard.h>
 #include <engine/io/Mouse.h>
-#include <engine/renderer/ResourceManager.h>
+#include <engine/io/Camera.h>
+#include <engine/renderer/Renderer.h>
 
 namespace Amba {
 
@@ -32,8 +33,11 @@ class Application
 		Amba::Window* m_Window;
 
 	protected:
-		double AB_timeElapsed;
-		double AB_deltaTime;
+		double AB_TimeElapsed;
+		double AB_DeltaTime;
+
+		unsigned int m_ScrWidth;
+		unsigned int m_ScrHeight;
 
 
 	};

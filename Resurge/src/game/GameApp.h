@@ -3,7 +3,8 @@
 #include <application/Application.h>
 
 // set different game states
-enum GameState {
+enum class GameState {
+	NONE = 0,
 	GAME_ACTIVE,
 	GAME_MENU,
 	GAME_WIN
@@ -13,10 +14,9 @@ enum GameState {
 class GameApp : public Amba::Application
 {
 public:
-
+	GameApp();
 	~GameApp();
 
-	GameState State;
 
 	void OnUserCreate() override;
 	void OnUserUpdate() override;
@@ -24,6 +24,16 @@ public:
 	void ProcessInput();
 
 private:
+
+	GameState AB_State;
+
+	unsigned int AB_ActiveCamera;
+
+	// array of cameras
+	Camera AB_Cameras[5];
+
+	// projection mat
+	glm::mat4 AB_Projection;
 
 };
 

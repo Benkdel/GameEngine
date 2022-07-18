@@ -1,0 +1,42 @@
+#pragma once
+
+#include <glm/glm.hpp>
+
+enum class CameraMotion {
+	NONE = 0, 
+	FORWARD, BACKWARD, 
+	UP, DOWN, RIGHT, LEFT
+};
+
+class Camera
+{
+public:
+	Camera(glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f));
+
+	void UpdateCameraDirection(double dx, double dy);
+
+	void UpdateCameraPos(CameraMotion direction, double dt);
+
+	void UpdateCameraZoom(double dy);
+
+	glm::mat4 GetViewMatrix();
+
+	inline float GetZoom() { return m_FoV; }
+
+private:
+	glm::vec3 m_CameraPos;
+
+	glm::vec3 m_CameraFront;
+	glm::vec3 m_CameraUp;
+	glm::vec3 m_CameraRight;
+	
+	float m_Yaw; // x-axis
+	float m_Pitch; // y-axis
+
+	float m_Speed;
+	float m_Sensitivity;
+	float m_FoV;
+
+	void UpdateCameraVectors();
+
+};

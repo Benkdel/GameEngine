@@ -4,6 +4,8 @@
 namespace Amba {
 
 	Application::Application()
+		: AB_DeltaTime(0.0f), AB_TimeElapsed(0.0f), m_Window(NULL),
+		m_ScrWidth(1280), m_ScrHeight(760)
 	{
 		Amba::Log::Init();
 		AB_TRACE("Application Created Succesfully");
@@ -15,7 +17,9 @@ namespace Amba {
 
 	void Application::Init(const char* title, unsigned int width, unsigned int height)
 	{
-		m_Window = new Amba::Window("Resurge", 1280, 760);
+		m_Window = new Amba::Window("Resurge", width, height);
+		m_ScrWidth = width;
+		m_ScrHeight = height;
 	}
 
 	// method to be override by user
@@ -58,13 +62,12 @@ namespace Amba {
 	
 		while (!m_Window->WindowShouldClose())
 		{
-			glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT);
+			Renderer::Clear();
 
 			// Compute delta time and store it as class member for user to use
-			AB_timeElapsed = glfwGetTime();
-			AB_deltaTime = AB_timeElapsed - lastTime;
-			lastTime = AB_timeElapsed;
+			AB_TimeElapsed = glfwGetTime();
+			AB_DeltaTime = AB_TimeElapsed - lastTime;
+			lastTime = AB_TimeElapsed;
 		
 			// method used by user
 			OnUserUpdate();

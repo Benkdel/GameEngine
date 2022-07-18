@@ -26,9 +26,9 @@ Shader::Shader(const char* vsPath, const char* fsPath)
 	glLinkProgram(m_RendererID);
 	glValidateProgram(m_RendererID);
 
-	int nShaders;
-	glGetProgramiv(m_RendererID, GL_ATTACHED_SHADERS, &nShaders);
-	std::cout << nShaders << "\n";
+	//int nShaders;
+	//glGetProgramiv(m_RendererID, GL_ATTACHED_SHADERS, &nShaders);
+	//std::cout << nShaders << "\n";
 
 	int result;
 	glGetProgramiv(m_RendererID, GL_LINK_STATUS, &result);
@@ -83,14 +83,24 @@ void Shader::Unbind() const
 	glUseProgram(0);
 }
 
-void Shader::SetUniform1f(const std::string& name, float value)
+void Shader::SetUniform1i(const std::string& name, const int& value)
+{
+	glUniform1i(GetUniformLocation(name), value);
+}
+
+void Shader::SetUniform1f(const std::string& name, const float& value)
 {
 	glUniform1f(GetUniformLocation(name), value);
 }
 
-void Shader::SetUniform4f(const std::string& name, glm::vec4 vec4)
+void Shader::SetUniform4f(const std::string& name, const glm::vec4 &vec4)
 {
 	glUniform4f(GetUniformLocation(name), vec4.x, vec4.y, vec4.z, vec4.w);
+}
+
+void Shader::SetUniform4mat(const std::string& name, const glm::mat4 &mat)
+{
+	glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
 }
 
 unsigned int Shader::GetUniformLocation(const std::string& name)

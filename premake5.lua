@@ -23,7 +23,8 @@ project "Resurge"
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.hpp",
 		"%{prj.name}/src/**.cpp",
-		"%{prj.name}/vendor/glad/src/glad.c"
+		"%{prj.name}/vendor/glad/src/glad.c",
+		"%{prj.name}/vendor/include/STB/stb_image.cpp"
 	}
 
 	includedirs

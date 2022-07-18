@@ -16,8 +16,10 @@ public:
 	void Unbind() const;
 
 	// Uniforms Setters
-	void SetUniform1f(const std::string& name, float value);
-	void SetUniform4f(const std::string& name, glm::vec4 vec4);
+	void SetUniform1i(const std::string& name, const int& value);
+	void SetUniform1f(const std::string& name, const float& value);
+	void SetUniform4f(const std::string& name, const glm::vec4& vec4);
+	void SetUniform4mat(const std::string& name, const glm::mat4& mat);
 
 private:
 	unsigned int m_RendererID;

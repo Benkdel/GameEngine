@@ -23,17 +23,17 @@ public:
 	static std::unordered_map<std::string, Shader*>				rm_Shaders;
 	static std::unordered_map<std::string, Texture*>			rm_Textures;
 
-	static void GenVA(std::string name);
-	static void GenVBO(const void* data, unsigned int size, std::string name);
-	static void GenIBO(unsigned int* data, unsigned int count, std::string name);
-	static void CreateShader(const char* vsPath, const char* fsPath, std::string name);
-	static void LoadTexture(const char* texPath, bool alpha, std::string name);
+	static void GenVA(const std::string& name);
+	static void GenVBO(const void* data, unsigned int size, const std::string& name);
+	static void GenIBO(unsigned int* data, unsigned int count, const std::string& name);
+	static void CreateShader(const char* vsPath, const char* fsPath, const std::string& name);
+	static void LoadTexture(const char* texPath, const std::string& name);
 
-	static VertexArray* GetVA(std::string name);
-	static VertexBuffer* GetVBO(std::string name);
-	static IndexBuffer* GetIBO(std::string name);
-	static Shader* GetShader(std::string name);
-	static Texture* GetTexture(std::string name);
+	static VertexArray* GetVA(const std::string& name);
+	static VertexBuffer* GetVBO(const std::string& name);
+	static IndexBuffer* GetIBO(const std::string& name);
+	static Shader* GetShader(const std::string& name);
+	static Texture* GetTexture(const std::string& name);
 
 	static void cleanup();
 
