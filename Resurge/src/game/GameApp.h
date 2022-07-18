@@ -14,6 +14,8 @@ class GameApp : public Amba::Application
 {
 public:
 
+	~GameApp();
+
 	GameState State;
 
 	void OnUserCreate() override;
