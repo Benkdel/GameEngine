@@ -30,6 +30,9 @@ TODO LIST
 #include <string>
 #include <vector>
 
+#include <stdio.h>
+#include <stdlib.h>
+
 
 using json = nlohmann::json;
 
@@ -65,20 +68,47 @@ static unsigned int GetSizeOfComponent(const unsigned int& componentType)
 namespace ABImp {														// documentation
 
 	template<typename T>
-	class Array {
+	class Array {														// custome array to build with dynamic size at run time
 	public:
 		Array(unsigned int size)
-			: m_Data(NULL), m_Size(size);
+			: m_Data(0), m_Size(size)
 		{
-			T* m_Data = malloc(sizeof(T) * m_size);
+			m_Data = (T*)malloc(sizeof(T) * m_Size);
 			AB_ASSERT(m_Data != NULL, "Failed to allocate memory");
+
+			m_CurrentIdx = 0;
+		}
+		
+		~Array()
+		{
+			for (unsigned int i = 0; i < m_Size; i++)
+				m_Data[i] = NULL;
+			m_Data = NULL;
 		}
 
-		// other methods like sorting, deleting, etc
+		T& operator[](T index)
+		{
+			AB_ASSERT(index < m_CurrentIdx, "Invalid memory reading");
+			return m_Data[index];
+		}
 
+
+		// other methods like sorting, deleting, etc
+		void PushBack(T value)
+		{
+			m_Data[m_CurrentIdx] = value;
+			m_CurrentIdx++;
+		}
+
+		T* GetData()
+		{
+			return m_Data;
+		}
+	
 	private:
 		T* m_Data;
-		unsigned int m_Size
+		unsigned int m_Size;
+		unsigned int m_CurrentIdx;
 	};
 
 
@@ -152,21 +182,25 @@ namespace ABImp {														// documentation
 
 			/* PROCESS DATA INTO OPENGL FORMAT */
 			GetBinData();
-			GetVertices();
-			GetIndices();
+			GetMeshData();
 			GetMaterials();
+			GenVertices();
 		}
 
-		std::vector<impMeshIndexes> m_Meshes;
-		std::vector<impAccesor> m_Accessors;
-		std::vector<impBufferView> m_BufferViews;
-		std::vector<impBuffer> m_Buffers;
-
-		std::vector<Vertex> m_Vertices;
-		std::vector<unsigned int> m_Indices;
+		std::vector<impMeshIndexes> m_Meshes;											// structs with indexes or relationships
+		std::vector<impAccesor> m_Accessors;											// structs with indexes or relationships
+		std::vector<impBufferView> m_BufferViews;										// structs with indexes or relationships
+		std::vector<impBuffer> m_Buffers;												// structs with indexes or relationships
+						
+		std::vector<Vertex> m_Vertices;													// OPENGL format data
+		std::vector<unsigned int> m_Indices;											// OPENGL format data
 
 	private:
 		std::vector<std::vector<unsigned char>> m_BinData;								// vector or vectors of bytes holding raw data from binary files
+
+		std::vector<float> m_Positions;													// vector to group floats before convert to vertices
+		std::vector<float> m_Normals;													// vector to group floats before convert to vertices 
+		std::vector<float> m_Texcoords;													// vector to group floats before convert to vertices
 
 		std::string m_Directory;
 
@@ -263,77 +297,78 @@ namespace ABImp {														// documentation
 			}
 		}
 
-		void GetVertices()
+		void GetMeshData()
 		{
 			for (unsigned int i = 0; i < m_Meshes.size(); i++)
 			{
 				/* loop through meshes */
 				impMeshIndexes mesh = m_Meshes.at(i);
 
-				Vertex vertex;
-
 				/* every mesh has primitives used by accesors */
 				if (mesh.indices != -1)
+				{
+					impAccesor accesor = m_Accessors.at(mesh.indices);
+					impBufferView bufferView = m_BufferViews.at(accesor.bufferView);
+					std::vector<unsigned char> data = m_BinData.at(bufferView.buffer);
+					const unsigned int beginningOfData = bufferView.byteOffset + accesor.byteOffset;
+					const unsigned int lenghtOfData = accesor.count * GetSizeOfComponent(accesor.componentType) * GetNumOfElements(accesor.type);
+					
+					for (unsigned int i = beginningOfData; i < beginningOfData + lenghtOfData; i)
+					{
+						unsigned int value;
+						ConvertBytes<unsigned int>(value, data, accesor, i, beginningOfData + lenghtOfData);
+						m_Indices.push_back((unsigned int)value);
+					}
+				}
+
+				if (mesh.attributes.Positions != -1)
 				{
 					impAccesor accesor = m_Accessors.at(mesh.attributes.Positions);
 					impBufferView bufferView = m_BufferViews.at(accesor.bufferView);
 					std::vector<unsigned char> data = m_BinData.at(bufferView.buffer);
 					const unsigned int beginningOfData = bufferView.byteOffset + accesor.byteOffset;
 					const unsigned int lenghtOfData = accesor.count * GetSizeOfComponent(accesor.componentType) * GetNumOfElements(accesor.type);
+
 					for (unsigned int i = beginningOfData; i < beginningOfData + lenghtOfData; i)
 					{
-						Array data = Array<unsigned char>(beginningOfData + lenghtOfData);
-
-					}
-				}
-
-
-				if (mesh.attributes.Positions != -1)
-				{
-					/* this means i do have positions */
-					/* so accesor at index Positions is of position attribute*/
-					/* get accesor */
-					impAccesor accesor = m_Accessors.at(mesh.attributes.Positions);
-
-					/* accesor points to buffer view */
-					impBufferView bufferView = m_BufferViews.at(accesor.bufferView);
-
-					/* buffer view points to buffer and says how to use data (with help from accesors) */
-					std::vector<unsigned char> data = m_BinData.at(bufferView.buffer);
-
-					/* Now we have the correct bin data, how to interpreted, and all */
-					/* lets try for now how Victor Gordan does it */
-					unsigned int beginningOfData = bufferView.byteOffset + accesor.byteOffset;
-					unsigned int lenghtOfData = accesor.count * GetSizeOfComponent(accesor.componentType) * GetNumOfElements(accesor.type);
-					for (unsigned int i = beginningOfData; i < beginningOfData + lenghtOfData; i)
-					{
-						unsigned char bytes[] = { data[i++], data[i++], data[i++], data[i++] };
 						float value;
-						/* i cant do it like him because I want to fill vertices*/
+						ConvertBytes<float>(value, data, accesor, i, beginningOfData + lenghtOfData);
+						m_Positions.push_back((float)value);
 					}
-
-
 				}
 
 				if (mesh.attributes.Normals != -1)
 				{
+					impAccesor accesor = m_Accessors.at(mesh.attributes.Normals);
+					impBufferView bufferView = m_BufferViews.at(accesor.bufferView);
+					std::vector<unsigned char> data = m_BinData.at(bufferView.buffer);
+					const unsigned int beginningOfData = bufferView.byteOffset + accesor.byteOffset;
+					const unsigned int lenghtOfData = accesor.count * GetSizeOfComponent(accesor.componentType) * GetNumOfElements(accesor.type);
 
+					for (unsigned int i = beginningOfData; i < beginningOfData + lenghtOfData; i)
+					{
+						float value;
+						ConvertBytes<float>(value, data, accesor, i, beginningOfData + lenghtOfData);
+						m_Normals.push_back((float)value);
+					}
 				}
 
 				if (mesh.attributes.Texcoords != -1)
 				{
+					impAccesor accesor = m_Accessors.at(mesh.attributes.Texcoords);
+					impBufferView bufferView = m_BufferViews.at(accesor.bufferView);
+					std::vector<unsigned char> data = m_BinData.at(bufferView.buffer);
+					const unsigned int beginningOfData = bufferView.byteOffset + accesor.byteOffset;
+					const unsigned int lenghtOfData = accesor.count * GetSizeOfComponent(accesor.componentType) * GetNumOfElements(accesor.type);
 
+					for (unsigned int i = beginningOfData; i < beginningOfData + lenghtOfData; i)
+					{
+						float value;
+						ConvertBytes<float>(value, data, accesor, i, beginningOfData + lenghtOfData);
+						m_Texcoords.push_back((float)value);
+					}
 				}
-
-				/* each accesor defines a buffer view */
-
-				/* each buffer view points to a buffer and says how data should be interpreted */
 			}
-		}
-
-		void GetIndices()
-		{
-
 		}
 
 		// todo
@@ -342,6 +377,66 @@ namespace ABImp {														// documentation
 
 		}
 
+		// translate data to vertices
+		void GenVertices()
+		{
+			// all vectors corresponding to vertices should be same size
+			// divided by num elementss
+			unsigned int elements = m_Positions.size() / 3; // i know every 3 points is a pos, and positions must always be there
+			unsigned int posIdx = 0;
+			unsigned int normIdx = 0;
+			unsigned int texIdx = 0;
+
+			for (unsigned int i = 0; i < elements; i++)
+			{
+				Vertex vertex;
+
+				if (m_Positions.size() > 0)
+				{
+					vertex.v_Position = glm::vec3(
+						m_Positions[posIdx++],
+						m_Positions[posIdx++],
+						m_Positions[posIdx++]
+					);				
+				}
+
+				if (m_Normals.size() > 0)
+				{
+					vertex.v_Normals = glm::vec3(
+						m_Normals[normIdx++],
+						m_Normals[normIdx++],
+						m_Normals[normIdx++]
+					);
+				}
+
+				if (m_Texcoords.size() > 0)
+				{
+					vertex.v_TexCoords = glm::vec2(
+						m_Normals[texIdx++],
+						m_Normals[texIdx++]
+					);
+				}
+				m_Vertices.push_back(vertex);
+			}
+		}
+
+		/*
+		=========================
+		HELPER FUNCTIONS
+		=========================
+		*/
+
+		template<typename T>
+		void ConvertBytes(T& value, std::vector<unsigned char>& data, const impAccesor& accesor, unsigned int& idx, const unsigned int arraySize)
+		{
+			Array bytes = Array<unsigned char>(arraySize);
+
+			for (unsigned int j = 0; j < GetSizeOfComponent(accesor.componentType); j++)
+			{
+				bytes.PushBack(data[idx++]);
+			}
+			std::memcpy(&value, bytes.GetData(), GetSizeOfComponent(accesor.componentType));
+		}
 	};
 }
 

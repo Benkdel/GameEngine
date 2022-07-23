@@ -29,16 +29,16 @@ project "Resurge"
 
 	includedirs
 	{
-		"Resurge/src",
-		"Resurge/vendor/spdlog/include",
-		"Resurge/vendor/include",
-		"Resurge/vendor/include/GLAD",
-		"Resurge/vendor/GLM"
+		"%{prj.name}/src",
+		"%{prj.name}/vendor/spdlog/include",
+		"%{prj.name}/vendor/include",
+		"%{prj.name}/vendor/include/GLAD",
+		"%{prj.name}/vendor/GLM"
 	}
 
 	libdirs
 	{
-		"Resurge/vendor/libs/"
+		"%{prj.name}/vendor/libs/"
 	}
 
 	links
@@ -53,7 +53,6 @@ project "Resurge"
 		staticruntime "off"
 		runtime "Release"
 		systemversion "latest"
-
 
 	filter "configurations:Debug"
 		defines 
