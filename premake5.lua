@@ -44,6 +44,7 @@ project "Resurge"
 	links
 	{
 		"/GLFW/glfw3.lib",
+		"/ASSIMP/assimp-vc142-mtd.lib",
 		"opengl32.lib"
 	}
 
@@ -52,6 +53,7 @@ project "Resurge"
 		staticruntime "off"
 		runtime "Release"
 		systemversion "latest"
+
 
 	filter "configurations:Debug"
 		defines 

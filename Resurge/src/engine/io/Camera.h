@@ -2,41 +2,47 @@
 
 #include <glm/glm.hpp>
 
-enum class CameraMotion {
-	NONE = 0, 
-	FORWARD, BACKWARD, 
-	UP, DOWN, RIGHT, LEFT
-};
+namespace Amba {
 
-class Camera
-{
-public:
-	Camera(glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f));
+	enum class CameraMotion {
+		NONE = 0, 
+		FORWARD, BACKWARD, 
+		UP, DOWN, RIGHT, LEFT
+	};
 
-	void UpdateCameraDirection(double dx, double dy);
+	class Camera
+	{
+	public:
+		Camera(glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f));
 
-	void UpdateCameraPos(CameraMotion direction, double dt);
+		void UpdateCameraDirection(double dx, double dy);
 
-	void UpdateCameraZoom(double dy);
+		void UpdateCameraPos(CameraMotion direction, double dt);
 
-	glm::mat4 GetViewMatrix();
+		void UpdateCameraZoom(double dy);
 
-	inline float GetZoom() { return m_FoV; }
+		glm::mat4 GetViewMatrix();
 
-private:
-	glm::vec3 m_CameraPos;
+		inline float GetZoom() { return m_FoV; }
+		inline glm::vec3 GetCamPos() { return m_CameraPos; }
+		inline glm::vec3 GetCamFront() { return m_CameraFront; }
 
-	glm::vec3 m_CameraFront;
-	glm::vec3 m_CameraUp;
-	glm::vec3 m_CameraRight;
+	private:
+		glm::vec3 m_CameraPos;
+
+		glm::vec3 m_CameraFront;
+		glm::vec3 m_CameraUp;
+		glm::vec3 m_CameraRight;
 	
-	float m_Yaw; // x-axis
-	float m_Pitch; // y-axis
+		float m_Yaw; // x-axis
+		float m_Pitch; // y-axis
 
-	float m_Speed;
-	float m_Sensitivity;
-	float m_FoV;
+		float m_Speed;
+		float m_Sensitivity;
+		float m_FoV;
 
-	void UpdateCameraVectors();
+		void UpdateCameraVectors();
 
 };
+
+}

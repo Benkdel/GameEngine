@@ -27,13 +27,12 @@ private:
 
 	GameState AB_State;
 
+	// cameras
 	unsigned int AB_ActiveCamera;
-
-	// array of cameras
-	Camera AB_Cameras[5];
+	Amba::Camera AB_Cameras[5];
 
 	// projection mat
-	glm::mat4 AB_Projection;
+	glm::mat4 AB_Perspective;
 
 };
 

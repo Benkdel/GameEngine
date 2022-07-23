@@ -8,4 +8,6 @@
 	#define AB_ASSERT(x, ...)
 #endif
 
+#define INIT_GL_INFO 0
+
 // set up OpenGL error checking

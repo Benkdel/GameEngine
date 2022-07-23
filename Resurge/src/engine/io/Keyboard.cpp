@@ -2,45 +2,48 @@
 
 #include <iostream>
 
+namespace Amba {
 
-bool KeyBoard::m_Keys[GLFW_KEY_LAST] = { 0 };
-bool KeyBoard::m_KeysChanged[GLFW_KEY_LAST] = { 0 };
+	bool KeyBoard::m_Keys[GLFW_KEY_LAST] = { 0 };
+	bool KeyBoard::m_KeysChanged[GLFW_KEY_LAST] = { 0 };
 
-void KeyBoard::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	if (action != GLFW_RELEASE)
+	void KeyBoard::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
-		if (!m_Keys[key])
+		if (action != GLFW_RELEASE)
 		{
-			m_Keys[key] = true;
+			if (!m_Keys[key])
+			{
+				m_Keys[key] = true;
+			}
 		}
+		else
+		{
+			m_Keys[key] = false;
+		}
+
+		m_KeysChanged[key] = action != GLFW_REPEAT;
 	}
-	else
+
+	bool KeyBoard::Key(int key) 
 	{
-		m_Keys[key] = false;
+		return m_Keys[key];
 	}
 
-	m_KeysChanged[key] = action != GLFW_REPEAT;
-}
+	bool KeyBoard::KeyChanged(int key)
+	{
+		bool ret = m_KeysChanged[key];
+		m_KeysChanged[key] = false;
+		return ret;
+	}
 
-bool KeyBoard::Key(int key) 
-{
-	return m_Keys[key];
-}
+	bool KeyBoard::KeyWentUp(int key) 
+	{
+		return !m_Keys[key] && KeyChanged(key);
+	}
 
-bool KeyBoard::KeyChanged(int key)
-{
-	bool ret = m_KeysChanged[key];
-	m_KeysChanged[key] = false;
-	return ret;
-}
+	bool KeyBoard::KeyWentDown(int key)
+	{
+		return m_Keys[key] && KeyChanged(key);
+	}
 
-bool KeyBoard::KeyWentUp(int key) 
-{
-	return !m_Keys[key] && KeyChanged(key);
-}
-
-bool KeyBoard::KeyWentDown(int key)
-{
-	return m_Keys[key] && KeyChanged(key);
 }

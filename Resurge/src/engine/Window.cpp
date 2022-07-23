@@ -1,9 +1,14 @@
 #include "Window.h"
-#include "Log.h"
-#include "core.h"
 
-#include "engine/io/Keyboard.h"
-#include "engine/io/Mouse.h"
+#include <engine/Log.h>
+#include <engine/core.h>
+
+#include <engine/io/Keyboard.h>
+#include <engine/io/Mouse.h>
+
+#ifdef AB_ENABLE_ASSERTS
+	#include <engine/OpenGlErrorChecking.h>
+#endif
 
 namespace Amba {
 
@@ -30,6 +35,10 @@ namespace Amba {
 			s_GLFWInitialized = true;
 		}
 
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+
 		m_Window = glfwCreateWindow(m_Width, m_Height, m_Title.c_str(), NULL, NULL);
 		if (!m_Window)
 		{
@@ -44,12 +53,22 @@ namespace Amba {
 		glfwSetMouseButtonCallback(m_Window, Mouse::MouseButtonCallback);
 		glfwSetScrollCallback(m_Window, Mouse::MouseWheelCallback);
 
+		// hide cursor
+		glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 		// initialize GLAD
 		int success = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		AB_ASSERT(success, "Could not load GLAD!\n");
 
 		// enable depth testing
 		glEnable(GL_DEPTH_TEST);
+
+#ifdef AB_ENABLE_ASSERTS
+		// only in debug mode, enable output and 
+		// set callback
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		glDebugMessageCallback((GLDEBUGPROC)MessageCallback, NULL);
+#endif
 	}
 
 	Window::~Window() {}
