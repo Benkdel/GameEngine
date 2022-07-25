@@ -44,7 +44,6 @@ project "Resurge"
 	links
 	{
 		"/GLFW/glfw3.lib",
-		"/ASSIMP/assimp-vc142-mtd.lib",
 		"opengl32.lib"
 	}
 

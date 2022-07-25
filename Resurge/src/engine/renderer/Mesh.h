@@ -23,6 +23,7 @@ namespace Amba {
 
 		Mesh();
 		Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
+		Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices);
 		~Mesh();
 	
 		std::vector<Vertex> m_Vertices;
@@ -30,9 +31,10 @@ namespace Amba {
 		std::vector<Texture> m_Textures;
 	
 		void Cleanup();
+		inline bool ContainsTextures() const { return m_NoTextures; }
 
 	private:
-
+		bool m_NoTextures;
 
 	};
 

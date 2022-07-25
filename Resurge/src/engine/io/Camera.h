@@ -34,8 +34,8 @@ namespace Amba {
 		glm::vec3 m_CameraUp;
 		glm::vec3 m_CameraRight;
 	
-		float m_Yaw; // x-axis
-		float m_Pitch; // y-axis
+		double m_Yaw; // x-axis
+		double m_Pitch; // y-axis
 
 		float m_Speed;
 		float m_Sensitivity;

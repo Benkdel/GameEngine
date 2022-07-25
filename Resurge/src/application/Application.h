@@ -39,7 +39,6 @@ class Application
 		unsigned int m_ScrWidth;
 		unsigned int m_ScrHeight;
 
-
 	};
 }
 

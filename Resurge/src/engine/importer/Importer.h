@@ -33,7 +33,6 @@ TODO LIST
 #include <stdio.h>
 #include <stdlib.h>
 
-
 using json = nlohmann::json;
 
 static unsigned int GetNumOfElements(const std::string& type)
@@ -61,6 +60,7 @@ static unsigned int GetSizeOfComponent(const unsigned int& componentType)
 	case 5127: return sizeof(double);
 	default:
 		AB_ASSERT(false, "Component Type not found");
+		return 0;
 		break;
 	}
 }
@@ -111,11 +111,21 @@ namespace ABImp {														// documentation
 		unsigned int m_CurrentIdx;
 	};
 
+	struct vec3 {
+		float x;
+		float y;
+		float z;
+	};
+
+	struct vec2 {
+		float x;
+		float y;
+	};
 
 	struct Vertex {
-		glm::vec3 v_Position;
-		glm::vec3 v_Normals;
-		glm::vec2 v_TexCoords;
+		vec3 v_Position;
+		vec3 v_Normals;
+		vec2 v_TexCoords;
 	};
 
 	struct impNodes {													// To be done, i dont fully understand it yet
@@ -163,46 +173,28 @@ namespace ABImp {														// documentation
 
 		json m_Data;
 
-		void LoadData(const std::string& filePath)
-		{
-			std::ifstream input(filePath);
-			m_Data = json::parse(input);
-			input.close();
+		Importer();
 
-			m_Directory = filePath.substr(0, filePath.find_last_of('/') + 1);
+		void LoadData(const std::string& filePath);						// Loads data from file
 
-			std::string uri = m_Data["buffers"][0]["uri"];				// for now im assuming that only 1 buffer exists, just for testing purposes
-			std::string path = m_Directory + uri;
-
-			/* LOAD STRUCTS */
-			GetMeshes();
-			GetAccessors();
-			GetBufferViews();
-			GetBuffers();
-
-			/* PROCESS DATA INTO OPENGL FORMAT */
-			GetBinData();
-			GetMeshData();
-			GetMaterials();
-			GenVertices();
-		}
-
-		std::vector<impMeshIndexes> m_Meshes;											// structs with indexes or relationships
-		std::vector<impAccesor> m_Accessors;											// structs with indexes or relationships
-		std::vector<impBufferView> m_BufferViews;										// structs with indexes or relationships
-		std::vector<impBuffer> m_Buffers;												// structs with indexes or relationships
+		std::vector<impMeshIndexes> m_Meshes;							// structs with indexes or relationships
+		std::vector<impAccesor> m_Accessors;							// structs with indexes or relationships
+		std::vector<impBufferView> m_BufferViews;						// structs with indexes or relationships
+		std::vector<impBuffer> m_Buffers;								// structs with indexes or relationships
 						
-		std::vector<Vertex> m_Vertices;													// OPENGL format data
-		std::vector<unsigned int> m_Indices;											// OPENGL format data
+		std::vector<Vertex> m_Vertices;									// OPENGL format data
+		std::vector<unsigned int> m_Indices;							// OPENGL format data
+
+		void Cleanup();													// Clean all date
 
 	private:
-		std::vector<std::vector<unsigned char>> m_BinData;								// vector or vectors of bytes holding raw data from binary files
+		std::vector<std::vector<unsigned char>> m_BinData;				// vector or vectors of bytes holding raw data from binary files
 
-		std::vector<float> m_Positions;													// vector to group floats before convert to vertices
-		std::vector<float> m_Normals;													// vector to group floats before convert to vertices 
-		std::vector<float> m_Texcoords;													// vector to group floats before convert to vertices
+		std::vector<float> m_Positions;									// vector to group floats before convert to vertices
+		std::vector<float> m_Normals;									// vector to group floats before convert to vertices 
+		std::vector<float> m_Texcoords;									// vector to group floats before convert to vertices
 
-		std::string m_Directory;
+		std::string m_Directory;										// directory of all data needed
 
 		/*
 		=======================
@@ -210,215 +202,23 @@ namespace ABImp {														// documentation
 		=======================
 		*/
 
-		void GetMeshes()
-		{	
-			for (auto& mesh : m_Data["meshes"])
-			{
-				std::string name = mesh.value("name", "null");
-				json primitives = mesh["primitives"][0];
-				json attributes = primitives["attributes"];
-
-				unsigned int position = attributes.value("POSITION", -1);
-				unsigned int normals = attributes.value("NORMAL", -1);
-				unsigned int texcoords = attributes.value("TEXCOORD_0", -1);
-				impAttributesIndexes att = { position, normals, texcoords };
-				
-				unsigned int indices = primitives.value("indices", -1);
-				unsigned int material = primitives.value("material", -1);
-				unsigned int mode = primitives.value("mode", -1);
-
-				// push back mesh indexes struct 
-				m_Meshes.push_back({ att, indices, material, mode });
-			}
-		}
-
-		void GetAccessors()
-		{
-			for (auto& accesor : m_Data["accessors"])
-			{
-				unsigned int bufferView = accesor["bufferView"];
-				unsigned int byteOffset = accesor.value("byteOffset", 0);
-				unsigned int componentType = accesor["componentType"];
-				unsigned int count = accesor["count"];
-				std::string type = accesor["type"];
-				unsigned int size = GetNumOfElements(type) * GetSizeOfComponent(componentType);
-
-				m_Accessors.push_back({ bufferView, byteOffset, componentType, count, type, size });
-			}
-		}
-
-		void GetBufferViews()
-		{
-			for (auto& bufferView : m_Data["bufferViews"])
-			{
-				unsigned int buffer = bufferView["buffer"];
-				unsigned int byteLength = bufferView["byteLength"];
-				unsigned int byteOffset = bufferView.value("byteOffset", 0);
-				unsigned int byteStride = bufferView.value("byteStride", 0);
-				std::string name = bufferView.value("name", "null");
-				unsigned int target = bufferView.value("target", -1);
-
-				m_BufferViews.push_back({ buffer, byteLength, byteOffset, byteStride, name, target });
-			}
-		}
-
-		void GetBuffers()
-		{
-			for (auto& buffer : m_Data["buffers"])
-			{
-				unsigned int byteLength = buffer["byteLength"];
-				std::string uri = buffer["uri"];
-
-				m_Buffers.push_back({ byteLength, uri });
-			}
-		}
+		void GetMeshes();
+		void GetAccessors();
+		void GetBufferViews();
+		void GetBuffers();
 	
 		/*
 		=================================
 		Translate data into OPENGL format
 		=================================
 		*/
-
-		void GetBinData()
-		{
-			for (auto& buffer : m_Buffers)
-			{
-				std::string path = m_Directory + buffer.uri;
-				std::ifstream input(path);
-
-				AB_ASSERT(input.is_open(), ("Failed to open bin file at {0}", path));
-
-				std::stringstream ss;
-				ss << input.rdbuf();
-				std::string bytesText = ss.str();
-
-				std::vector<unsigned char> bytes(bytesText.begin(), bytesText.end());
-				m_BinData.push_back(bytes);
-			}
-		}
-
-		void GetMeshData()
-		{
-			for (unsigned int i = 0; i < m_Meshes.size(); i++)
-			{
-				/* loop through meshes */
-				impMeshIndexes mesh = m_Meshes.at(i);
-
-				/* every mesh has primitives used by accesors */
-				if (mesh.indices != -1)
-				{
-					impAccesor accesor = m_Accessors.at(mesh.indices);
-					impBufferView bufferView = m_BufferViews.at(accesor.bufferView);
-					std::vector<unsigned char> data = m_BinData.at(bufferView.buffer);
-					const unsigned int beginningOfData = bufferView.byteOffset + accesor.byteOffset;
-					const unsigned int lenghtOfData = accesor.count * GetSizeOfComponent(accesor.componentType) * GetNumOfElements(accesor.type);
-					
-					for (unsigned int i = beginningOfData; i < beginningOfData + lenghtOfData; i)
-					{
-						unsigned int value;
-						ConvertBytes<unsigned int>(value, data, accesor, i, beginningOfData + lenghtOfData);
-						m_Indices.push_back((unsigned int)value);
-					}
-				}
-
-				if (mesh.attributes.Positions != -1)
-				{
-					impAccesor accesor = m_Accessors.at(mesh.attributes.Positions);
-					impBufferView bufferView = m_BufferViews.at(accesor.bufferView);
-					std::vector<unsigned char> data = m_BinData.at(bufferView.buffer);
-					const unsigned int beginningOfData = bufferView.byteOffset + accesor.byteOffset;
-					const unsigned int lenghtOfData = accesor.count * GetSizeOfComponent(accesor.componentType) * GetNumOfElements(accesor.type);
-
-					for (unsigned int i = beginningOfData; i < beginningOfData + lenghtOfData; i)
-					{
-						float value;
-						ConvertBytes<float>(value, data, accesor, i, beginningOfData + lenghtOfData);
-						m_Positions.push_back((float)value);
-					}
-				}
-
-				if (mesh.attributes.Normals != -1)
-				{
-					impAccesor accesor = m_Accessors.at(mesh.attributes.Normals);
-					impBufferView bufferView = m_BufferViews.at(accesor.bufferView);
-					std::vector<unsigned char> data = m_BinData.at(bufferView.buffer);
-					const unsigned int beginningOfData = bufferView.byteOffset + accesor.byteOffset;
-					const unsigned int lenghtOfData = accesor.count * GetSizeOfComponent(accesor.componentType) * GetNumOfElements(accesor.type);
-
-					for (unsigned int i = beginningOfData; i < beginningOfData + lenghtOfData; i)
-					{
-						float value;
-						ConvertBytes<float>(value, data, accesor, i, beginningOfData + lenghtOfData);
-						m_Normals.push_back((float)value);
-					}
-				}
-
-				if (mesh.attributes.Texcoords != -1)
-				{
-					impAccesor accesor = m_Accessors.at(mesh.attributes.Texcoords);
-					impBufferView bufferView = m_BufferViews.at(accesor.bufferView);
-					std::vector<unsigned char> data = m_BinData.at(bufferView.buffer);
-					const unsigned int beginningOfData = bufferView.byteOffset + accesor.byteOffset;
-					const unsigned int lenghtOfData = accesor.count * GetSizeOfComponent(accesor.componentType) * GetNumOfElements(accesor.type);
-
-					for (unsigned int i = beginningOfData; i < beginningOfData + lenghtOfData; i)
-					{
-						float value;
-						ConvertBytes<float>(value, data, accesor, i, beginningOfData + lenghtOfData);
-						m_Texcoords.push_back((float)value);
-					}
-				}
-			}
-		}
-
+		void GetBinData();
+		void GetMeshData();
 		// todo
-		void GetMaterials()
-		{
-
-		}
+		void GetMaterials();
 
 		// translate data to vertices
-		void GenVertices()
-		{
-			// all vectors corresponding to vertices should be same size
-			// divided by num elementss
-			unsigned int elements = m_Positions.size() / 3; // i know every 3 points is a pos, and positions must always be there
-			unsigned int posIdx = 0;
-			unsigned int normIdx = 0;
-			unsigned int texIdx = 0;
-
-			for (unsigned int i = 0; i < elements; i++)
-			{
-				Vertex vertex;
-
-				if (m_Positions.size() > 0)
-				{
-					vertex.v_Position = glm::vec3(
-						m_Positions[posIdx++],
-						m_Positions[posIdx++],
-						m_Positions[posIdx++]
-					);				
-				}
-
-				if (m_Normals.size() > 0)
-				{
-					vertex.v_Normals = glm::vec3(
-						m_Normals[normIdx++],
-						m_Normals[normIdx++],
-						m_Normals[normIdx++]
-					);
-				}
-
-				if (m_Texcoords.size() > 0)
-				{
-					vertex.v_TexCoords = glm::vec2(
-						m_Normals[texIdx++],
-						m_Normals[texIdx++]
-					);
-				}
-				m_Vertices.push_back(vertex);
-			}
-		}
+		void GenVertices();
 
 		/*
 		=========================
@@ -437,6 +237,7 @@ namespace ABImp {														// documentation
 			}
 			std::memcpy(&value, bytes.GetData(), GetSizeOfComponent(accesor.componentType));
 		}
+
 	};
 }
 

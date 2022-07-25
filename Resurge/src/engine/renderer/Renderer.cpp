@@ -36,33 +36,37 @@ namespace Amba {
 			unsigned int diffuseIdx = 0;
 			unsigned int specularIdx = 0;
 
- 			for (unsigned int i = 0; i < mesh.m_Textures.size(); i++)
+			if (mesh.ContainsTextures())
 			{
-				glActiveTexture(GL_TEXTURE0 + i);
-
-				std::string name;
-				switch (mesh.m_Textures[i].m_TexType)
+ 				for (unsigned int i = 0; i < mesh.m_Textures.size(); i++)
 				{
-				case aiTextureType_DIFFUSE:
-					name = "diffuse" + std::to_string(diffuseIdx++);
-					break;
-				case aiTextureType_SPECULAR:
-					name = "specular" + std::to_string(specularIdx++);
-					break;
-				default:
-					break;
+					glActiveTexture(GL_TEXTURE0 + i);
+
+					// update this
+					std::string name;
+					switch (mesh.m_Textures[i].m_TexType)
+					{
+					case 0:
+						name = "diffuse" + std::to_string(diffuseIdx++);
+						break;
+					case 1:
+						name = "specular" + std::to_string(specularIdx++);
+						break;
+					default:
+						break;
+					}
+			
+					// set the shader value
+					shader->SetUniform1i(name, i);
+					mesh.m_Textures[i].Bind();
 				}
-			
-				// set the shader value
-				shader->SetUniform1i(name, i);
-				mesh.m_Textures[i].Bind();
 			}
-			
+
 			VertexArray va;
-			VertexBuffer vbo(&mesh.m_Vertices[0], mesh.m_Vertices.size() * sizeof(mesh.m_Vertices));
+			VertexBuffer vbo(&mesh.m_Vertices[0], (unsigned int)mesh.m_Vertices.size() * sizeof(Vertex));
 			
 			va.AddBuffer(&vbo, layout);
-			IndexBuffer ib(&mesh.m_Indices[0], mesh.m_Indices.size());
+			IndexBuffer ib(&mesh.m_Indices[0], (unsigned int)mesh.m_Indices.size());
 			
 			va.Bind();
 			ib.Bind();
