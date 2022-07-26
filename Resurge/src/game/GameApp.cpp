@@ -27,7 +27,7 @@ void GameApp::OnUserCreate()
 	AB_INFO("Window init succesfully");
 
 	ResManager::CreateModel("testImporter");
-	ResManager::GetModel("testImporter")->LoadModel("src/game/res/models/gltftutorial/cube.gltf");
+	ResManager::GetModel("testImporter")->LoadModel("src/game/res/models/gltftutorial/example2/example2.gltf");
 
 	ResManager::CreateShader("src/game/res/shaders/gltfTutorialVS.glsl", "src/game/res/shaders/gltfTutorialFS.glsl", "testImporter");
 }

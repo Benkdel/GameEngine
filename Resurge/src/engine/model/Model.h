@@ -6,6 +6,8 @@
 #include <engine/renderer/Mesh.h>
 #include <engine/importer/Importer.h>
 
+
+
 namespace Amba {
 
 	class Model {
@@ -22,7 +24,8 @@ namespace Amba {
 		std::vector<Texture> m_TexturesLoaded;
 
 		std::string m_Directory;
-		void processMesh(ABImp::Importer* data);
+		void processNode(ABImp::Importer* data);
+		void processMesh(ABImp::Mesh& mesh);
 
 		friend class Renderer;
 	};

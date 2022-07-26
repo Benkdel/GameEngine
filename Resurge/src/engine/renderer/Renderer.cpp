@@ -29,16 +29,28 @@ namespace Amba {
 		shader->Bind();
 		shader->SetUniform4mat("u_ViewProjection", m_SceneData->ViewProjectionMatrix);
 		shader->SetUniform4mat("u_Perspective", perspective);
-		shader->SetUniform4mat("u_Transform", transform); // for now, i dont know where to put transforms
-		
+
 		for (auto& mesh : model->m_Meshes)
 		{
-			unsigned int diffuseIdx = 0;
-			unsigned int specularIdx = 0;
+			// compute transforms per mesh
+			
+			// calculate transforms from model loading
+			glm::mat4 scale = glm::scale(glm::mat4(1.0f), mesh.m_TSR.scaling);
+			glm::mat4 modelTransform = glm::translate(glm::mat4(1.0f), mesh.m_TSR.translation) * scale;
+			//modelTransform = glm::rotate(transform, mesh.m_TSR.rotation.angle, mesh.m_TSR.rotation.vec3);
+
+			// add on top transforms (how should I do this?)
+			// something like, modelTransfor += transform
+
+			// set shader transform
+			shader->SetUniform4mat("u_Transform", modelTransform); // for now, i dont know where to put transforms
 
 			if (mesh.ContainsTextures())
 			{
- 				for (unsigned int i = 0; i < mesh.m_Textures.size(); i++)
+				unsigned int diffuseIdx = 0;
+				unsigned int specularIdx = 0;
+
+				for (unsigned int i = 0; i < mesh.m_Textures.size(); i++)
 				{
 					glActiveTexture(GL_TEXTURE0 + i);
 
@@ -55,7 +67,7 @@ namespace Amba {
 					default:
 						break;
 					}
-			
+					
 					// set the shader value
 					shader->SetUniform1i(name, i);
 					mesh.m_Textures[i].Bind();

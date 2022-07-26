@@ -38,11 +38,12 @@ using json = nlohmann::json;
 static unsigned int GetNumOfElements(const std::string& type)
 {
 	if (type == "MAT4") return 4;
+	if (type == "VEC4") return 4;
 	if (type == "MAT3") return 3;
 	if (type == "VEC3") return 3;
 	if (type == "VEC2") return 2;
 	if (type == "SCALAR") return 1;
-	AB_ASSERT(false, "Type not found");
+	AB_ASSERT(false, ("Type not found {0}", type));
 	return 0;
 }
 
@@ -128,24 +129,42 @@ namespace ABImp {														// documentation
 		vec2 v_TexCoords;
 	};
 
-	struct impNodes {													// To be done, i dont fully understand it yet
-
+	struct Rotation {
+		float angle;
+		vec3 vec3;
 	};
 
-	struct impAttributesIndexes {										// Mesh - stores indexes of attributes - pointing to accesors array
+	struct Mesh {														// stores Mesh data separetly
+		std::string name;
+		std::vector<Vertex> vertices;
+		std::vector<unsigned int> indices;
+		// todo std::vector<Materials> materials;
+		vec3 translation;
+		vec3 scaling;
+		Rotation rotation;
+	};
+
+	struct Node {														// linked list with nodes														//		Mesh data
+		std::string name;												//		node id name
+		std::vector<unsigned int> meshesIdx;								//		index of meshes of node
+		std::vector<unsigned int> childrenIdx;								//		index of childrens
+	};
+
+	struct impAttributesIndexes {										// Mesh metadata struct - stores indexes of attributes - pointing to accesors array
 		unsigned int Positions;											//		index to be used in ACCESSORS (identifieds accesor at idx [] to be of POSITIONS)
 		unsigned int Normals;											//		index to be used in ACCESORS 
 		unsigned int Texcoords;											//		index to be used in ACCESORS
 	};
 
-	struct impMeshIndexes {												// Mesh - stores indexes for mesh - pointing to accesors array
+	struct impMeshIndexes {												// Mesh metadata struct - stores indexes for mesh - pointing to accesors array
+		std::string name;												//		stores name id
 		impAttributesIndexes attributes;								//		stores attribute indexes pointing to accesors array
 		unsigned int indices;											//		index to be used in ACCESSORS
 		unsigned int material;											//		index to be used in ACCESSORS
 		unsigned int mode;												//		index to be used in ACCESSORS - IM NOT SURE ABOUT THIS ONE YET
 	};
 
-	struct impAccesor {													// stores accesors data - pointing to buffer views
+	struct impAccesor {													// stores accesors meta data - pointing to buffer views
 		unsigned int bufferView;										//		index of buffer view that this accesor explains
 		unsigned int byteOffset;										//		similar to STRIDE parameters in typical layout (review)
 		unsigned int componentType;										//		char, unsigned char, float, double, etc
@@ -154,7 +173,7 @@ namespace ABImp {														// documentation
 		unsigned int chunkSize;											//		computed by importer: size of group of data: ie --> vec3, vec2, int, etc (vec3 would be 3 times 4 bytes if float, etc...)
 	};
 
-	struct impBufferView {												//	describes the binary data from URI of a given buffer
+	struct impBufferView {												//	meta data - describes the binary data from URI of a given buffer
 		unsigned int buffer;											//		buffer idx that view its describing
 		unsigned int byteLength;										//		lenght in bytes of chung of data that view is describing
 		unsigned int byteOffset;										//		where the chunk of data begins
@@ -163,7 +182,7 @@ namespace ABImp {														// documentation
 		unsigned int target;											//		id of openGL buffer such as ARRAY_BUFFER, for example
 	};
 
-	struct impBuffer {													// contains the raw binary file with data
+	struct impBuffer {													// meta data - contains the raw binary file with data
 		unsigned int byteLength;										//		length of bin file in bytes
 		std::string uri;												//		path to bin file
 	};
@@ -177,48 +196,41 @@ namespace ABImp {														// documentation
 
 		void LoadData(const std::string& filePath);						// Loads data from file
 
-		std::vector<impMeshIndexes> m_Meshes;							// structs with indexes or relationships
-		std::vector<impAccesor> m_Accessors;							// structs with indexes or relationships
-		std::vector<impBufferView> m_BufferViews;						// structs with indexes or relationships
-		std::vector<impBuffer> m_Buffers;								// structs with indexes or relationships
+		std::vector<impMeshIndexes> m_MD_Meshes;						// Metadata
+		std::vector<impAccesor>		m_MD_Accessors;						// Metadata
+		std::vector<impBufferView>	m_MD_BufferViews;					// Metadata
+		std::vector<impBuffer>		m_MD_Buffers;						// Metadata
 						
-		std::vector<Vertex> m_Vertices;									// OPENGL format data
-		std::vector<unsigned int> m_Indices;							// OPENGL format data
+		std::vector<Node> m_Nodes;										// Nodes holding children indexes, mesh
+		std::vector<Mesh> m_Meshes;										// Meshes holding primitives, indices, tsr, material and others
 
 		void Cleanup();													// Clean all date
 
 	private:
 		std::vector<std::vector<unsigned char>> m_BinData;				// vector or vectors of bytes holding raw data from binary files
 
-		std::vector<float> m_Positions;									// vector to group floats before convert to vertices
-		std::vector<float> m_Normals;									// vector to group floats before convert to vertices 
-		std::vector<float> m_Texcoords;									// vector to group floats before convert to vertices
-
 		std::string m_Directory;										// directory of all data needed
 
 		/*
 		=======================
-		LOAD STRUCTURES
+		LOAD METADATA STRUCTURES
 		=======================
 		*/
 
-		void GetMeshes();
-		void GetAccessors();
-		void GetBufferViews();
-		void GetBuffers();
+		void GetMeshesMetadata();
+		void GetAccessorsMetadata();
+		void GetBufferViewsMetadata();
+		void GetBuffersMetadata();
 	
 		/*
 		=================================
 		Translate data into OPENGL format
 		=================================
 		*/
-		void GetBinData();
-		void GetMeshData();
-		// todo
-		void GetMaterials();
-
-		// translate data to vertices
-		void GenVertices();
+		void GetBinData();												//
+		void GetMeshData();												//
+		void GetNodes();												// generates a vector of nodes that relate with struct of meshes by index and same with other nodes
+		void GetMaterials();											// todo
 
 		/*
 		=========================

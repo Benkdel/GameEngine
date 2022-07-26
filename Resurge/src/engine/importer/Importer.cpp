@@ -19,35 +19,30 @@ namespace ABImp {
 		std::string path = m_Directory + uri;
 
 		/* LOAD STRUCTS */
-		GetMeshes();
-		GetAccessors();
-		GetBufferViews();
-		GetBuffers();
+		GetMeshesMetadata();
+		GetAccessorsMetadata();
+		GetBufferViewsMetadata();
+		GetBuffersMetadata();
 
 		/* PROCESS DATA INTO OPENGL FORMAT */
 		GetBinData();
 		GetMeshData();
+		GetNodes();
 		GetMaterials();
-		GenVertices();
 	}
 
 	void Importer::Cleanup()													// Clean all data
 	{
-		m_BinData.clear();
-		m_Positions.clear();
-		m_Normals.clear();
-		m_Texcoords.clear();
 		m_Data.clear();
-		m_Meshes.clear();
-		m_Accessors.clear();
-		m_BufferViews.clear();
-		m_Buffers.clear();
-		m_Vertices.clear();
-		m_Indices.clear();
+		m_MD_Meshes.clear();
+		m_MD_Accessors.clear();
+		m_MD_BufferViews.clear();
+		m_MD_Buffers.clear();
 		m_Directory = "";
+		m_BinData.clear();
 	}
 
-	void Importer::GetMeshes()
+	void Importer::GetMeshesMetadata()
 	{
 		for (auto& mesh : m_Data["meshes"])
 		{
@@ -65,11 +60,11 @@ namespace ABImp {
 			unsigned int mode = primitives.value("mode", -1);
 
 			// push back mesh indexes struct 
-			m_Meshes.push_back({ att, indices, material, mode });
+			m_MD_Meshes.push_back({ name, att, indices, material, mode });
 		}
 	}
 
-	void Importer::GetAccessors()
+	void Importer::GetAccessorsMetadata()
 	{
 		for (auto& accesor : m_Data["accessors"])
 		{
@@ -80,11 +75,11 @@ namespace ABImp {
 			std::string type = accesor["type"];
 			unsigned int size = GetNumOfElements(type) * GetSizeOfComponent(componentType);
 
-			m_Accessors.push_back({ bufferView, byteOffset, componentType, count, type, size });
+			m_MD_Accessors.push_back({ bufferView, byteOffset, componentType, count, type, size });
 		}
 	}
 
-	void Importer::GetBufferViews()
+	void Importer::GetBufferViewsMetadata()
 	{
 		for (auto& bufferView : m_Data["bufferViews"])
 		{
@@ -95,18 +90,18 @@ namespace ABImp {
 			std::string name = bufferView.value("name", "null");
 			unsigned int target = bufferView.value("target", -1);
 
-			m_BufferViews.push_back({ buffer, byteLength, byteOffset, byteStride, name, target });
+			m_MD_BufferViews.push_back({ buffer, byteLength, byteOffset, byteStride, name, target });
 		}
 	}
 
-	void Importer::GetBuffers()
+	void Importer::GetBuffersMetadata()
 	{
 		for (auto& buffer : m_Data["buffers"])
 		{
 			unsigned int byteLength = buffer["byteLength"];
 			std::string uri = buffer["uri"];
 
-			m_Buffers.push_back({ byteLength, uri });
+			m_MD_Buffers.push_back({ byteLength, uri });
 		}
 	}
 
@@ -118,7 +113,7 @@ namespace ABImp {
 
 	void Importer::GetBinData()
 	{
-		for (auto& buffer : m_Buffers)
+		for (auto& buffer : m_MD_Buffers)
 		{
 			std::string path = m_Directory + buffer.uri;
 			std::ifstream input(path);
@@ -134,18 +129,21 @@ namespace ABImp {
 		}
 	}
 
+	// get meshes before nodes
 	void Importer::GetMeshData()
 	{
-		for (unsigned int i = 0; i < m_Meshes.size(); i++)
+		for (unsigned int i = 0; i < m_MD_Meshes.size(); i++)
 		{
 			/* loop through meshes */
-			impMeshIndexes mesh = m_Meshes.at(i);
+			impMeshIndexes meshMD = m_MD_Meshes.at(i);
+			Mesh mesh;
+			std::vector<Vertex> vertices;
 
 			/* every mesh has primitives used by accesors */
-			if (mesh.indices != -1)
+			if (meshMD.indices != -1)
 			{
-				impAccesor accesor = m_Accessors.at(mesh.indices);
-				impBufferView bufferView = m_BufferViews.at(accesor.bufferView);
+				impAccesor accesor = m_MD_Accessors.at(meshMD.indices);
+				impBufferView bufferView = m_MD_BufferViews.at(accesor.bufferView);
 				std::vector<unsigned char> data = m_BinData.at(bufferView.buffer);
 				const unsigned int beginningOfData = bufferView.byteOffset + accesor.byteOffset;
 				const unsigned int lenghtOfData = accesor.count * GetSizeOfComponent(accesor.componentType) * GetNumOfElements(accesor.type);
@@ -154,101 +152,173 @@ namespace ABImp {
 				{
 					unsigned int value = 0;
 					ConvertBytes<unsigned int>(value, data, accesor, i, beginningOfData + lenghtOfData);
-					m_Indices.push_back((unsigned int)value);
+					mesh.indices.push_back((unsigned int)value);
 				}
 			}
 
-			if (mesh.attributes.Positions != -1)
+			if (meshMD.attributes.Positions != -1)
 			{
-				impAccesor accesor = m_Accessors.at(mesh.attributes.Positions);
-				impBufferView bufferView = m_BufferViews.at(accesor.bufferView);
+				impAccesor accesor = m_MD_Accessors.at(meshMD.attributes.Positions);
+				impBufferView bufferView = m_MD_BufferViews.at(accesor.bufferView);
 				std::vector<unsigned char> data = m_BinData.at(bufferView.buffer);
 				const unsigned int beginningOfData = bufferView.byteOffset + accesor.byteOffset;
 				const unsigned int lenghtOfData = accesor.count * GetSizeOfComponent(accesor.componentType) * GetNumOfElements(accesor.type);
 
+				unsigned int ctr = 0;
+				float pos[3];
 				for (unsigned int i = beginningOfData; i < beginningOfData + lenghtOfData; i += bufferView.byteStride)
 				{
 					float value = 0.0f;
 					ConvertBytes<float>(value, data, accesor, i, beginningOfData + lenghtOfData);
-					m_Positions.push_back((float)value);
+					pos[ctr++] = value;
+
+					if (ctr == 3)
+					{
+						vec3 position = { pos[0], pos[1], pos[2] };
+						vec3 normPlaceHolder = { 0.0f, 0.0f, 0.0f };
+						vec2 texPlaceHolder = { 0.0f, 0.0f };
+						vertices.push_back({ position, normPlaceHolder, texPlaceHolder });
+						ctr = 0;
+					}					
 				}
 			}
 
-			if (mesh.attributes.Normals != -1)
+			if (meshMD.attributes.Normals != -1)
 			{
-				impAccesor accesor = m_Accessors.at(mesh.attributes.Normals);
-				impBufferView bufferView = m_BufferViews.at(accesor.bufferView);
+				impAccesor accesor = m_MD_Accessors.at(meshMD.attributes.Normals);
+				impBufferView bufferView = m_MD_BufferViews.at(accesor.bufferView);
 				std::vector<unsigned char> data = m_BinData.at(bufferView.buffer);
 				const unsigned int beginningOfData = bufferView.byteOffset + accesor.byteOffset;
 				const unsigned int lenghtOfData = accesor.count * GetSizeOfComponent(accesor.componentType) * GetNumOfElements(accesor.type);
 
+				unsigned int ctr = 0;
+				unsigned int idx = 0;
+				float pos[3];
 				for (unsigned int i = beginningOfData; i < beginningOfData + lenghtOfData; i)
 				{
 					float value = 0.0f;
 					ConvertBytes<float>(value, data, accesor, i, beginningOfData + lenghtOfData);
-					m_Normals.push_back((float)value);
+					pos[ctr++] = value;
+
+					if (ctr == 3)
+					{
+						vec3 norms = { pos[0], pos[1], pos[2] };
+						vertices.at(idx++).v_Normals = norms;
+						ctr = 0;
+					}
 				}
 			}
 
-			if (mesh.attributes.Texcoords != -1)
+			if (meshMD.attributes.Texcoords != -1)
 			{
-				impAccesor accesor = m_Accessors.at(mesh.attributes.Texcoords);
-				impBufferView bufferView = m_BufferViews.at(accesor.bufferView);
+				impAccesor accesor = m_MD_Accessors.at(meshMD.attributes.Texcoords);
+				impBufferView bufferView = m_MD_BufferViews.at(accesor.bufferView);
 				std::vector<unsigned char> data = m_BinData.at(bufferView.buffer);
 				const unsigned int beginningOfData = bufferView.byteOffset + accesor.byteOffset;
 				const unsigned int lenghtOfData = accesor.count * GetSizeOfComponent(accesor.componentType) * GetNumOfElements(accesor.type);
 
+				unsigned int ctr = 0;
+				unsigned int idx = 0;
+				float pos[2];
 				for (unsigned int i = beginningOfData; i < beginningOfData + lenghtOfData; i)
 				{
 					float value = 0.0f;
 					ConvertBytes<float>(value, data, accesor, i, beginningOfData + lenghtOfData);
-					m_Texcoords.push_back((float)value);
+					pos[ctr++] = value;
+
+					if (ctr == 2)
+					{
+						vec2 tex = { pos[0], pos[1] };
+						vertices.at(idx++).v_TexCoords = tex;
+						ctr = 0;
+					}
 				}
+			}
+
+			// pushing meshes without TSR, --> TSR is done in node loop
+			mesh.vertices = vertices;
+			m_Meshes.push_back(mesh);
+		}
+	}
+
+	void Importer::GetNodes()
+	{
+		for (auto& node : m_Data["nodes"])
+		{
+			std::cout << node << "\n";
+
+			std::vector<unsigned int> meshes;
+			std::vector<unsigned int> children;
+
+			std::string name = node.value("name", "null");
+			unsigned int meshIdx = node["mesh"];
+			json childrenArray = node.value("children", 0);
+
+			// push meshes index and children
+			meshes.push_back(meshIdx); // for now only 1
+
+			if (childrenArray != NULL)
+			{
+				for (auto& child : childrenArray)
+				{
+					children.push_back(child);
+				}
+			}
+
+			// push node metadata
+			m_Nodes.push_back({ name, meshes, children });
+
+			/* 
+			===========
+			SET TSR 
+			===========
+			*/
+
+			vec3 t = { 0.0f, 0.0f, 0.0f };
+			vec3 s = { 1.0f, 1.0f, 1.0f };
+			Rotation r = { 0.0f, { 0.0f, 0.0f, 0.0f } };
+			// todo tsr
+
+			// check for transformation
+			if (node.contains("translation"))
+			{
+				t.x = node["translation"][0];
+				t.y = node["translation"][1];
+				t.z = node["translation"][2];
+			}
+
+			if (node.contains("scaling"))
+			{
+				s.x = node["scaling"][0];
+				s.y = node["scaling"][1];
+				s.z = node["scaling"][2];
+			}
+
+			// CHECK IF THIS IS A 4x4 MAT
+			if (node.contains("rotation"))
+			{
+				r.angle = node["rotation"][0];
+				r.vec3.x = node["rotation"][1];
+				r.vec3.y = node["rotation"][2];
+				r.vec3.z = node["rotation"][3];
+			}
+
+			// set tsr from node for every mesh
+			for (auto& mesh : meshes)
+			{
+				m_Meshes.at(mesh).translation = t;
+				m_Meshes.at(mesh).scaling = s;
+				m_Meshes.at(mesh).rotation = r;
 			}
 		}
 	}
 
-	// todo
 	void Importer::GetMaterials()
 	{
-	}
-
-	// translate data to vertices
-	void Importer::GenVertices()
-	{
-		// all vectors corresponding to vertices should be same size
-		// divided by num elementss
-		size_t elements = m_Positions.size() / 3; // pos is vec3 - every 3 floats ==> 1 vec3
-		unsigned int posIdx = 0;
-		unsigned int normIdx = 0;
-		unsigned int texIdx = 0;
-
-		for (unsigned int i = 0; i < elements; i++)
-		{
-			Vertex vertex;
-
-			if (m_Positions.size() > 0)
-			{
-				vertex.v_Position.x = m_Positions[posIdx];
-				vertex.v_Position.y = m_Positions[posIdx + 1];
-				vertex.v_Position.z = m_Positions[posIdx + 2];
-				posIdx += 3;
-			}
-
-			if (m_Normals.size() > 0)
-			{
-				vertex.v_Normals.x = m_Normals[normIdx++];
-				vertex.v_Normals.y = m_Normals[normIdx++];
-				vertex.v_Normals.z = m_Normals[normIdx++];
-			}
-
-			if (m_Texcoords.size() > 0)
-			{
-				vertex.v_TexCoords.x = m_Texcoords[texIdx++];
-				vertex.v_TexCoords.y = m_Texcoords[texIdx++];
-			}
-			m_Vertices.push_back(vertex);
-		}
+		// todo materials / textures
+		
+		// clena up (this should be final method)
+		Cleanup();
 	}
 
 }
