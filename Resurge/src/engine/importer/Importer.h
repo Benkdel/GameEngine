@@ -33,6 +33,9 @@ TODO LIST
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 using json = nlohmann::json;
 
 static unsigned int GetNumOfElements(const std::string& type)
@@ -43,7 +46,7 @@ static unsigned int GetNumOfElements(const std::string& type)
 	if (type == "VEC3") return 3;
 	if (type == "VEC2") return 2;
 	if (type == "SCALAR") return 1;
-	AB_ASSERT(false, ("Type not found {0}", type));
+	AB_ASSERT(false, ("Type \"{0}\" not found ", type));
 	return 0;
 }
 
@@ -60,13 +63,20 @@ static unsigned int GetSizeOfComponent(const unsigned int& componentType)
 	case 5126: return sizeof(float);
 	case 5127: return sizeof(double);
 	default:
-		AB_ASSERT(false, "Component Type not found");
+		AB_ASSERT(false, ("Component Type \"{0}\" not found", componentType));
 		return 0;
 		break;
 	}
 }
 
+
 namespace ABImp {														// documentation
+
+	/*
+	=================
+	Custom Array
+	=================
+	*/
 
 	template<typename T>
 	class Array {														// custome array to build with dynamic size at run time
@@ -101,6 +111,11 @@ namespace ABImp {														// documentation
 			m_CurrentIdx++;
 		}
 
+		unsigned int GetSize()
+		{
+			return m_Size;
+		}
+
 		T* GetData()
 		{
 			return m_Data;
@@ -112,26 +127,10 @@ namespace ABImp {														// documentation
 		unsigned int m_CurrentIdx;
 	};
 
-	struct vec3 {
-		float x;
-		float y;
-		float z;
-	};
-
-	struct vec2 {
-		float x;
-		float y;
-	};
-
 	struct Vertex {
-		vec3 v_Position;
-		vec3 v_Normals;
-		vec2 v_TexCoords;
-	};
-
-	struct Rotation {
-		float angle;
-		vec3 vec3;
+		glm::vec3 v_Position;
+		glm::vec3 v_Normals;
+		glm::vec2 v_TexCoords;
 	};
 
 	struct Mesh {														// stores Mesh data separetly
@@ -139,15 +138,15 @@ namespace ABImp {														// documentation
 		std::vector<Vertex> vertices;
 		std::vector<unsigned int> indices;
 		// todo std::vector<Materials> materials;
-		vec3 translation;
-		vec3 scaling;
-		Rotation rotation;
 	};
 
 	struct Node {														// linked list with nodes														//		Mesh data
 		std::string name;												//		node id name
-		std::vector<unsigned int> meshesIdx;								//		index of meshes of node
-		std::vector<unsigned int> childrenIdx;								//		index of childrens
+		unsigned int numMeshes;
+		unsigned int numChildren;
+		std::vector<int> meshes;										//		index of meshes of node
+		std::vector<int> children;										//		index of childrens
+		glm::mat4 tsrMatrix;
 	};
 
 	struct impAttributesIndexes {										// Mesh metadata struct - stores indexes of attributes - pointing to accesors array
@@ -239,11 +238,10 @@ namespace ABImp {														// documentation
 		*/
 
 		template<typename T>
-		void ConvertBytes(T& value, std::vector<unsigned char>& data, const impAccesor& accesor, unsigned int& idx, const unsigned int arraySize)
+		void ConvertBytes(T& value, std::vector<unsigned char>& data, const impAccesor& accesor, unsigned int& idx)
 		{
-			Array bytes = Array<unsigned char>(arraySize);
-
-			for (unsigned int j = 0; j < GetSizeOfComponent(accesor.componentType); j++)
+			Array bytes = Array<unsigned char>(GetSizeOfComponent(accesor.componentType));
+			for (unsigned int j = 0; j < bytes.GetSize(); j++)
 			{
 				bytes.PushBack(data[idx++]);
 			}

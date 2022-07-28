@@ -4,12 +4,12 @@ Amba::Mesh::Mesh()
 {
 }
 
-Amba::Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, TSR tsr)
+Amba::Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, glm::mat4 tsr)
 	: m_Vertices(vertices), m_Indices(indices), m_Textures(textures), m_NoTextures(false), m_TSR(tsr)
 {
 }
 
-Amba::Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, TSR tsr)
+Amba::Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, glm::mat4 tsr)
 	: m_Vertices(vertices), m_Indices(indices), m_NoTextures(true), m_TSR(tsr)
 {
 }

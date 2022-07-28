@@ -25,3 +25,12 @@ namespace Amba {
 		friend class Model;
 	};
 }
+
+// TODO
+/*
+	- CREATE A SUBMISION BUFFER
+	- DO AUTOMIZATIONS
+	- THEN RENDER THE SCENE
+
+	- RENDER MULTITHREAD WISE
+*/

@@ -30,20 +30,10 @@ namespace Amba {
 		shader->SetUniform4mat("u_ViewProjection", m_SceneData->ViewProjectionMatrix);
 		shader->SetUniform4mat("u_Perspective", perspective);
 
-		for (auto& mesh : model->m_Meshes)
+ 		for (auto& mesh : model->m_Meshes)
 		{
-			// compute transforms per mesh
-			
-			// calculate transforms from model loading
-			glm::mat4 scale = glm::scale(glm::mat4(1.0f), mesh.m_TSR.scaling);
-			glm::mat4 modelTransform = glm::translate(glm::mat4(1.0f), mesh.m_TSR.translation) * scale;
-			//modelTransform = glm::rotate(transform, mesh.m_TSR.rotation.angle, mesh.m_TSR.rotation.vec3);
-
-			// add on top transforms (how should I do this?)
-			// something like, modelTransfor += transform
-
-			// set shader transform
-			shader->SetUniform4mat("u_Transform", modelTransform); // for now, i dont know where to put transforms
+			glm::mat4 finalTSR = glm::scale(mesh.m_TSR, glm::vec3(0.001f));
+			shader->SetUniform4mat("u_Transform", finalTSR);
 
 			if (mesh.ContainsTextures())
 			{

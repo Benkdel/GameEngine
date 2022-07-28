@@ -27,7 +27,7 @@ void GameApp::OnUserCreate()
 	AB_INFO("Window init succesfully");
 
 	ResManager::CreateModel("testImporter");
-	ResManager::GetModel("testImporter")->LoadModel("src/game/res/models/gltftutorial/example2/example2.gltf");
+	ResManager::GetModel("testImporter")->LoadModel("src/game/res/models/envirorment/tree_model_1/scene.gltf");
 
 	ResManager::CreateShader("src/game/res/shaders/gltfTutorialVS.glsl", "src/game/res/shaders/gltfTutorialFS.glsl", "testImporter");
 }
@@ -39,19 +39,14 @@ void GameApp::OnUserUpdate()
 
 	// projection matrix
 	AB_Perspective = glm::perspective(glm::radians(AB_Cameras[AB_ActiveCamera].GetZoom()), (float)m_ScrWidth / (float)m_ScrHeight, 0.1f, 100.0f);
-
-	glm::mat4 modelScale = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
-
+	
 	Amba::VertexBufferLayout layout;
 	layout.Push<float>(3);
 	layout.Push<float>(3);
 	layout.Push<float>(2);
 
-	glm::vec3 pos = AB_Cameras[AB_ActiveCamera].GetCamFront();
-	glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * modelScale;
 	ResManager::GetShader("testImporter")->Bind();
-	//ResManager::GetShader("testImporter")->SetUniform3f("viewPos", AB_Cameras[AB_ActiveCamera].GetCamPos());
-	Amba::Renderer::DrawModel(ResManager::GetModel("testImporter"), layout, ResManager::GetShader("testImporter"), AB_Perspective, transform);
+	Amba::Renderer::DrawModel(ResManager::GetModel("testImporter"), layout, ResManager::GetShader("testImporter"), AB_Perspective);
 
 	ProcessInput();
 }

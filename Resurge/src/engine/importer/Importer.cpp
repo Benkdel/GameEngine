@@ -116,7 +116,7 @@ namespace ABImp {
 		for (auto& buffer : m_MD_Buffers)
 		{
 			std::string path = m_Directory + buffer.uri;
-			std::ifstream input(path);
+			std::ifstream input(path, std::ios::binary);
 
 			AB_ASSERT(input.is_open(), ("Failed to open bin file at {0}", path));
 
@@ -148,11 +148,11 @@ namespace ABImp {
 				const unsigned int beginningOfData = bufferView.byteOffset + accesor.byteOffset;
 				const unsigned int lenghtOfData = accesor.count * GetSizeOfComponent(accesor.componentType) * GetNumOfElements(accesor.type);
 
-				for (unsigned int i = beginningOfData; i < beginningOfData + lenghtOfData; i += bufferView.byteStride)
+				for (unsigned int i = beginningOfData; i < beginningOfData + lenghtOfData; i)
 				{
 					unsigned int value = 0;
-					ConvertBytes<unsigned int>(value, data, accesor, i, beginningOfData + lenghtOfData);
-					mesh.indices.push_back((unsigned int)value);
+					ConvertBytes<unsigned int>(value, data, accesor, i);
+ 					mesh.indices.push_back((unsigned int)value);
 				}
 			}
 
@@ -166,17 +166,18 @@ namespace ABImp {
 
 				unsigned int ctr = 0;
 				float pos[3];
-				for (unsigned int i = beginningOfData; i < beginningOfData + lenghtOfData; i += bufferView.byteStride)
+
+				for (unsigned int i = beginningOfData; i < beginningOfData + lenghtOfData; i)
 				{
 					float value = 0.0f;
-					ConvertBytes<float>(value, data, accesor, i, beginningOfData + lenghtOfData);
+					ConvertBytes<float>(value, data, accesor, i);
 					pos[ctr++] = value;
 
 					if (ctr == 3)
 					{
-						vec3 position = { pos[0], pos[1], pos[2] };
-						vec3 normPlaceHolder = { 0.0f, 0.0f, 0.0f };
-						vec2 texPlaceHolder = { 0.0f, 0.0f };
+						glm::vec3 position = { pos[0], pos[1], pos[2] };
+						glm::vec3 normPlaceHolder = { 0.0f, 0.0f, 0.0f };
+						glm::vec2 texPlaceHolder = { 0.0f, 0.0f };
 						vertices.push_back({ position, normPlaceHolder, texPlaceHolder });
 						ctr = 0;
 					}					
@@ -197,12 +198,12 @@ namespace ABImp {
 				for (unsigned int i = beginningOfData; i < beginningOfData + lenghtOfData; i)
 				{
 					float value = 0.0f;
-					ConvertBytes<float>(value, data, accesor, i, beginningOfData + lenghtOfData);
+					ConvertBytes<float>(value, data, accesor, i);
 					pos[ctr++] = value;
 
 					if (ctr == 3)
 					{
-						vec3 norms = { pos[0], pos[1], pos[2] };
+						glm::vec3 norms = { pos[0], pos[1], pos[2] };
 						vertices.at(idx++).v_Normals = norms;
 						ctr = 0;
 					}
@@ -223,19 +224,18 @@ namespace ABImp {
 				for (unsigned int i = beginningOfData; i < beginningOfData + lenghtOfData; i)
 				{
 					float value = 0.0f;
-					ConvertBytes<float>(value, data, accesor, i, beginningOfData + lenghtOfData);
+					ConvertBytes<float>(value, data, accesor, i);
 					pos[ctr++] = value;
 
 					if (ctr == 2)
 					{
-						vec2 tex = { pos[0], pos[1] };
+						glm::vec2 tex = { pos[0], pos[1] };
 						vertices.at(idx++).v_TexCoords = tex;
 						ctr = 0;
 					}
 				}
 			}
 
-			// pushing meshes without TSR, --> TSR is done in node loop
 			mesh.vertices = vertices;
 			m_Meshes.push_back(mesh);
 		}
@@ -245,71 +245,78 @@ namespace ABImp {
 	{
 		for (auto& node : m_Data["nodes"])
 		{
+			std::vector<int> meshes;
+			std::vector<int> children;
+
 			std::cout << node << "\n";
 
-			std::vector<unsigned int> meshes;
-			std::vector<unsigned int> children;
-
 			std::string name = node.value("name", "null");
-			unsigned int meshIdx = node["mesh"];
-			json childrenArray = node.value("children", 0);
-
-			// push meshes index and children
-			meshes.push_back(meshIdx); // for now only 1
-
-			if (childrenArray != NULL)
+			
+			// Add index of nodes's meshes
+			if (node.contains("mesh"))
 			{
-				for (auto& child : childrenArray)
+				for (auto& mesh : node["mesh"])
+					meshes.push_back(mesh);
+			}
+			
+			// Add index of node's children
+			if (node.contains("children"))
+			{
+				for (auto& child : node["children"])
 				{
 					children.push_back(child);
 				}
 			}
-
-			// push node metadata
-			m_Nodes.push_back({ name, meshes, children });
 
 			/* 
 			===========
 			SET TSR 
 			===========
 			*/
+			glm::mat4 tsr = glm::mat4(1.0f);
 
-			vec3 t = { 0.0f, 0.0f, 0.0f };
-			vec3 s = { 1.0f, 1.0f, 1.0f };
-			Rotation r = { 0.0f, { 0.0f, 0.0f, 0.0f } };
-			// todo tsr
-
-			// check for transformation
-			if (node.contains("translation"))
+			// check if there are other potential names for tsr matrix in gltf files
+			if (node.contains("matrix"))
 			{
-				t.x = node["translation"][0];
-				t.y = node["translation"][1];
-				t.z = node["translation"][2];
+				tsr = (glm::mat3)node["matrix"][0];
+			}
+			else
+			{
+				// build matrix from vectors
+				if (node.contains("translation"))
+				{
+					tsr = glm::translate(tsr,
+										glm::vec3(
+											node["translation"][0],
+											node["translation"][1],
+											node["translation"][2]
+						));
+				}
+
+				if (node.contains("scale"))
+				{
+					tsr = glm::scale(tsr,
+									glm::vec3(
+										node["scale"][0],
+										node["scale"][1],
+										node["scale"][2]
+					));
+				}
+
+				if (node.contains("rotation"))
+				{
+					float angle = node["rotation"][0];
+					tsr = glm::rotate(tsr, angle, 
+									glm::vec3(
+										node["rotation"][1],
+										node["rotation"][2],
+										node["rotation"][3]
+					));
+				}
 			}
 
-			if (node.contains("scaling"))
-			{
-				s.x = node["scaling"][0];
-				s.y = node["scaling"][1];
-				s.z = node["scaling"][2];
-			}
-
-			// CHECK IF THIS IS A 4x4 MAT
-			if (node.contains("rotation"))
-			{
-				r.angle = node["rotation"][0];
-				r.vec3.x = node["rotation"][1];
-				r.vec3.y = node["rotation"][2];
-				r.vec3.z = node["rotation"][3];
-			}
-
-			// set tsr from node for every mesh
-			for (auto& mesh : meshes)
-			{
-				m_Meshes.at(mesh).translation = t;
-				m_Meshes.at(mesh).scaling = s;
-				m_Meshes.at(mesh).rotation = r;
-			}
+			// push node data
+			m_Nodes.push_back({ name, (unsigned int)meshes.size(), (unsigned int)children.size(), meshes, children, tsr });
 		}
 	}
 

@@ -1,12 +1,6 @@
 #pragma once
 
-#include <glad/glad.h>
-
-#include <vector>
 #include <engine/renderer/Mesh.h>
-#include <engine/importer/Importer.h>
-
-
 
 namespace Amba {
 
@@ -24,8 +18,8 @@ namespace Amba {
 		std::vector<Texture> m_TexturesLoaded;
 
 		std::string m_Directory;
-		void processNode(ABImp::Importer* data);
-		void processMesh(ABImp::Mesh& mesh);
+		void processNode(ABImp::Node* node, ABImp::Importer* data);
+		Mesh processMesh(ABImp::Mesh* mesh, ABImp::Node* node);
 
 		friend class Renderer;
 	};
