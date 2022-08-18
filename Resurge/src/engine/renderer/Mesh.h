@@ -4,8 +4,6 @@
 
 #include <engine/importer/Importer.h>
 
-
-
 #include <string>
 #include <vector>
 #include <engine/renderer/Texture.h>
@@ -39,7 +37,7 @@ namespace Amba {
 		glm::mat4 m_TSR;
 	
 		void Cleanup();
-		inline bool ContainsTextures() const { return m_NoTextures; }
+		inline bool ContainsTextures() const { return !m_NoTextures; }
 
 	private:
 		bool m_NoTextures;

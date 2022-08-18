@@ -225,6 +225,21 @@ namespace ABImp {
 				{
 					float value = 0.0f;
 					ConvertBytes<float>(value, data, accesor, i);
+
+					// testing
+					/*if (value < 0)
+					{
+						if (value < -1)
+							value = value + (int)value; // removing truncated val, remaining: decimal
+						else
+							value = value * -1;
+					}
+					else
+					{
+						if (value > 1)
+							value = value - (int)value; // removing truncated val, remaining: decimal
+					}*/
+
 					pos[ctr++] = value;
 
 					if (ctr == 2)
@@ -234,6 +249,29 @@ namespace ABImp {
 						ctr = 0;
 					}
 				}
+			}
+
+			if (meshMD.material != -1)
+			{
+				Materials meshMat;
+				json matInfo = m_Data["materials"][meshMD.material];
+				json img = m_Data["images"];
+
+				meshMat.doubleSided = matInfo.value("doubleSided", false);
+				meshMat.alphaMode = matInfo.value("alphaMode", "none");
+				meshMat.name = matInfo.value("name", "null");
+				
+				// try to get uri in different ways for now
+				if (matInfo.contains("normalTexture"))
+					meshMat.uri[TexType::NORMAL] = img[(int)matInfo["normalTexture"]["index"]]["uri"];
+				
+				if (matInfo.contains("pbrMetallicRoughness"))
+					meshMat.uri[TexType::PBR_METALLIC] = img[(int)matInfo["pbrMetallicRoughness"]["baseColorTexture"]["index"]]["uri"];
+
+				if (matInfo.contains("metallicRoughnessTexture"))
+					meshMat.uri[TexType::METALLIC] = img[(int)matInfo["metallicRoughnessTexture"]["index"]]["uri"];
+			
+				mesh.material = meshMat;
 			}
 
 			mesh.vertices = vertices;
@@ -247,8 +285,6 @@ namespace ABImp {
 		{
 			std::vector<int> meshes;
 			std::vector<int> children;
-
-			std::cout << node << "\n";
 
 			std::string name = node.value("name", "null");
 			

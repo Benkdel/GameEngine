@@ -27,9 +27,10 @@ void GameApp::OnUserCreate()
 	AB_INFO("Window init succesfully");
 
 	ResManager::CreateModel("testImporter");
-	ResManager::GetModel("testImporter")->LoadModel("src/game/res/models/envirorment/tree_model_1/scene.gltf");
+	//ResManager::GetModel("testImporter")->LoadModel("src/game/res/models/envirorment/tree_model_1/scene.gltf");
+	ResManager::GetModel("testImporter")->LoadModel("src/game/res/models/guns/futuristic_rifles/scene.gltf");
 
-	ResManager::CreateShader("src/game/res/shaders/gltfTutorialVS.glsl", "src/game/res/shaders/gltfTutorialFS.glsl", "testImporter");
+	ResManager::CreateShader("src/game/res/shaders/treeVS.glsl", "src/game/res/shaders/treeFS.glsl", "testImporter");
 }
 
 void GameApp::OnUserUpdate()

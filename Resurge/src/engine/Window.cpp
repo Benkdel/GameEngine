@@ -60,8 +60,9 @@ namespace Amba {
 		int success = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		AB_ASSERT(success, "Could not load GLAD!\n");
 
-		// enable depth testing
+		// enable depth testing and blending
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
 
 #ifdef AB_ENABLE_ASSERTS
 		// only in debug mode, enable output and 

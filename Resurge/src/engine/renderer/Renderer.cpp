@@ -7,6 +7,8 @@ namespace Amba {
 	void Renderer::BeginScene(Camera& camera)
 	{
 		m_SceneData->ViewProjectionMatrix = camera.GetViewMatrix();
+		
+
 	}
 
 	void Renderer::EndScene()
@@ -30,38 +32,20 @@ namespace Amba {
 		shader->SetUniform4mat("u_ViewProjection", m_SceneData->ViewProjectionMatrix);
 		shader->SetUniform4mat("u_Perspective", perspective);
 
+		int id = 0;
  		for (auto& mesh : model->m_Meshes)
 		{
-			glm::mat4 finalTSR = glm::scale(mesh.m_TSR, glm::vec3(0.001f));
+			glm::mat4 finalTSR = glm::scale(mesh.m_TSR, glm::vec3(0.1f));
 			shader->SetUniform4mat("u_Transform", finalTSR);
 
+			// for now, I will use models with only 1 texture for each mesh
 			if (mesh.ContainsTextures())
 			{
-				unsigned int diffuseIdx = 0;
-				unsigned int specularIdx = 0;
-
-				for (unsigned int i = 0; i < mesh.m_Textures.size(); i++)
-				{
-					glActiveTexture(GL_TEXTURE0 + i);
-
-					// update this
-					std::string name;
-					switch (mesh.m_Textures[i].m_TexType)
-					{
-					case 0:
-						name = "diffuse" + std::to_string(diffuseIdx++);
-						break;
-					case 1:
-						name = "specular" + std::to_string(specularIdx++);
-						break;
-					default:
-						break;
-					}
-					
-					// set the shader value
-					shader->SetUniform1i(name, i);
-					mesh.m_Textures[i].Bind();
-				}
+				std::string name = "u_Texture";
+				
+				// set the shader value
+				shader->SetUniform1i(name, id);
+				mesh.m_Textures[0].Bind(id++);
 			}
 
 			VertexArray va;

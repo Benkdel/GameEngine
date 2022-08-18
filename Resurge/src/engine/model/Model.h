@@ -21,6 +21,9 @@ namespace Amba {
 		void processNode(ABImp::Node* node, ABImp::Importer* data);
 		Mesh processMesh(ABImp::Mesh* mesh, ABImp::Node* node);
 
+		std::vector<Texture> LoadTextures(std::string uri, std::string texName);
+
+
 		friend class Renderer;
 	};
 

@@ -8,8 +8,10 @@ namespace Amba {
 	Texture::Texture() {}
 
 	Texture::Texture(const std::string& fileName)
+		:m_TexType(0), m_LocalBuffer(nullptr),
+		m_Width(0), m_Height(0), m_BPP(0)
 	{
-		m_Directory = fileName.substr(0, fileName.find_last_of('/')) + '/';
+		m_Directory = fileName.substr(0, fileName.find_last_of('/') + 1);
 		m_FilePath = fileName.substr(fileName.find_last_of('/') + 1);
 	}
 
@@ -46,8 +48,8 @@ namespace Amba {
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT /*GL_CLAMP_TO_EDGE*/);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT /*GL_CLAMP_TO_EDGE */);
 
 		GLenum colorMode = GL_RGBA;
 		switch (m_BPP)

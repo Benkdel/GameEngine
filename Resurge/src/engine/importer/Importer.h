@@ -36,6 +36,8 @@ TODO LIST
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <unordered_map>
+
 using json = nlohmann::json;
 
 static unsigned int GetNumOfElements(const std::string& type)
@@ -71,6 +73,12 @@ static unsigned int GetSizeOfComponent(const unsigned int& componentType)
 
 
 namespace ABImp {														// documentation
+
+	enum class TexType {												// to see if its possible to standarize tex types later
+		NONE = 0,
+		NORMAL, PBR_METALLIC, METALLIC,
+		DIFFUSE, SPECULAR
+	};
 
 	/*
 	=================
@@ -133,11 +141,22 @@ namespace ABImp {														// documentation
 		glm::vec2 v_TexCoords;
 	};
 
+
+	// populate all material info and create a material class to use in every mesh
+	// material class should use either color or texture, etc
+	struct Materials {													// simple material struct for now
+		bool doubleSided;
+		std::string alphaMode;
+		std::string name;
+		std::unordered_map<TexType, std::string> uri;				// for now we are going to get the uri for the texture
+		glm::vec4 color;
+	};
+
 	struct Mesh {														// stores Mesh data separetly
 		std::string name;
 		std::vector<Vertex> vertices;
 		std::vector<unsigned int> indices;
-		// todo std::vector<Materials> materials;
+		Materials material;
 	};
 
 	struct Node {														// linked list with nodes														//		Mesh data
@@ -185,6 +204,13 @@ namespace ABImp {														// documentation
 		unsigned int byteLength;										//		length of bin file in bytes
 		std::string uri;												//		path to bin file
 	};
+
+	
+	/*
+	===============================================
+	MAIN CLASS
+	===============================================
+	*/
 
 	class Importer {
 	public:

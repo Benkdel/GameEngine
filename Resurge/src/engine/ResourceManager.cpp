@@ -7,6 +7,7 @@ std::unordered_map<std::string, VertexArray*>		ResManager::rm_VertexArrays;
 std::unordered_map<std::string, VertexBuffer*>		ResManager::rm_VertexBuffers;
 std::unordered_map<std::string, IndexBuffer*>		ResManager::rm_IndexBuffers;
 std::unordered_map<std::string, Shader*>			ResManager::rm_Shaders;
+std::unordered_map<std::string, Material*>			ResManager::rm_Materials;
 std::unordered_map<std::string, Texture*>			ResManager::rm_Textures;
 std::unordered_map<std::string, Model*>				ResManager::rm_Models;
 
@@ -40,6 +41,11 @@ void ResManager::CreateModel(const std::string& name)
 	rm_Models.insert(std::pair<std::string, Model*>(name, new Model()));
 }
 
+void ResManager::CreateMaterial(const std::string& name)
+{
+	rm_Materials.insert(std::pair<std::string, Material*>(name, new Material()));
+}
+
 VertexArray* ResManager::GetVA(const std::string& name)
 {
 	return rm_VertexArrays[name];
@@ -68,6 +74,11 @@ Texture* ResManager::GetTexture(const std::string& name)
 Amba::Model* ResManager::GetModel(const std::string& name)
 {
 	return rm_Models[name];
+}
+
+Amba::Material* ResManager::GetMaterial(const std::string& name)
+{
+	return rm_Materials[name];
 }
 
 
@@ -124,4 +135,12 @@ void ResManager::cleanup()
 	}
 	rm_Models.clear();
 
+	for (auto& it : rm_Materials)
+	{
+		if (it.second != NULL)
+		{
+			it.second = NULL;
+		}
+	}
+	rm_Materials.clear();
 }

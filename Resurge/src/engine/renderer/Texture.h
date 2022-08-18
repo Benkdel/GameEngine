@@ -20,6 +20,7 @@ namespace Amba {
 		
         inline int GetWidth() const { return m_Width; }
 		inline int GetHeight() const { return m_Height; }
+		inline std::string GetPath() const { return m_Directory + m_FilePath; }
 
         void Cleanup();
 
@@ -30,7 +31,7 @@ namespace Amba {
         unsigned int m_TexType;
 		unsigned char* m_LocalBuffer;
 		int m_Width, m_Height, m_BPP;
-	
+		
 
     friend class Model;
     friend class Renderer;

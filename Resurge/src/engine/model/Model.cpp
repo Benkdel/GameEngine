@@ -45,6 +45,7 @@ namespace Amba {
         // data to fill
         std::vector<Vertex> vertices;
         std::vector<unsigned int> indices;
+        std::vector<Texture> textures;
         
         size_t nVertex = mesh->vertices.size();
 
@@ -66,9 +67,59 @@ namespace Amba {
             vertices.push_back(vertex);
         }
 
-        
         indices = mesh->indices;
 
+        if (mesh->material.uri.size() > 0)
+        {
+            // for now I am only using 1 texture for each mesh
+            std::vector<Texture> temp;
+            if (mesh->material.uri.find(ABImp::TexType::NORMAL) != mesh->material.uri.end())
+            {
+                temp = LoadTextures(mesh->material.uri[ABImp::TexType::NORMAL], "texture");
+                textures.insert(textures.end(), temp.begin(), temp.end());
+            }
+
+            if (mesh->material.uri.find(ABImp::TexType::PBR_METALLIC) != mesh->material.uri.end())
+            {
+                temp = LoadTextures(mesh->material.uri[ABImp::TexType::PBR_METALLIC], "texture");
+                textures.insert(textures.end(), temp.begin(), temp.end());
+            }
+            if (mesh->material.uri.find(ABImp::TexType::METALLIC) != mesh->material.uri.end())
+            {
+                temp = LoadTextures(mesh->material.uri[ABImp::TexType::METALLIC], "texture");
+                textures.insert(textures.end(), temp.begin(), temp.end());
+            }
+        
+            return Mesh(vertices, indices, textures, node->tsrMatrix);
+        }
         return Mesh(vertices, indices, node->tsrMatrix);
+    }
+
+    std::vector<Texture> Model::LoadTextures(std::string uri, std::string texName)
+    {
+        // for now only one texture for every mesh
+
+        std::vector<Texture> textures;
+        bool skip = false;
+
+        for (unsigned int i = 0; i < m_TexturesLoaded.size(); i++)
+        {
+            if (std::strcmp(m_TexturesLoaded[i].GetPath().data(), uri.c_str()) == 0)
+            {
+                textures.push_back(m_TexturesLoaded[i]);
+                skip = true;
+                break;
+            }
+        }
+
+        if (!skip)
+        {
+            Texture texture(m_Directory + uri);
+            texture.LoadTexture(true);
+            textures.push_back(texture);
+            m_TexturesLoaded.push_back(texture);
+        }
+
+        return textures;
     }
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <engine/renderer/Shader.h>
+#include <engine/material/Shader.h>
 
 namespace Amba {
 
