@@ -8,7 +8,6 @@ namespace Amba {
 	{
 		m_SceneData->ViewProjectionMatrix = camera.GetViewMatrix();
 		
-
 	}
 
 	void Renderer::EndScene()

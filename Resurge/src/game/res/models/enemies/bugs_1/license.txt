@@ -1,0 +1,11 @@
+Model Information:
+* title:	Starship troopers bug
+* source:	https://sketchfab.com/3d-models/starship-troopers-bug-b9b1f02a76344916af85c323bf50bc03
+* author:	Yury.Petrov (https://sketchfab.com/Yury.Petrov)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Starship troopers bug" (https://sketchfab.com/3d-models/starship-troopers-bug-b9b1f02a76344916af85c323bf50bc03) by Yury.Petrov (https://sketchfab.com/Yury.Petrov) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
