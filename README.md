@@ -43,39 +43,27 @@ The main goal of this project is to learn about graphics programming. ...TODO
 ```
 Model created by: aliyeredon (https://sketchfab.com/aliyeredon).
 
-Result:
-<br>![sample code output (dark)](https://raw.githubusercontent.com/wiki/ocornut/imgui/web/v175/capture_readme_styles_0001.png) ![sample code output (light)](https://raw.githubusercontent.com/wiki/ocornut/imgui/web/v175/capture_readme_styles_0002.png)
+<br>![sample code output (dark)](https://github.com/Benkdel/Resurge-Gamedev/blob/main/img/GLTFTreeLoader.png) ![sample code output (light)]()
 
 ``` 
-
-
-### NON INTERACTIVE MODE
+### Simple Textured cube model
 ```
-$ echo "ls" | ./hsh
-AUTHORS    Tests        external            get_cmd_path.c       help_files  main.c  man_1_simple_shell  shell_IO.c     shell_str_parsing.c  string_methods.c
-README.md  built_ins.c  get_buildint_cmd.c  handle_stat_codes.c  hsh         main.h  mem_mgmt.c          shell_calls.c  signals_handler.c
-$
+Model created by: lildrstrange11 (https://sketchfab.com/lildrstrange11).
+
+<br>![sample code output (dark)](https://github.com/Benkdel/Resurge-Gamedev/blob/main/img/GLTFTexturedCube.png) ![sample code output (light)]()
+
 ``` 
 
-# EXIT STATUS
-The following exit values shall be returned:
-#### `0`
-> The script to be executed consisted solely of zero or more blank lines or comments, or both.
-#### `1-125`
-> A non-interactive shell detected a syntax, redirection, or variable assignment error.
-#### `127`
-> A specified command_file could not be found by a non-interactive shell.
+
+### TODO
+```
+
+``` 
+
 
 # AUTHORS
 ### Contact Information
-##### Please feel free to contact us regarding any matter (specially about mistakes, recomendations and gramar errors)
-
-<p align="center">
-Humberto Tejada - 
-<a href="https://github.com/humtej1204">
-        <img src="https://img.shields.io/badge/Haru-mainPage-blue">
-</a>
-</p>
+##### Please feel free to contact me regarding any matter (specially about mistakes, recomendations and gramar errors)
 
 <p align="center">
 Carlos Bentin -
