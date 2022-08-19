@@ -41,13 +41,12 @@ The main goal of this project is to learn about graphics programming. ...TODO
 # Examples
 ### Simple Tree model loaded
 Model created by: aliyeredon (https://sketchfab.com/aliyeredon).
-<br>![sample code output (dark)](https://github.com/Benkdel/Resurge-Gamedev/blob/main/img/GLTFTreeLoader.png) ![sample code output (light)]()
+<br>![sample code output (dark)](https://github.com/Benkdel/Resurge-Gamedev/blob/main/img/GLTFTreeLoader.png)
 
 ### Simple Textured cube model
 
 Model created by: lildrstrange11 (https://sketchfab.com/lildrstrange11).
-<br>![sample code output (dark)](https://github.com/Benkdel/Resurge-Gamedev/blob/main/img/GLTFTexturedCube.png) ![sample code output (light)]()
-
+<br>![sample code output (dark)](https://github.com/Benkdel/Resurge-Gamedev/blob/main/img/GLTFTexturedCube.png)
 
 ### TODO
 ```
