@@ -1,10 +1,6 @@
-<h1 align="center" >
-<br>
-    <img src="PERSONAL PROJECT" height="20%" width="20%">
-</h1>
 
 <h2 align="center">
-   OpenGL based Graphics / Game engine in C++
+   OpenGL based Graphics / Game engine written in C++
 </h2>
 
 <p align="center">
@@ -24,19 +20,23 @@
 <h4 align="center"> Game Engine / Game using OpenGL </h4>
 
 <p align="center">
+    <a href="About">About</a> •
     <a href="#">TODO</a> •
-    <a href="#">TODO</a> •
-    <a href="#">TODO</a> •
+    <a href="Examples">Examples</a> •
     <a href="#">TODO</a> •
     <a href="#">TODO</a> •
 </p>
 
-***
-# Game development project
-In this project I am developing a simple game engine using OpenGL API. TODO
+# About
+My intention with this project is to write a simple graphics/game engine using OpenGL (for now, maybe later, I will add Vulkan), using the least number of third-party libraries I can. For example, I am writing my GLTF importer to load and display models onto the screen. I am doing this because I want to learn as much as possible about the core principles of graphics programming. 
 
-# Description
-The main goal of this project is to learn about graphics programming. ...TODO
+# How to run
+    requirerments:
+    -   Visual studio 2022
+    -   Premake installed
+    -   Only works in windows
+    how to run:
+    -   clone repo and execute GenerateProject.bat file, it should work fine
 
 # Examples
 ### Simple Tree model loaded

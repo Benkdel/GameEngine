@@ -225,21 +225,6 @@ namespace ABImp {
 				{
 					float value = 0.0f;
 					ConvertBytes<float>(value, data, accesor, i);
-
-					// testing
-					/*if (value < 0)
-					{
-						if (value < -1)
-							value = value + (int)value; // removing truncated val, remaining: decimal
-						else
-							value = value * -1;
-					}
-					else
-					{
-						if (value > 1)
-							value = value - (int)value; // removing truncated val, remaining: decimal
-					}*/
-
 					pos[ctr++] = value;
 
 					if (ctr == 2)
