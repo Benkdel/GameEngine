@@ -119,7 +119,6 @@ namespace Amba {
             textures.push_back(texture);
             m_TexturesLoaded.push_back(texture);
         }
-
         return textures;
     }
 }

@@ -5,14 +5,15 @@
 
 <p align="center">
     <a href="https://github.com/Benkdel/Resurge-Gamedev/commits/main">
-        <img src="https://img.shields.io/github/last-commit/Benkdel/printf.svg?style=flat-square&logo=github&logoColor=white" alt="GitHub last commit">
+        <img src="https://img.shields.io/github/last-commit/Benkdel/Resurge-Gamedev.svg?style=flat-square&logo=github&logoColor=white"
+        alt="GitHub last commit">
     </a>
     <a href="https://github.com/Benkdel/Resurge-Gamedev/issues">
-    <img src="https://img.shields.io/github/issues-raw/Benkdel/printf.svg?style=flat-square&logo=github&logoColor=white"
+    <img src="https://img.shields.io/github/issues-raw/Benkdel/Resurge-Gamedev.svg?style=flat-square&logo=github&logoColor=white"
          alt="GitHub issues">
     </a>
     <a href="https://github.com/Benkdel/Resurge-Gamedev/pulls">
-    <img src="https://img.shields.io/github/issues-pr-raw/Benkdel/printf.svg?style=flat-square&logo=github&logoColor=white"
+    <img src="https://img.shields.io/github/issues-pr-raw/Benkdel/Resurge-Gamedev.svg?style=flat-square&logo=github&logoColor=white"
          alt="GitHub pull requests">
     </a>
 </p>
