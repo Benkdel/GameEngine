@@ -115,7 +115,7 @@ namespace Amba {
         if (!skip)
         {
             Texture texture(m_Directory + uri);
-            texture.LoadTexture(true);
+            texture.LoadTexture(false);
             textures.push_back(texture);
             m_TexturesLoaded.push_back(texture);
         }

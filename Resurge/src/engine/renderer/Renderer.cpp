@@ -34,7 +34,7 @@ namespace Amba {
 		int id = 0;
  		for (auto& mesh : model->m_Meshes)
 		{
-			glm::mat4 finalTSR = glm::scale(mesh.m_TSR, glm::vec3(0.1f));
+			glm::mat4 finalTSR = glm::scale(mesh.m_TSR, glm::vec3(0.001f));
 			shader->SetUniform4mat("u_Transform", finalTSR);
 
 			// for now, I will use models with only 1 texture for each mesh
