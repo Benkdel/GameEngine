@@ -1,6 +1,10 @@
 #include "Application.h"
 #include "engine/Window.h"
 
+#include <imgui.h>
+
+#include <engine/interface/inferface.h>
+
 namespace Amba {
 
 	Application::Application()
@@ -20,6 +24,12 @@ namespace Amba {
 		m_Window = new Amba::Window("Resurge", width, height);
 		m_ScrWidth = width;
 		m_ScrHeight = height;
+
+		// for now, init Imgui here
+		// Setup Dear ImGui context
+		m_Interface = new Interface();
+		m_Interface->Setup(m_Window);
+
 	}
 
 	// method to be override by user
@@ -48,6 +58,11 @@ namespace Amba {
 			return false;
 	}
 
+	void Application::InterfaceHandler()
+	{
+		m_Interface->Run();
+	}
+
 	void Application::SetWindowShouldClose()
 	{
 		m_Window->SetWindowShouldClose();
@@ -62,7 +77,7 @@ namespace Amba {
 	
 		while (!m_Window->WindowShouldClose())
 		{
-			Renderer::Clear();
+			Renderer::Clear(m_Interface->m_Clear_color);
 
 			// Compute delta time and store it as class member for user to use
 			AB_TimeElapsed = glfwGetTime();
@@ -72,9 +87,13 @@ namespace Amba {
 			// method used by user
 			OnUserUpdate();
 
+			// run interface - ImGui
+			InterfaceHandler();
+
 			m_Window->OnUpdate();
 		}
 
 		delete m_Window;
+		m_Interface->Cleanup();
 	}
 }

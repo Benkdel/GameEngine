@@ -8,6 +8,8 @@
 #include <engine/io/Camera.h>
 #include <engine/renderer/Renderer.h>
 
+#include <engine/interface/inferface.h>
+
 namespace Amba {
 
 class Application
@@ -23,6 +25,8 @@ class Application
 		bool AB_keyPressed(unsigned int GLFW_KEY_CODE);
 		bool AB_keyReleased(unsigned int GLFW_KEY_CODE);
 
+		void InterfaceHandler();
+
 		// methods to be overrided by user
 		virtual void OnUserCreate();
 		virtual void OnUserUpdate();
@@ -31,6 +35,7 @@ class Application
 
 	private:
 		Amba::Window* m_Window;
+		Amba::Interface* m_Interface;
 
 	protected:
 		double AB_TimeElapsed;

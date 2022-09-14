@@ -24,7 +24,10 @@ project "Resurge"
 		"%{prj.name}/src/**.hpp",
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/vendor/glad/src/glad.c",
-		"%{prj.name}/vendor/include/STB/stb_image.cpp"
+		"%{prj.name}/vendor/include/STB/stb_image.cpp",
+		"%{prj.name}/vendor/Imgui/*.cpp",
+		"%{prj.name}/vendor/Imgui/backends/imgui_impl_opengl3.cpp",
+		"%{prj.name}/vendor/Imgui/backends/imgui_impl_glfw.cpp"
 	}
 
 	includedirs
@@ -33,7 +36,8 @@ project "Resurge"
 		"%{prj.name}/vendor/spdlog/include",
 		"%{prj.name}/vendor/include",
 		"%{prj.name}/vendor/include/GLAD",
-		"%{prj.name}/vendor/GLM"
+		"%{prj.name}/vendor/GLM",
+		"%{prj.name}/vendor/Imgui"
 	}
 
 	libdirs

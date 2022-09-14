@@ -3,6 +3,9 @@
 #include <engine/ResourceManager.h>
 #include <engine/io/Camera.h>
 
+// interface in renderer?
+#include <engine/interface/inferface.h>
+
 namespace Amba {
 
 	class Renderer
@@ -14,7 +17,7 @@ namespace Amba {
 		static void Draw(const VertexArray *va, const IndexBuffer *ib, Shader *shader, const glm::mat4 perspective, const glm::mat4& transform = glm::mat4(1.0f));
 		static void DrawModel(const Model* model, const VertexBufferLayout& layout, Shader* shader, const glm::mat4 perspective, const glm::mat4& transform = glm::mat4(1.0f));
 
-		static void Clear();
+		static void Clear(glm::vec4 clearColor = glm::vec4(0.2f, 0.3f, 0.3f, 1.0f));
 	private:
 		struct SceneData
 		{

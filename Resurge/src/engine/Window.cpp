@@ -54,7 +54,7 @@ namespace Amba {
 		glfwSetScrollCallback(m_Window, Mouse::MouseWheelCallback);
 
 		// hide cursor
-		glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		//glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 		// initialize GLAD
 		int success = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);

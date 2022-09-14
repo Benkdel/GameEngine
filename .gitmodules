@@ -4,3 +4,6 @@
 [submodule "Resurge/vendor/GLM"]
 	path = Resurge/vendor/GLM
 	url = git@github.com:g-truc/glm.git
+[submodule "Resurge/vendor/Imgui"]
+	path = Resurge/vendor/Imgui
+	url = git@github.com:ocornut/imgui.git
