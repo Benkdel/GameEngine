@@ -51,6 +51,11 @@ Model created by: lildrstrange11 (https://sketchfab.com/lildrstrange11).
 
 ### TODO
 ```
+    1. Interface
+        - implement mouse locking when in ImGui space
+
+    2. Rendering
+        - FILL THIS PART
 
 ``` 
 
