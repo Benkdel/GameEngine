@@ -25,6 +25,8 @@ namespace Amba {
 		inline bool WindowShouldClose() const { return m_WindowShouldClose; }
 		GLFWwindow* getWindow() const { return m_Window; }
 
+		void ToggleCursor();
+
 	private:
 		GLFWwindow* m_Window;
 
@@ -33,5 +35,7 @@ namespace Amba {
 		std::string m_Title;
 
 		bool m_WindowShouldClose;
+
+		bool m_IsCursorLocked;
 	};
 }

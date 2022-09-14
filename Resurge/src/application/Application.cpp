@@ -30,6 +30,8 @@ namespace Amba {
 		m_Interface = new Interface();
 		m_Interface->Setup(m_Window);
 
+		// set active camera to 0 - default camera
+		AB_ActiveCamera = 0;
 	}
 
 	// method to be override by user
@@ -91,9 +93,77 @@ namespace Amba {
 			InterfaceHandler();
 
 			m_Window->OnUpdate();
+
+			ProcessInput();
 		}
 
 		delete m_Window;
 		m_Interface->Cleanup();
 	}
+
+	void Application::ProcessInput()
+	{
+		if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_ESCAPE))
+			SetWindowShouldClose();
+
+		// Camera movements
+		if (Amba::KeyBoard::Key(GLFW_KEY_W))
+		{
+			AB_Cameras[AB_ActiveCamera].UpdateCameraPos(Amba::CameraMotion::FORWARD, AB_DeltaTime);
+		}
+
+		if (Amba::KeyBoard::Key(GLFW_KEY_W))
+		{
+			AB_Cameras[AB_ActiveCamera].UpdateCameraPos(Amba::CameraMotion::FORWARD, AB_DeltaTime);
+		}
+
+		if (Amba::KeyBoard::Key(GLFW_KEY_S))
+		{
+			AB_Cameras[AB_ActiveCamera].UpdateCameraPos(Amba::CameraMotion::BACKWARD, AB_DeltaTime);
+		}
+
+		if (Amba::KeyBoard::Key(GLFW_KEY_D))
+		{
+			AB_Cameras[AB_ActiveCamera].UpdateCameraPos(Amba::CameraMotion::RIGHT, AB_DeltaTime);
+		}
+
+		if (Amba::KeyBoard::Key(GLFW_KEY_A))
+		{
+			AB_Cameras[AB_ActiveCamera].UpdateCameraPos(Amba::CameraMotion::LEFT, AB_DeltaTime);
+		}
+
+		if (Amba::KeyBoard::Key(GLFW_KEY_SPACE))
+		{
+			AB_Cameras[AB_ActiveCamera].UpdateCameraPos(Amba::CameraMotion::UP, AB_DeltaTime);
+		}
+
+		if (Amba::KeyBoard::Key(GLFW_KEY_LEFT_CONTROL))
+		{
+			AB_Cameras[AB_ActiveCamera].UpdateCameraPos(Amba::CameraMotion::DOWN, AB_DeltaTime);
+		}
+
+		// mouse movement
+		double dx = Amba::Mouse::GetDX();
+		double dy = Amba::Mouse::GetDY();
+		if (dx != 0 || dy != 0)
+		{
+			AB_Cameras[AB_ActiveCamera].UpdateCameraDirection(dx, dy);
+		}
+
+		// zoom
+		double scrollDy = Amba::Mouse::GetScrollDY();
+		if (scrollDy != 0)
+		{
+			AB_Cameras[AB_ActiveCamera].UpdateCameraZoom(scrollDy);
+		}
+
+		// lock/unlock mouse
+		if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_F10))
+		{
+			Amba::Mouse::ToggleMouseLock();
+			m_Window->ToggleCursor();
+		}
+	}
+
 }
+

@@ -17,19 +17,12 @@ public:
 	GameApp();
 	~GameApp();
 
-
 	void OnUserCreate() override;
 	void OnUserUpdate() override;
-
-	void ProcessInput();
 
 private:
 
 	GameState AB_State;
-
-	// cameras
-	unsigned int AB_ActiveCamera;
-	Amba::Camera AB_Cameras[5];
 
 	// projection mat
 	glm::mat4 AB_Perspective;

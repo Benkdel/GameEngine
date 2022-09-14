@@ -1,5 +1,7 @@
 #include "Mouse.h"
 
+#include <engine/Log.h>
+
 namespace Amba {
 
 	double Mouse::m_X = 0;
@@ -19,17 +21,23 @@ namespace Amba {
 	bool Mouse::m_Buttons[GLFW_MOUSE_BUTTON_LAST] = { 0 };
 	bool Mouse::m_ButtonsChanged[GLFW_MOUSE_BUTTON_LAST] = { 0 };
 
+	bool Mouse::m_IsLock = false;
+
 	void Mouse::CursorPosCallback(GLFWwindow* window, double x, double y)
 	{
 		m_X = x;
 		m_Y = y;
-
+		
 		if (m_FirstMouse)
 		{
 			m_LastX = x;
 			m_LastY = y;
 			m_FirstMouse = false;
 		}
+
+		// where should this be??
+		if (m_IsLock)
+			return;
 
 		m_Dx = x - m_LastX;
 		m_Dy = m_LastY - y; // inverted
@@ -118,4 +126,10 @@ namespace Amba {
 	{
 		return m_Buttons[button] && ButtonChanged(button);
 	}
+
+	void Mouse::ToggleMouseLock()
+	{
+		m_IsLock = (!m_IsLock) ? 1 : 0;
+	}
+
 }

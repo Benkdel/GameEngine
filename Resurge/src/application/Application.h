@@ -33,9 +33,15 @@ class Application
 
 		void SetWindowShouldClose();
 
+		// cameras
+		unsigned int AB_ActiveCamera;
+		Amba::Camera AB_Cameras[5];
+
 	private:
 		Amba::Window* m_Window;
 		Amba::Interface* m_Interface;
+
+		void ProcessInput();
 
 	protected:
 		double AB_TimeElapsed;

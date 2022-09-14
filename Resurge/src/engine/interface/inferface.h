@@ -5,8 +5,10 @@
 #include <backends/imgui_impl_opengl3.h>
 
 #include <engine/Window.h>
-
+#include <engine/renderer/Renderer.h>
 #include <glm/glm.hpp>
+
+#include <engine/ResourceManager.h>
 
 namespace Amba {
 
@@ -26,6 +28,9 @@ namespace Amba {
 
 	private:
 		Window* m_Window;
+
+		ImGuiViewport* m_MainViewport;
+
 	};
 
 }

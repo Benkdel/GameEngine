@@ -42,7 +42,6 @@ namespace Amba {
 		float m_FoV;
 
 		void UpdateCameraVectors();
-
 };
 
 }

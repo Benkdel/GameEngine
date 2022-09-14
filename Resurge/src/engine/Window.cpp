@@ -54,7 +54,8 @@ namespace Amba {
 		glfwSetScrollCallback(m_Window, Mouse::MouseWheelCallback);
 
 		// hide cursor
-		//glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		m_IsCursorLocked = 0;
 
 		// initialize GLAD
 		int success = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
@@ -83,6 +84,20 @@ namespace Amba {
 	void Window::SetWindowShouldClose()
 	{
 		m_WindowShouldClose = true;
+	}
+
+	void Window::ToggleCursor()
+	{
+		if (m_IsCursorLocked)
+		{
+			glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			m_IsCursorLocked = 0;
+		}
+		else
+		{
+			glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			m_IsCursorLocked = 1;
+		}
 	}
 
 	void Window::ShutDown()

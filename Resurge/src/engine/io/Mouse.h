@@ -24,6 +24,8 @@ namespace Amba {
 		static bool ButtonWentUp(int button);
 		static bool ButtonWentDown(int button);
 
+		static void ToggleMouseLock();
+
 	private:
 
 		static double m_X;
@@ -42,5 +44,7 @@ namespace Amba {
 
 		static bool m_Buttons[];
 		static bool m_ButtonsChanged[];
+
+		static bool m_IsLock;
 	};
 }
