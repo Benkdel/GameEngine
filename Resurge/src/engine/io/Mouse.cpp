@@ -37,7 +37,11 @@ namespace Amba {
 
 		// where should this be??
 		if (m_IsLock)
+		{
+			m_LastX = x;
+			m_LastY = y;
 			return;
+		}
 
 		m_Dx = x - m_LastX;
 		m_Dy = m_LastY - y; // inverted
