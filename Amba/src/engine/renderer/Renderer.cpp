@@ -4,8 +4,6 @@ namespace Amba {
 
 	Renderer::SceneData* Renderer::m_SceneData = new Renderer::SceneData;
 
-	float Renderer::m_ModelSize = 1.0f;
-
 	void Renderer::BeginScene(Camera& camera)
 	{
 		m_SceneData->ViewProjectionMatrix = camera.GetViewMatrix();
@@ -26,7 +24,7 @@ namespace Amba {
 		glDrawElements(GL_TRIANGLES, ib->GetCount(), GL_UNSIGNED_INT, nullptr);
 	}
 
-	void Renderer::DrawModel(const Model* model, const VertexBufferLayout& layout, Shader* shader, const glm::mat4 perspective, const glm::mat4& transform, float mSize)
+	void Renderer::DrawModel(const Model* model, const VertexBufferLayout& layout, Shader* shader, const glm::mat4 perspective, const glm::mat4& transform)
 	{
 		shader->Bind();
 		shader->SetUniform4mat("u_ViewProjection", m_SceneData->ViewProjectionMatrix);
@@ -35,7 +33,8 @@ namespace Amba {
 		int id = 0;
  		for (auto& mesh : model->m_Meshes)
 		{
-			glm::mat4 finalTSR = glm::scale(mesh.m_TSR, glm::vec3(mSize));
+			glm::mat4 finalTSR = glm::scale(mesh.m_TSR, glm::vec3(model->m_Size));
+			finalTSR = glm::translate(finalTSR, model->m_Translation);
 			shader->SetUniform4mat("u_Transform", finalTSR);
 
 			// for now, I will use models with only 1 texture for each mesh

@@ -15,7 +15,7 @@ namespace Amba {
 		static void EndScene();
 
 		static void Draw(const VertexArray *va, const IndexBuffer *ib, Shader *shader, const glm::mat4 perspective, const glm::mat4& transform = glm::mat4(1.0f));
-		static void DrawModel(const Model* model, const VertexBufferLayout& layout, Shader* shader, const glm::mat4 perspective, const glm::mat4& transform = glm::mat4(1.0f), float mSize = m_ModelSize);
+		static void DrawModel(const Model* model, const VertexBufferLayout& layout, Shader* shader, const glm::mat4 perspective, const glm::mat4& transform = glm::mat4(1.0f));
 
 		static void Clear(glm::vec4 clearColor = glm::vec4(0.2f, 0.3f, 0.3f, 1.0f));
 	private:
@@ -24,8 +24,6 @@ namespace Amba {
 			glm::mat4 ViewProjectionMatrix;
 		};
 		static SceneData* m_SceneData;
-
-		static float m_ModelSize;
 		
 		friend class Model;
 		friend class Interface;

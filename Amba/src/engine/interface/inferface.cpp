@@ -1,6 +1,10 @@
 #include "inferface.h"
 
 
+// Models 
+static std::string currentModel = "No active model selected";
+static bool selection = false;
+
 namespace Amba {
 
     const char* glsl_version = "#version 130";
@@ -19,9 +23,6 @@ namespace Amba {
 
         ImGui_ImplGlfw_InitForOpenGL(window->getWindow(), true);
         ImGui_ImplOpenGL3_Init(glsl_version);
-
-        // Get initial list of models:
-        //HandleModels();
 
         // set up placeholders
         m_Clear_color = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -50,32 +51,36 @@ namespace Amba {
             ImGui::Text("FSP data");
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-            // Models 
-            std::string currentModel = "No active model selected";
             
             ImGui::NewLine();
             ImGui::Text("Model Settings");
             ImGui::NewLine();
-
 
             ImGui::TextColored(ImVec4(1, 1, 0, 1), "Avaiable models:");
             ImGui::Text("Active model: ");
             ImGui::SameLine();
             ImGui::Text(currentModel.c_str());
 
+            // List of models to select
             ImGui::BeginListBox("##");
             for (auto k : ResManager::rm_Models)
             {
+                // get current selection and set
+                // it in current model, using string name
                 const bool isSelected = (currentModel == k.first);
                 if (ImGui::Selectable(k.first.c_str(), isSelected))
+                {
+                    selection = true;
                     currentModel = k.first;
-
-                if (isSelected)
-                    ImGui::SetItemDefaultFocus();
+                }
             }
             ImGui::EndListBox();
 
-            ImGui::SliderFloat("Size:", &Renderer::m_ModelSize, 0.001f, 1.0f, "%.003f");    
+            if (selection)
+            {
+                ImGui::SliderFloat("Size:", &ResManager::rm_Models[currentModel]->m_Size, 0.001f, 1.0f, "%.003f");
+                ImGui::SliderFloat3("Position:", &ResManager::rm_Models[currentModel]->m_Translation[0], -500.0f, 500.0f, "%.003f");
+            }
 
             ImGui::End();
         }

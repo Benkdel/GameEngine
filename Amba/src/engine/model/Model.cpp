@@ -5,6 +5,7 @@
 namespace Amba {
     
     Model::Model()
+    : m_Size(1.0f), m_Translation(glm::vec3(1.0f))
     {
     }
 

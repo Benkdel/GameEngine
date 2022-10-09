@@ -23,8 +23,11 @@ namespace Amba {
 
 		std::vector<Texture> LoadTextures(std::string uri, std::string texName);
 
+		float m_Size;
+		glm::vec3 m_Translation;
 
 		friend class Renderer;
+		friend class Interface;
 	};
 
 }

@@ -1,4 +1,4 @@
-workspace "Resurge"
+workspace "Amba"
 	architecture "x64"
 
 	configurations
@@ -10,8 +10,8 @@ workspace "Resurge"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/"
 
-project "Resurge"
-	location "Resurge"
+project "Amba"
+	location "Amba"
 	kind "ConsoleApp"
 	language "C++"
 

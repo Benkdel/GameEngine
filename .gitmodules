@@ -1,9 +1,9 @@
-[submodule "Resurge/vendor/spdlog"]
-	path = Resurge/vendor/spdlog
+[submodule "Amba/vendor/spdlog"]
+	path = Amba/vendor/spdlog
 	url = git@github.com:gabime/spdlog.git
-[submodule "Resurge/vendor/GLM"]
-	path = Resurge/vendor/GLM
+[submodule "Amba/vendor/GLM"]
+	path = Amba/vendor/GLM
 	url = git@github.com:g-truc/glm.git
-[submodule "Resurge/vendor/Imgui"]
-	path = Resurge/vendor/Imgui
+[submodule "Amba/vendor/Imgui"]
+	path = Amba/vendor/Imgui
 	url = git@github.com:ocornut/imgui.git
