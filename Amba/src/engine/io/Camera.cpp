@@ -87,5 +87,5 @@ namespace Amba {
 
         m_CameraRight = glm::normalize(glm::cross(m_CameraFront, worldUp));
         m_CameraUp = glm::normalize(glm::cross(m_CameraRight, m_CameraFront));
-}
+    }
 }

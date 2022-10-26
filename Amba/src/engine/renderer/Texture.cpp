@@ -77,4 +77,56 @@ namespace Amba {
 	{
 		glDeleteTextures(1, &m_RendererID);
 	}
+
+	// temp
+	unsigned int LoadCubemap(std::vector<std::string> faces)
+	{
+		stbi_set_flip_vertically_on_load(false);
+		unsigned int textureID;
+		glGenTextures(1, &textureID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+		int width, height, nrChannels;
+
+		for (unsigned int i = 0; i < faces.size(); i++)
+		{
+			unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+
+			GLenum colorMode = GL_RGBA;
+			switch (nrChannels)
+			{
+			case 1:
+				colorMode = GL_RED;
+				break;
+			case 3:
+				colorMode = GL_RGB;
+				break;
+			case 4:
+				colorMode = GL_RGBA;
+				break;
+			default:
+				break;
+			}
+
+			if (data)
+			{
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, colorMode, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+				stbi_image_free(data);
+			}
+			else
+			{
+				std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
+				stbi_image_free(data);
+			}
+		}
+
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_REPEAT /*GL_CLAMP_TO_EDGE*/);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_REPEAT /*GL_CLAMP_TO_EDGE */);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_REPEAT /*GL_CLAMP_TO_EDGE */);
+
+		return textureID;
+	}
+
 }

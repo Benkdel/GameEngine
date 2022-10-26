@@ -24,6 +24,16 @@ namespace Amba {
 		glDrawElements(GL_TRIANGLES, ib->GetCount(), GL_UNSIGNED_INT, nullptr);
 	}
 
+	void Renderer::DrawTriangles(const VertexArray* va, unsigned int count, Shader* shader, const glm::mat4 perspective, const glm::mat4& transform)
+	{
+		shader->Bind();
+		shader->SetUniform4mat("u_ViewProjection", m_SceneData->ViewProjectionMatrix); // this should not be called every frame?
+		shader->SetUniform4mat("u_Perspective", perspective);
+		shader->SetUniform4mat("u_Transform", transform);
+		va->Bind();
+		glDrawArrays(GL_TRIANGLES, 0, count);
+	}
+
 	void Renderer::DrawModel(const Model* model, const VertexBufferLayout& layout, Shader* shader, const glm::mat4 perspective, const glm::mat4& transform)
 	{
 		shader->Bind();
@@ -58,6 +68,12 @@ namespace Amba {
 			
 			glDrawElements(GL_TRIANGLES, ib.GetCount(), GL_UNSIGNED_INT, nullptr);
 		}
+	}
+
+	void Renderer::DrawTerrain(unsigned int gridSize, unsigned int vertices, Texture texture)
+	{
+		unsigned int count = vertices * vertices;
+
 	}
 
 	void Renderer::Clear(glm::vec4 clearColor)

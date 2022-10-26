@@ -10,6 +10,7 @@ std::unordered_map<std::string, Shader*>			ResManager::rm_Shaders;
 std::unordered_map<std::string, Material*>			ResManager::rm_Materials;
 std::unordered_map<std::string, Texture*>			ResManager::rm_Textures;
 std::unordered_map<std::string, Model*>				ResManager::rm_Models;
+std::unordered_map<std::string, Mesh*>				ResManager::rm_Meshes;
 
 void ResManager::GenVA(const std::string& name)
 {
@@ -39,6 +40,11 @@ void ResManager::GenTexture(const std::string& filePath, const std::string& name
 void ResManager::CreateModel(const std::string& name)
 {
 	rm_Models.insert(std::pair<std::string, Model*>(name, new Model()));
+}
+
+void ResManager::CreateMesh(const std::string& name)
+{
+	
 }
 
 void ResManager::CreateMaterial(const std::string& name)
@@ -74,6 +80,11 @@ Texture* ResManager::GetTexture(const std::string& name)
 Amba::Model* ResManager::GetModel(const std::string& name)
 {
 	return rm_Models[name];
+}
+
+Amba::Mesh* ResManager::GetMesh(const std::string& name)
+{
+	return nullptr;
 }
 
 Amba::Material* ResManager::GetMaterial(const std::string& name)

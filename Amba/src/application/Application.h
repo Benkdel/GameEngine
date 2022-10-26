@@ -10,6 +10,9 @@
 
 #include <engine/interface/inferface.h>
 
+
+#include <engine/renderer/dataTypes.h>
+
 namespace Amba {
 
 class Application

@@ -15,7 +15,9 @@ namespace Amba {
 		static void EndScene();
 
 		static void Draw(const VertexArray *va, const IndexBuffer *ib, Shader *shader, const glm::mat4 perspective, const glm::mat4& transform = glm::mat4(1.0f));
+		static void DrawTriangles(const VertexArray* va, unsigned int count, Shader* shader, const glm::mat4 perspective, const glm::mat4& transform = glm::mat4(1.0f));
 		static void DrawModel(const Model* model, const VertexBufferLayout& layout, Shader* shader, const glm::mat4 perspective, const glm::mat4& transform = glm::mat4(1.0f));
+		static void DrawTerrain(unsigned int gridSize, unsigned int vertices, Texture texture);
 
 		static void Clear(glm::vec4 clearColor = glm::vec4(0.2f, 0.3f, 0.3f, 1.0f));
 	private:
@@ -32,6 +34,7 @@ namespace Amba {
 
 // TODO
 /*
+*	- later on create an abstract class and then derive for each API (vulkan, opengl etc)
 	- CREATE A SUBMISION BUFFER
 	- DO AUTOMIZATIONS
 	- THEN RENDER THE SCENE

@@ -1,4 +1,4 @@
-#include "game/GameApp.h"
+#include "../game/GameApp.h"
 
 int main(int argc, char** argv)
 {

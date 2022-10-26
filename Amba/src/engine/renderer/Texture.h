@@ -3,6 +3,8 @@
 #include <iostream>
 #include <STB/stb_image.h>
 
+#include <vector>
+
 namespace Amba {
 
 	class Texture
@@ -37,4 +39,5 @@ namespace Amba {
     friend class Renderer;
     };
 
+	unsigned int LoadCubemap(std::vector<std::string> faces);
 }
