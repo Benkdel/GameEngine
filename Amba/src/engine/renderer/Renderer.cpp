@@ -24,10 +24,33 @@ namespace Amba {
 		glDrawElements(GL_TRIANGLES, ib->GetCount(), GL_UNSIGNED_INT, nullptr);
 	}
 
-	void Renderer::DrawTriangles(const VertexArray* va, unsigned int count, Shader* shader, const glm::mat4 perspective, const glm::mat4& transform)
+	void Renderer::DrawMesh(const Mesh* mesh, const VertexBufferLayout& layout, Shader* shader, const glm::mat4 perspective, const glm::mat4& transform)
 	{
 		shader->Bind();
 		shader->SetUniform4mat("u_ViewProjection", m_SceneData->ViewProjectionMatrix); // this should not be called every frame?
+		shader->SetUniform4mat("u_Perspective", perspective);
+		//shader->SetUniform4mat("u_Transform", transform);
+
+		glm::mat4 tsr = glm::scale(glm::mat4(1.0f), glm::vec3(mesh->m_Size));
+		tsr = glm::translate(tsr, mesh->m_Translation);
+		shader->SetUniform4mat("u_Transform", tsr);
+
+		VertexArray va;
+		VertexBuffer vbo(&mesh->m_Vertices[0], (unsigned int)mesh->m_Vertices.size() * sizeof(Vertex));
+
+		va.AddBuffer(&vbo, layout);
+		IndexBuffer ib(&mesh->m_Indices[0], (unsigned int)mesh->m_Indices.size());
+
+		va.Bind();
+		ib.Bind();
+
+		glDrawElements(GL_TRIANGLES, ib.GetCount(), GL_UNSIGNED_INT, nullptr);
+	}
+
+	void Renderer::DrawTriangles(const VertexArray* va, unsigned int count, Shader* shader, const glm::mat4 perspective, const glm::mat4& transform)
+	{
+		shader->Bind();
+		shader->SetUniform4mat("u_ViewProjection", m_SceneData->ViewProjectionMatrix);
 		shader->SetUniform4mat("u_Perspective", perspective);
 		shader->SetUniform4mat("u_Transform", transform);
 		va->Bind();
@@ -68,12 +91,6 @@ namespace Amba {
 			
 			glDrawElements(GL_TRIANGLES, ib.GetCount(), GL_UNSIGNED_INT, nullptr);
 		}
-	}
-
-	void Renderer::DrawTerrain(unsigned int gridSize, unsigned int vertices, Texture texture)
-	{
-		unsigned int count = vertices * vertices;
-
 	}
 
 	void Renderer::Clear(glm::vec4 clearColor)

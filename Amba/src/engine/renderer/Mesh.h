@@ -25,6 +25,9 @@ namespace Amba {
 		std::vector<Texture> m_Textures;
 		
 		glm::mat4 m_TSR;
+
+		float m_Size;
+		glm::vec3 m_Translation;
 	
 		void Cleanup();
 		inline bool ContainsTextures() const { return !m_NoTextures; }

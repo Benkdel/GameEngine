@@ -57,9 +57,6 @@ float positions[] = {
 	 1.0f, -1.0f,  1.0f
 };
 
-float terrain[32 * 32 * 5];
-
-
 GameApp::GameApp()
 	: AB_State(GameState::NONE)
 {
@@ -81,7 +78,10 @@ void GameApp::OnUserCreate()
 
 	ResManager::CreateShader("game/res/shaders/simpleVS.glsl", "game/res/shaders/simpleFS.glsl", "tree");
 
-	ResManager::GenTexture("game/res/textures/envirorment/wall.jpg", "terrainTexture");
+	ResManager::GenTexture("game/res/textures/envirorment/terrain/forest_terrain_1.png", "terrainTexture");
+	ResManager::GetTexture("terrainTexture")->LoadTexture(false);
+
+	ResManager::CreateShader("game/res/shaders/simpleVS.glsl", "game/res/shaders/simpleFS.glsl", "terrain");
 
 	// load sykbox
 	std::vector<std::string> faces
@@ -109,8 +109,52 @@ void GameApp::OnUserCreate()
 	*			
 	* 
 	*/
-	Amba::Vertex vertex;
+	ResManager::CreateMesh("terrainMesh");
+	ResManager::GetMesh("terrainMesh")->m_Size = 1.0f;
+	ResManager::GetMesh("terrainMesh")->m_Translation = glm::vec3(1.0f);
 
+	unsigned int vertexCount = 32;
+	unsigned int size = 800;
+
+	// we are using same normal data for every vertice
+	glm::vec3 normals = glm::vec3(0.0f, 1.0f, 0.0f);
+
+	// make terrain and populate mesh
+	for (unsigned int i = 0; i < vertexCount; i++)
+	{
+		for (unsigned int j = 0; j < vertexCount; j++)
+		{
+			// populate here the vector data
+			glm::vec3 positions = glm::vec3(
+				(float)j / ((float)vertexCount - 1) * size,
+				0.0f,
+				(float)i / ((float)vertexCount - 1) * size);
+
+			glm::vec2 texCoords = glm::vec2(
+				(float)j / ((float)vertexCount - 1),
+				(float)i / ((float)vertexCount - 1));
+
+			ResManager::GetMesh("terrainMesh")->m_Vertices.push_back({ positions, normals, texCoords });
+		}
+	}
+
+	// indices calculation
+	std::vector<unsigned int> *indices = &ResManager::GetMesh("terrainMesh")->m_Indices;
+	for (unsigned int i = 0; i < vertexCount - 1; i++) {
+		for (unsigned int j = 0; j < vertexCount - 1; j++) {
+			int topLeft = (i * vertexCount) + j;
+			int topRight = topLeft + 1;
+			int bottomLeft = ((i + 1) * vertexCount) + j;
+			int bottomRight = bottomLeft + 1;
+			indices->push_back(topLeft);
+			indices->push_back(bottomLeft);
+			indices->push_back(topRight);
+			indices->push_back(topRight);
+			indices->push_back(bottomLeft);
+			indices->push_back(bottomRight);
+		}
+	}
+	indices = nullptr;
 }
 
 void GameApp::OnUserUpdate()
@@ -129,9 +173,19 @@ void GameApp::OnUserUpdate()
 	ResManager::GetShader("tree")->Bind();
 	Amba::Renderer::DrawModel(ResManager::GetModel("tree"), layout, ResManager::GetShader("tree"), AB_Perspective);
 
-	glBindVertexArray(0);
+	Amba::VertexBufferLayout layoutTerrain;
+	layoutTerrain.Push<float>(3);
+	layoutTerrain.Push<float>(3);
+	layoutTerrain.Push<float>(2);
 
-	// skybox
+	ResManager::GetTexture("terrainTexture")->Bind();
+	ResManager::GetShader("terrain")->Bind();
+	ResManager::GetShader("terrain")->SetUniform1i("u_Texture", 0);
+
+	Amba::Renderer::DrawMesh(ResManager::GetMesh("terrainMesh"), layoutTerrain, ResManager::GetShader("terrain"), AB_Perspective);
+
+	glBindVertexArray(0);
+	// skybox - remember to always draw this last!!
 	unsigned int skyboxVAO, skyboxVBO;
 	glGenVertexArrays(1, &skyboxVAO);
 	glGenBuffers(1, &skyboxVBO);
@@ -140,13 +194,6 @@ void GameApp::OnUserUpdate()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(positions), &positions, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	//Amba::VertexArray va;
-	//Amba::VertexBuffer vbo(&positions, sizeof(positions));
-
-	//Amba::VertexBufferLayout layout2;
-	//layout.Push<float>(2);
-	//va.AddBuffer(&vbo, layout2);
-	//va.Bind();
 	glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
 	ResManager::GetShader("skybox")->Bind();
 	glm::mat4 view = glm::mat4(glm::mat3(AB_Cameras[AB_ActiveCamera].GetViewMatrix()));
@@ -158,19 +205,6 @@ void GameApp::OnUserUpdate()
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
 	glDepthFunc(GL_LESS); // set depth function back to default
-
-
-	Amba::VertexArray va;
-	Amba::VertexBuffer vbo(&terrain, sizeof(terrain));
-
-	Amba::VertexBufferLayout layoutTerrain;
-	layoutTerrain.Push<float>(3);
-	layoutTerrain.Push<float>(2);
-
-	va.AddBuffer(&vbo, layoutTerrain);
-	ResManager::GetTexture("terrainTexture")->Bind(0);
-	ResManager::GetShader("tree")->SetUniform1i("u_Texture", 0);
-	Amba::Renderer::DrawTriangles(&va, 32 * 32 * 5, ResManager::GetShader("tree"), AB_Perspective);
 
 	
 }

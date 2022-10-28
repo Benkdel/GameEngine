@@ -44,7 +44,7 @@ void ResManager::CreateModel(const std::string& name)
 
 void ResManager::CreateMesh(const std::string& name)
 {
-	
+	rm_Meshes.insert(std::pair<std::string, Mesh*>(name, new Mesh()));
 }
 
 void ResManager::CreateMaterial(const std::string& name)
@@ -84,7 +84,7 @@ Amba::Model* ResManager::GetModel(const std::string& name)
 
 Amba::Mesh* ResManager::GetMesh(const std::string& name)
 {
-	return nullptr;
+	return rm_Meshes[name];
 }
 
 Amba::Material* ResManager::GetMaterial(const std::string& name)
@@ -154,4 +154,13 @@ void ResManager::cleanup()
 		}
 	}
 	rm_Materials.clear();
+
+	for (auto& it : rm_Meshes)
+	{
+		if (it.second != NULL)
+		{
+			it.second = NULL;
+		}
+	}
+	rm_Meshes.clear();
 }
