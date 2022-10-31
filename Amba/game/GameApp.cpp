@@ -9,6 +9,7 @@
 
 #include <engine/importer/Importer.h>
 
+#include <engine/ecs/Scene.h>
 
 unsigned int cubemapTexture;
 
@@ -155,6 +156,28 @@ void GameApp::OnUserCreate()
 		}
 	}
 	indices = nullptr;
+
+	Scene scene;
+	EntityId exampleEnt = scene.CreateEntity();
+	scene.AddComponent<TransformComponent>(exampleEnt);
+
+	EntityId secondEnt = scene.CreateEntity();
+	scene.AddComponent<TransformComponent>(secondEnt);
+
+	EntityId thirdEntity = scene.CreateEntity();
+
+	scene.GetComponent<TransformComponent>(exampleEnt)->Position = glm::vec3(0.9f, 1.0f, 1.0f);
+	std::cout << scene.GetComponent<TransformComponent>(exampleEnt)->Position.x << std::endl;
+
+	int numOfComponentsFound = 0;
+	for (EntityId ent : SceneView<TransformComponent>(scene))
+	{
+		numOfComponentsFound++;
+	}
+
+	AB_INFO("Numb of components found: {0}", numOfComponentsFound);
+
+
 }
 
 void GameApp::OnUserUpdate()
