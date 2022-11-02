@@ -4,8 +4,9 @@ namespace Amba {
 
 	Renderer::SceneData* Renderer::m_SceneData = new Renderer::SceneData;
 
-	void Renderer::BeginScene(Camera& camera)
+	void Renderer::BeginScene(Camera& camera, Scene* scene)
 	{
+		m_SceneData->m_Scene = scene;
 		m_SceneData->ViewProjectionMatrix = camera.GetViewMatrix();
 	}
 
@@ -92,6 +93,35 @@ namespace Amba {
 			glDrawElements(GL_TRIANGLES, ib.GetCount(), GL_UNSIGNED_INT, nullptr);
 		}
 	}
+
+
+
+	void Renderer::DrawMeshes(EntityId id, Shader* shader, const glm::mat4 perspective, const glm::mat4& transform)
+	{
+		shader->Bind();
+		shader->SetUniform4mat("u_ViewProjection", m_SceneData->ViewProjectionMatrix); // this should not be called every frame?
+		shader->SetUniform4mat("u_Perspective", perspective);
+		//shader->SetUniform4mat("u_Transform", transform);
+
+		MeshComponent *mesh = m_SceneData->m_Scene->GetComponent<MeshComponent>(id);
+		TransformComponent* trs = m_SceneData->m_Scene->GetComponent<TransformComponent>(id);
+
+		glm::mat4 tsr = glm::scale(glm::mat4(1.0f), glm::vec3(mesh->m_Size));
+		tsr = glm::translate(tsr, trs->m_Position);
+		shader->SetUniform4mat("u_Transform", tsr);
+
+		VertexArray va;
+		VertexBuffer vbo(&mesh->m_Vertices[0], (unsigned int)mesh->m_Vertices.size() * sizeof(Vertex));
+
+		va.AddBuffer(&vbo, mesh->layout);
+		IndexBuffer ib(&mesh->m_Indices[0], (unsigned int)mesh->m_Indices.size());
+
+		va.Bind();
+		ib.Bind();
+
+		glDrawElements(GL_TRIANGLES, ib.GetCount(), GL_UNSIGNED_INT, nullptr);
+	}
+
 
 	void Renderer::Clear(glm::vec4 clearColor)
 	{

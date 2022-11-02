@@ -58,6 +58,10 @@ float positions[] = {
 	 1.0f, -1.0f,  1.0f
 };
 
+// we need rn to create a scene pointer to use in both functions
+Amba::Scene* scene;
+EntityId terrain;
+
 GameApp::GameApp()
 	: AB_State(GameState::NONE)
 {
@@ -66,6 +70,7 @@ GameApp::GameApp()
 GameApp::~GameApp()
 {
 	ResManager::cleanup();
+	scene = nullptr;
 }
 
 void GameApp::OnUserCreate()
@@ -104,12 +109,21 @@ void GameApp::OnUserCreate()
 	*  envirorment:
 	*			1) skybox:
 	*           2) terrain: incl collision box, rigid body, and stuff.
-	*			3) entities: entity component system
+	*			3) entities: entity component system 
 	*			4) physics engine
 	*           5) complete importer incl animations, AI
 	*			
 	* 
 	*/
+	
+	// lets think about the API we need for the components, example: creating a terrain mesh
+	scene = new Amba::Scene();
+	
+	terrain = scene->CreateEntity();
+
+	scene->AddComponent<MeshComponent>(terrain);
+	scene->AddComponent<TransformComponent>(terrain);
+
 	ResManager::CreateMesh("terrainMesh");
 	ResManager::GetMesh("terrainMesh")->m_Size = 1.0f;
 	ResManager::GetMesh("terrainMesh")->m_Translation = glm::vec3(1.0f);
@@ -135,12 +149,16 @@ void GameApp::OnUserCreate()
 				(float)j / ((float)vertexCount - 1),
 				(float)i / ((float)vertexCount - 1));
 
-			ResManager::GetMesh("terrainMesh")->m_Vertices.push_back({ positions, normals, texCoords });
+
+			//ResManager::GetMesh("terrainMesh")->m_Vertices.push_back({ positions, normals, texCoords });
+			scene->GetComponent<MeshComponent>(terrain)->m_Vertices.push_back({ positions, normals, texCoords });
 		}
 	}
 
 	// indices calculation
-	std::vector<unsigned int> *indices = &ResManager::GetMesh("terrainMesh")->m_Indices;
+	//std::vector<unsigned int> *indices = &ResManager::GetMesh("terrainMesh")->m_Indices;
+	std::vector<unsigned int>* indices = &scene->GetComponent<MeshComponent>(terrain)->m_Indices;
+
 	for (unsigned int i = 0; i < vertexCount - 1; i++) {
 		for (unsigned int j = 0; j < vertexCount - 1; j++) {
 			int topLeft = (i * vertexCount) + j;
@@ -157,7 +175,13 @@ void GameApp::OnUserCreate()
 	}
 	indices = nullptr;
 
-	Scene scene;
+	// should I create an entity class that deals with initialization of components?
+	// how to handle user creating of objects so they dont go out of scope
+
+	scene->GetComponent<MeshComponent>(terrain)->m_Size = 1.0f;
+
+	/*
+	Amba::Scene scene;
 	EntityId exampleEnt = scene.CreateEntity();
 	scene.AddComponent<TransformComponent>(exampleEnt);
 
@@ -169,25 +193,26 @@ void GameApp::OnUserCreate()
 	scene.GetComponent<TransformComponent>(exampleEnt)->Position = glm::vec3(0.9f, 1.0f, 1.0f);
 	std::cout << scene.GetComponent<TransformComponent>(exampleEnt)->Position.x << std::endl;
 
+
 	int numOfComponentsFound = 0;
-	for (EntityId ent : SceneView<TransformComponent>(scene))
+	for (EntityId ent : Amba::SceneView<TransformComponent>(scene))
 	{
 		numOfComponentsFound++;
 	}
 
 	AB_INFO("Numb of components found: {0}", numOfComponentsFound);
-
+	*/
 
 }
 
 void GameApp::OnUserUpdate()
 {
 	// pass camera to renderer
-	Amba::Renderer::BeginScene(AB_Cameras[0]);
+	Amba::Renderer::BeginScene(AB_Cameras[0], scene);
 
 	// projection matrix
 	AB_Perspective = glm::perspective(glm::radians(AB_Cameras[AB_ActiveCamera].GetZoom()), (float)m_ScrWidth / (float)m_ScrHeight, 0.1f, 100.0f);
-	
+
 	Amba::VertexBufferLayout layout;
 	layout.Push<float>(3);
 	layout.Push<float>(3);
@@ -201,14 +226,22 @@ void GameApp::OnUserUpdate()
 	layoutTerrain.Push<float>(3);
 	layoutTerrain.Push<float>(2);
 
+	scene->GetComponent<MeshComponent>(terrain)->layout = layoutTerrain;
+
 	ResManager::GetTexture("terrainTexture")->Bind();
 	ResManager::GetShader("terrain")->Bind();
 	ResManager::GetShader("terrain")->SetUniform1i("u_Texture", 0);
 
-	Amba::Renderer::DrawMesh(ResManager::GetMesh("terrainMesh"), layoutTerrain, ResManager::GetShader("terrain"), AB_Perspective);
+	//Amba::Renderer::DrawMesh(ResManager::GetMesh("terrainMesh"), layoutTerrain, ResManager::GetShader("terrain"), AB_Perspective);
+	Amba::Renderer::DrawMeshes(terrain, ResManager::GetShader("terrain"), AB_Perspective);
+	
+	
+	
+	
 
-	glBindVertexArray(0);
+	
 	// skybox - remember to always draw this last!!
+	glBindVertexArray(0);
 	unsigned int skyboxVAO, skyboxVBO;
 	glGenVertexArrays(1, &skyboxVAO);
 	glGenBuffers(1, &skyboxVBO);

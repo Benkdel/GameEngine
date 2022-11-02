@@ -3,15 +3,14 @@
 #include <engine/ResourceManager.h>
 #include <engine/io/Camera.h>
 
-// interface in renderer?
-#include <engine/interface/inferface.h>
+#include <engine/ecs/Scene.h>
 
 namespace Amba {
 
 	class Renderer
 	{
 	public:
-		static void BeginScene(Camera& camera);
+		static void BeginScene(Camera& camera, Scene* scene);
 		static void EndScene();
 
 		static void Draw(const VertexArray *va, const IndexBuffer *ib, Shader *shader, const glm::mat4 perspective, const glm::mat4& transform = glm::mat4(1.0f));
@@ -19,10 +18,21 @@ namespace Amba {
 		static void DrawTriangles(const VertexArray* va, unsigned int count, Shader* shader, const glm::mat4 perspective, const glm::mat4& transform = glm::mat4(1.0f));
 		static void DrawModel(const Model* model, const VertexBufferLayout& layout, Shader* shader, const glm::mat4 perspective, const glm::mat4& transform = glm::mat4(1.0f));
 		
+		// this should loop over every entity that has a Mesh component to render
+		/*
+			something like:
+			for (EntityId ent : sceneView<MeshComponent, TransformComponent>)
+			do stuff
+
+			also, sceneView is a different struct/class. I need to added it to the renderer or joint it with scene class? 
+		*/
+		static void DrawMeshes(EntityId id, Shader *shader, const glm::mat4 perspective, const glm::mat4& transform = glm::mat4(1.0f));
+
 		static void Clear(glm::vec4 clearColor = glm::vec4(0.2f, 0.3f, 0.3f, 1.0f));
 	private:
 		struct SceneData
 		{
+			Scene* m_Scene;
 			glm::mat4 ViewProjectionMatrix;
 		};
 		static SceneData* m_SceneData;
