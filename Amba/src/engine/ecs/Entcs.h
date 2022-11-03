@@ -16,6 +16,7 @@ extern int s_CompotentCounter;
 
 namespace Amba {
 
+	
 	template<class t>
 	int GetComponentId()
 	{

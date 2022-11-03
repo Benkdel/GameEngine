@@ -13,7 +13,7 @@ namespace Amba {
 			return m_Entities[newIndex].id;
 		}
 
-		m_Entities.push_back({ CreateEntityId((EntityIndex)m_Entities.size(),0), ComponentMask() });
+		m_Entities.push_back({ CreateEntityId((EntityIndex)m_Entities.size(), 0), ComponentMask() });
 		return m_Entities.back().id;
 	}
 

@@ -11,7 +11,7 @@ namespace Amba {
 
     const char* glsl_version = "#version 130";
 
-    Interface::Interface() 
+    Interface::Interface()
     : m_Clear_color(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), m_Window(nullptr)
     {}
 

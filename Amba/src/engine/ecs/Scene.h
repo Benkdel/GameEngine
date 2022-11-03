@@ -55,7 +55,7 @@ namespace Amba {
 			if (!m_Entities[GetEntityIndex(id)].mask.test(componentId))
 				return nullptr;
 		
-			T* component = static_cast<T*>(m_ComponentPools[componentId]->get(id));
+			T* component = static_cast<T*>(m_ComponentPools[componentId]->get(GetEntityIndex(id)));
 			return component;
 		}
 

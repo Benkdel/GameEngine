@@ -58,6 +58,51 @@ float positions[] = {
 	 1.0f, -1.0f,  1.0f
 };
 
+// used to draw cube - 1 mesh
+float vertices[] = {
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+};
+
 // we need rn to create a scene pointer to use in both functions
 Amba::Scene* scene;
 EntityId terrain;
@@ -86,6 +131,9 @@ void GameApp::OnUserCreate()
 
 	ResManager::GenTexture("game/res/textures/envirorment/terrain/forest_terrain_1.png", "terrainTexture");
 	ResManager::GetTexture("terrainTexture")->LoadTexture(false);
+
+	ResManager::GenTexture("game/res/textures/wall.jpg", "wall");
+	ResManager::GetTexture("wall")->LoadTexture(false);
 
 	ResManager::CreateShader("game/res/shaders/simpleVS.glsl", "game/res/shaders/simpleFS.glsl", "terrain");
 
@@ -124,10 +172,6 @@ void GameApp::OnUserCreate()
 	scene->AddComponent<MeshComponent>(terrain);
 	scene->AddComponent<TransformComponent>(terrain);
 
-	ResManager::CreateMesh("terrainMesh");
-	ResManager::GetMesh("terrainMesh")->m_Size = 1.0f;
-	ResManager::GetMesh("terrainMesh")->m_Translation = glm::vec3(1.0f);
-
 	unsigned int vertexCount = 32;
 	unsigned int size = 800;
 
@@ -156,7 +200,6 @@ void GameApp::OnUserCreate()
 	}
 
 	// indices calculation
-	//std::vector<unsigned int> *indices = &ResManager::GetMesh("terrainMesh")->m_Indices;
 	std::vector<unsigned int>* indices = &scene->GetComponent<MeshComponent>(terrain)->m_Indices;
 
 	for (unsigned int i = 0; i < vertexCount - 1; i++) {
@@ -175,34 +218,43 @@ void GameApp::OnUserCreate()
 	}
 	indices = nullptr;
 
+	// this should be a shared pointer! all assets should not be copied
+	// it is too expensive
+	scene->GetComponent<MeshComponent>(terrain)->m_Texture = *ResManager::GetTexture("terrainTexture");
+
+	Amba::VertexBufferLayout layoutTerrain;
+	layoutTerrain.Push<float>(3);
+	layoutTerrain.Push<float>(3);
+	layoutTerrain.Push<float>(2);
+	scene->GetComponent<MeshComponent>(terrain)->layout = layoutTerrain;
+
 	// should I create an entity class that deals with initialization of components?
 	// how to handle user creating of objects so they dont go out of scope
 
-	scene->GetComponent<MeshComponent>(terrain)->m_Size = 1.0f;
-
-	/*
-	Amba::Scene scene;
-	EntityId exampleEnt = scene.CreateEntity();
-	scene.AddComponent<TransformComponent>(exampleEnt);
-
-	EntityId secondEnt = scene.CreateEntity();
-	scene.AddComponent<TransformComponent>(secondEnt);
-
-	EntityId thirdEntity = scene.CreateEntity();
-
-	scene.GetComponent<TransformComponent>(exampleEnt)->Position = glm::vec3(0.9f, 1.0f, 1.0f);
-	std::cout << scene.GetComponent<TransformComponent>(exampleEnt)->Position.x << std::endl;
-
-
-	int numOfComponentsFound = 0;
-	for (EntityId ent : Amba::SceneView<TransformComponent>(scene))
+	// create cube
+	EntityId cube = scene->CreateEntity();
+	scene->AddComponent<MeshComponent>(cube);
+	scene->AddComponent<TransformComponent>(cube);
+	for (int i = 0; i < 36 * 5; i += 5)
 	{
-		numOfComponentsFound++;
+		glm::vec3 positions = glm::vec3(vertices[i], vertices[i + 1], vertices[i + 2]);
+		glm::vec2 texCoords = glm::vec2(vertices[i + 3], vertices[i + 4]);
+		scene->GetComponent<MeshComponent>(cube)->m_Vertices.push_back({positions, normals, texCoords});
 	}
 
-	AB_INFO("Numb of components found: {0}", numOfComponentsFound);
-	*/
+	for (int i = 0; i < 36; i++)
+		scene->GetComponent<MeshComponent>(cube)->m_Indices.push_back(i);
 
+	// this should be a shared pointer! all assets should not be copied
+	// it is too expensive
+	scene->GetComponent<MeshComponent>(cube)->m_Texture = *ResManager::GetTexture("wall");
+
+	Amba::VertexBufferLayout layoutCube;
+	layoutCube.Push<float>(3);
+	layoutCube.Push<float>(3);
+	layoutCube.Push<float>(2);
+
+	scene->GetComponent<MeshComponent>(cube)->layout = layoutCube;
 }
 
 void GameApp::OnUserUpdate()
@@ -221,25 +273,13 @@ void GameApp::OnUserUpdate()
 	ResManager::GetShader("tree")->Bind();
 	Amba::Renderer::DrawModel(ResManager::GetModel("tree"), layout, ResManager::GetShader("tree"), AB_Perspective);
 
-	Amba::VertexBufferLayout layoutTerrain;
-	layoutTerrain.Push<float>(3);
-	layoutTerrain.Push<float>(3);
-	layoutTerrain.Push<float>(2);
+	//ResManager::GetTexture("terrainTexture")->Bind();
+	//ResManager::GetShader("terrain")->Bind();
+	//ResManager::GetShader("terrain")->SetUniform1i("u_Texture", 0);
 
-	scene->GetComponent<MeshComponent>(terrain)->layout = layoutTerrain;
-
-	ResManager::GetTexture("terrainTexture")->Bind();
-	ResManager::GetShader("terrain")->Bind();
-	ResManager::GetShader("terrain")->SetUniform1i("u_Texture", 0);
-
-	//Amba::Renderer::DrawMesh(ResManager::GetMesh("terrainMesh"), layoutTerrain, ResManager::GetShader("terrain"), AB_Perspective);
-	Amba::Renderer::DrawMeshes(terrain, ResManager::GetShader("terrain"), AB_Perspective);
-	
-	
-	
+	Amba::Renderer::DrawMeshes(ResManager::GetShader("terrain"), AB_Perspective);
 	
 
-	
 	// skybox - remember to always draw this last!!
 	glBindVertexArray(0);
 	unsigned int skyboxVAO, skyboxVBO;
