@@ -1,18 +1,17 @@
 #include "inferface.h"
 
 
-// Models 
-static std::string currentModel = "No active model selected";
-static std::string currentMesh = "No active mesh selected";
-static bool modelSelection = false;
-static bool meshSelection = false;
+static bool isEntitySelected = false;
+static EntityId selectedEntity;
+static std::string entityName;
+
 
 namespace Amba {
 
     const char* glsl_version = "#version 130";
 
     Interface::Interface()
-    : m_Clear_color(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), m_Window(nullptr)
+    : m_Clear_color(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), p_Window(nullptr)
     {}
 
 
@@ -29,6 +28,12 @@ namespace Amba {
         // set up placeholders
         m_Clear_color = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f);
         
+    }
+
+    void Interface::BindScene(Scene* scene)
+    {
+        // check if scene is null, where?
+        p_CurrentScene = scene;
     }
 
     void Interface::Run()
@@ -58,60 +63,45 @@ namespace Amba {
             ImGui::NewLine();
 
             // List of models to select
-            ImGui::TextColored(ImVec4(1, 1, 0, 1), "Avaiable models:");
-            ImGui::Text("Active model: ");
+            ImGui::TextColored(ImVec4(1, 1, 0, 1), "Avaiable Entities:");
+            ImGui::Text("Active Entity: ");
             ImGui::SameLine();
-            ImGui::Text(currentModel.c_str());
+            ImGui::Text(std::to_string(selectedEntity).c_str());
 
             ImGui::BeginListBox("##");
-            for (auto k : ResManager::rm_Models)
             {
-                // get current selection and set
-                // it in current model, using string name
-                const bool isModelSelected = (currentModel == k.first);
-                if (ImGui::Selectable(k.first.c_str(), isModelSelected))
+                for (EntityId ent : SceneView<MeshComponent, TransformComponent>(p_CurrentScene))
                 {
-                    modelSelection = true;
-                    currentModel = k.first;
+                    const bool isSelected = (selectedEntity == ent);
+                    if (ImGui::Selectable(std::to_string(ent).c_str(), isSelected))
+                    {
+                        isEntitySelected = true;
+                        selectedEntity = ent;
+
+                    }
                 }
             }
             ImGui::EndListBox();
-
-            if (modelSelection)
+            if (isEntitySelected)
             {
-                ImGui::SliderFloat("Model - Size:", &ResManager::rm_Models[currentModel]->m_Size, 0.001f, 1.0f, "%.003f");
-                ImGui::SliderFloat3("Model - Position:", &ResManager::rm_Models[currentModel]->m_Translation[0], -500.0f, 500.0f, "%.003f");
+                ImGui::SliderFloat("Model - Size:", 
+                        &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_Size, 
+                        0.001f, 1.0f, "%.03f");
+
+                ImGui::SliderFloat3("Model - Position:", 
+                        &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_Position[0],
+                        -10.0f, 10.0f, "%.03f");
+
+                if (ImGui::Button("Duplicate"))
+                {
+                    p_CurrentScene->CopyEntity(selectedEntity);
+                }
+
             }
 
             ImGui::NewLine();
             ImGui::Text("Mesh Settings");
             ImGui::NewLine();
-
-            // list of meshes to select
-            ImGui::TextColored(ImVec4(1, 1, 0, 1), "Available meshes:");
-            ImGui::Text("Active mesh: ");
-            ImGui::SameLine();
-            ImGui::Text(currentMesh.c_str());
-
-            ImGui::BeginListBox("##");
-            for (auto k : ResManager::rm_Meshes)
-            {
-                // get current selection and set
-                // it in current model, using string name
-                const bool isMeshSelected = (currentMesh == k.first);
-                if (ImGui::Selectable(k.first.c_str(), isMeshSelected))
-                {
-                    meshSelection = true;
-                    currentMesh = k.first;
-                }
-            }
-            ImGui::EndListBox();
-
-            if (meshSelection)
-            {
-                ImGui::SliderFloat("Mesh - Size:", &ResManager::rm_Meshes[currentMesh]->m_Size, 0.001f, 1.0f, "%.003f");
-                ImGui::SliderFloat3("Mesh - Position:", &ResManager::rm_Meshes[currentMesh]->m_Translation[0], -500.0f, 500.0f, "%.003f");
-            }
 
             ImGui::End();
         }

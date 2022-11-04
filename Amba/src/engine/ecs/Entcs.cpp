@@ -7,7 +7,6 @@ int s_CompotentCounter = 0;
 
 namespace Amba {
 
-
 	EntityId CreateEntityId(EntityIndex index, EntityVersion version)
 	{
 		// Shifts the index up 32, and puts the version in the bottom

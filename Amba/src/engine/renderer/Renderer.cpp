@@ -94,8 +94,6 @@ namespace Amba {
 		}
 	}
 
-
-
 	void Renderer::DrawMeshes(Shader* shader, const glm::mat4 perspective, const glm::mat4& transform)
 	{
 		shader->Bind();
@@ -103,10 +101,13 @@ namespace Amba {
 		shader->SetUniform4mat("u_Perspective", perspective);
 		//shader->SetUniform4mat("u_Transform", transform);
 
-		for (EntityId ent : SceneView<MeshComponent, TransformComponent>(*m_SceneData->m_Scene))
+		for (EntityId ent : SceneView<MeshComponent, TransformComponent>(m_SceneData->m_Scene))
 		{
 			MeshComponent *mesh = m_SceneData->m_Scene->GetComponent<MeshComponent>(ent);
 			TransformComponent* trs = m_SceneData->m_Scene->GetComponent<TransformComponent>(ent);
+
+			AB_ASSERT(!mesh->m_Indices.empty(), "Error in renderer function: DrawMeshes. Indices vector is empty!");
+			AB_ASSERT(!mesh->m_Vertices.empty(), "Error in renderer function: DrawMeshes. Vertices vector is empty!");
 
 			glm::mat4 tsr = glm::scale(glm::mat4(1.0f), glm::vec3(trs->m_Size));
 			tsr = glm::translate(tsr, trs->m_Position);
@@ -118,7 +119,7 @@ namespace Amba {
 			va.AddBuffer(&vbo, mesh->layout);
 			IndexBuffer ib(&mesh->m_Indices[0], (unsigned int)mesh->m_Indices.size());
 
-			mesh->m_Texture.Bind();
+			mesh->p_Texture->Bind();
 			shader->SetUniform1i("u_Texture", 0);
 
 			va.Bind();

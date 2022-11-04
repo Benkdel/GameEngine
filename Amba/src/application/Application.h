@@ -9,9 +9,9 @@
 #include <engine/renderer/Renderer.h>
 
 #include <engine/interface/inferface.h>
-
-
 #include <engine/renderer/dataTypes.h>
+
+class Scene;
 
 namespace Amba {
 
@@ -25,6 +25,8 @@ class Application
 
 		void Init(const char* title = "Game", unsigned int width = 1280, unsigned int height = 760);
 		
+		void BindScene(Scene* scene);
+
 		bool AB_keyPressed(unsigned int GLFW_KEY_CODE);
 		bool AB_keyReleased(unsigned int GLFW_KEY_CODE);
 
@@ -40,15 +42,19 @@ class Application
 		unsigned int AB_ActiveCamera;
 		Amba::Camera AB_Cameras[5];
 
+		Scene* p_ActiveScene;
+
 	private:
-		Amba::Window* m_Window;
-		Amba::Interface* m_Interface;
+		Amba::Window* p_Window;
+		Amba::Interface* p_Interface;
 
 		void ProcessInput();
+
 
 	protected:
 		double AB_TimeElapsed;
 		double AB_DeltaTime;
+
 
 		unsigned int m_ScrWidth;
 		unsigned int m_ScrHeight;

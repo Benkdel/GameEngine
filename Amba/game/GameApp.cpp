@@ -103,10 +103,6 @@ float vertices[] = {
 		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 };
 
-// we need rn to create a scene pointer to use in both functions
-Amba::Scene* scene;
-EntityId terrain;
-
 GameApp::GameApp()
 	: AB_State(GameState::NONE)
 {
@@ -115,19 +111,21 @@ GameApp::GameApp()
 GameApp::~GameApp()
 {
 	ResManager::cleanup();
-	scene = nullptr;
 }
 
 void GameApp::OnUserCreate()
 {
-	// Create GLFW window
+	// we need to initialize appliation - Create GLFW window
 	Init("Resurge", 1280, 760);
 	AB_INFO("Window init succesfully");
 
-	ResManager::CreateModel("tree");
-	ResManager::GetModel("tree")->LoadModel("game/res/models/envirorment/tree_model_1/scene.gltf");
+	// Create a Scene
+	ResManager::CreateScene("exampleScene");
 
-	ResManager::CreateShader("game/res/shaders/simpleVS.glsl", "game/res/shaders/simpleFS.glsl", "tree");
+	// Bind current scene
+	BindScene(ResManager::GetScene("exampleScene"));
+
+	ResManager::CreateShader("game/res/shaders/simpleVS.glsl", "game/res/shaders/simpleFS.glsl", "simpleShader");
 
 	ResManager::GenTexture("game/res/textures/envirorment/terrain/forest_terrain_1.png", "terrainTexture");
 	ResManager::GetTexture("terrainTexture")->LoadTexture(false);
@@ -151,26 +149,10 @@ void GameApp::OnUserCreate()
 
 	ResManager::CreateShader("game/res/shaders/skyboxVS.glsl", "game/res/shaders/skyboxFS.glsl", "skybox");
 
-	/* next steps:
-	* 
-	*  player? --> camera, maybe a gun. for now
-	*  envirorment:
-	*			1) skybox:
-	*           2) terrain: incl collision box, rigid body, and stuff.
-	*			3) entities: entity component system 
-	*			4) physics engine
-	*           5) complete importer incl animations, AI
-	*			
-	* 
-	*/
-	
-	// lets think about the API we need for the components, example: creating a terrain mesh
-	scene = new Amba::Scene();
-	
-	terrain = scene->CreateEntity();
+	EntityId terrain = ResManager::GetScene("exampleScene")->CreateEntity();
 
-	scene->AddComponent<MeshComponent>(terrain);
-	scene->AddComponent<TransformComponent>(terrain);
+	ResManager::GetScene("exampleScene")->AddComponent<MeshComponent>(terrain);
+	ResManager::GetScene("exampleScene")->AddComponent<TransformComponent>(terrain);
 
 	unsigned int vertexCount = 32;
 	unsigned int size = 800;
@@ -193,14 +175,12 @@ void GameApp::OnUserCreate()
 				(float)j / ((float)vertexCount - 1),
 				(float)i / ((float)vertexCount - 1));
 
-
-			//ResManager::GetMesh("terrainMesh")->m_Vertices.push_back({ positions, normals, texCoords });
-			scene->GetComponent<MeshComponent>(terrain)->m_Vertices.push_back({ positions, normals, texCoords });
+			ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(terrain)->m_Vertices.push_back({ positions, normals, texCoords });
 		}
 	}
 
 	// indices calculation
-	std::vector<unsigned int>* indices = &scene->GetComponent<MeshComponent>(terrain)->m_Indices;
+	std::vector<unsigned int>* indices = &ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(terrain)->m_Indices;
 
 	for (unsigned int i = 0; i < vertexCount - 1; i++) {
 		for (unsigned int j = 0; j < vertexCount - 1; j++) {
@@ -218,66 +198,50 @@ void GameApp::OnUserCreate()
 	}
 	indices = nullptr;
 
-	// this should be a shared pointer! all assets should not be copied
-	// it is too expensive
-	scene->GetComponent<MeshComponent>(terrain)->m_Texture = *ResManager::GetTexture("terrainTexture");
+	ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(terrain)->p_Texture = ResManager::GetTexture("terrainTexture");
 
 	Amba::VertexBufferLayout layoutTerrain;
 	layoutTerrain.Push<float>(3);
 	layoutTerrain.Push<float>(3);
 	layoutTerrain.Push<float>(2);
-	scene->GetComponent<MeshComponent>(terrain)->layout = layoutTerrain;
-
-	// should I create an entity class that deals with initialization of components?
-	// how to handle user creating of objects so they dont go out of scope
+	ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(terrain)->layout = layoutTerrain;
 
 	// create cube
-	EntityId cube = scene->CreateEntity();
-	scene->AddComponent<MeshComponent>(cube);
-	scene->AddComponent<TransformComponent>(cube);
+	EntityId cube = ResManager::GetScene("exampleScene")->CreateEntity();
+	ResManager::GetScene("exampleScene")->AddComponent<MeshComponent>(cube);
+	ResManager::GetScene("exampleScene")->AddComponent<TransformComponent>(cube);
 	for (int i = 0; i < 36 * 5; i += 5)
 	{
 		glm::vec3 positions = glm::vec3(vertices[i], vertices[i + 1], vertices[i + 2]);
 		glm::vec2 texCoords = glm::vec2(vertices[i + 3], vertices[i + 4]);
-		scene->GetComponent<MeshComponent>(cube)->m_Vertices.push_back({positions, normals, texCoords});
+		ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(cube)->m_Vertices.push_back({positions, normals, texCoords});
 	}
 
 	for (int i = 0; i < 36; i++)
-		scene->GetComponent<MeshComponent>(cube)->m_Indices.push_back(i);
-
-	// this should be a shared pointer! all assets should not be copied
-	// it is too expensive
-	scene->GetComponent<MeshComponent>(cube)->m_Texture = *ResManager::GetTexture("wall");
+		ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(cube)->m_Indices.push_back(i);
+	
+	ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(cube)->p_Texture = ResManager::GetTexture("wall");
 
 	Amba::VertexBufferLayout layoutCube;
 	layoutCube.Push<float>(3);
 	layoutCube.Push<float>(3);
 	layoutCube.Push<float>(2);
 
-	scene->GetComponent<MeshComponent>(cube)->layout = layoutCube;
+	ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(cube)->layout = layoutCube;
+
+	EntityId cubeCopy = ResManager::GetScene("exampleScene")->CopyEntity(cube);
+
 }
 
 void GameApp::OnUserUpdate()
 {
 	// pass camera to renderer
-	Amba::Renderer::BeginScene(AB_Cameras[0], scene);
+	Amba::Renderer::BeginScene(AB_Cameras[0], ResManager::GetScene("exampleScene"));
 
 	// projection matrix
 	AB_Perspective = glm::perspective(glm::radians(AB_Cameras[AB_ActiveCamera].GetZoom()), (float)m_ScrWidth / (float)m_ScrHeight, 0.1f, 100.0f);
 
-	Amba::VertexBufferLayout layout;
-	layout.Push<float>(3);
-	layout.Push<float>(3);
-	layout.Push<float>(2);
-
-	ResManager::GetShader("tree")->Bind();
-	Amba::Renderer::DrawModel(ResManager::GetModel("tree"), layout, ResManager::GetShader("tree"), AB_Perspective);
-
-	//ResManager::GetTexture("terrainTexture")->Bind();
-	//ResManager::GetShader("terrain")->Bind();
-	//ResManager::GetShader("terrain")->SetUniform1i("u_Texture", 0);
-
-	Amba::Renderer::DrawMeshes(ResManager::GetShader("terrain"), AB_Perspective);
+	Amba::Renderer::DrawMeshes(ResManager::GetShader("simpleShader"), AB_Perspective);
 	
 
 	// skybox - remember to always draw this last!!

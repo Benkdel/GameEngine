@@ -22,15 +22,16 @@ namespace Amba {
 
 		void Run();
 
+		void BindScene(Scene* scene);
+
 		void Cleanup();
 
 		glm::vec4 m_Clear_color;
 
+	
 	private:
-		Window* m_Window;
-
-		ImGuiViewport* m_MainViewport;
-
+		Window* p_Window;
+		Scene* p_CurrentScene;
 	};
 
 }

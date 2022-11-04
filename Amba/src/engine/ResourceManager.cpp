@@ -3,28 +3,15 @@
 using namespace Amba;
 
 // initialice static variables
-std::unordered_map<std::string, VertexArray*>		ResManager::rm_VertexArrays;
-std::unordered_map<std::string, VertexBuffer*>		ResManager::rm_VertexBuffers;
-std::unordered_map<std::string, IndexBuffer*>		ResManager::rm_IndexBuffers;
+std::unordered_map<std::string, Scene*>				ResManager::rm_Scenes;
 std::unordered_map<std::string, Shader*>			ResManager::rm_Shaders;
 std::unordered_map<std::string, Material*>			ResManager::rm_Materials;
 std::unordered_map<std::string, Texture*>			ResManager::rm_Textures;
 std::unordered_map<std::string, Model*>				ResManager::rm_Models;
-std::unordered_map<std::string, Mesh*>				ResManager::rm_Meshes;
 
-void ResManager::GenVA(const std::string& name)
+void ResManager::CreateScene(const std::string& name)
 {
-	rm_VertexArrays.insert(std::pair<std::string, VertexArray*>(name, new VertexArray()));
-}
-
-void ResManager::GenVBO(const void* data, unsigned int size, const std::string& name)
-{
-	rm_VertexBuffers.insert(std::pair<std::string, VertexBuffer*>(name, new VertexBuffer(data, size)));
-}
-
-void ResManager::GenIBO(unsigned int* data, unsigned int count, const std::string& name)
-{
-	rm_IndexBuffers.insert(std::pair<std::string, IndexBuffer*>(name, new IndexBuffer(data, count)));
+	rm_Scenes.insert(std::pair<std::string, Scene*>(name, new Scene()));
 }
 
 void ResManager::CreateShader(const char* vsPath, const char* fsPath, const std::string& name)
@@ -42,29 +29,14 @@ void ResManager::CreateModel(const std::string& name)
 	rm_Models.insert(std::pair<std::string, Model*>(name, new Model()));
 }
 
-void ResManager::CreateMesh(const std::string& name)
-{
-	rm_Meshes.insert(std::pair<std::string, Mesh*>(name, new Mesh()));
-}
-
 void ResManager::CreateMaterial(const std::string& name)
 {
 	rm_Materials.insert(std::pair<std::string, Material*>(name, new Material()));
 }
 
-VertexArray* ResManager::GetVA(const std::string& name)
+Scene* ResManager::GetScene(const std::string& name)
 {
-	return rm_VertexArrays[name];
-}
-
-VertexBuffer* ResManager::GetVBO(const std::string& name)
-{
-	return rm_VertexBuffers[name];
-}
-
-IndexBuffer* ResManager::GetIBO(const std::string& name)
-{
-	return rm_IndexBuffers[name];
+	return rm_Scenes[name];
 }
 
 Shader* ResManager::GetShader(const std::string& name)
@@ -82,11 +54,6 @@ Amba::Model* ResManager::GetModel(const std::string& name)
 	return rm_Models[name];
 }
 
-Amba::Mesh* ResManager::GetMesh(const std::string& name)
-{
-	return rm_Meshes[name];
-}
-
 Amba::Material* ResManager::GetMaterial(const std::string& name)
 {
 	return rm_Materials[name];
@@ -95,27 +62,6 @@ Amba::Material* ResManager::GetMaterial(const std::string& name)
 
 void ResManager::cleanup()
 {
-	for (auto it : rm_VertexArrays)
-	{
-		if (it.second != NULL)
-			it.second = NULL;
-	}
-	rm_VertexArrays.clear();
-
-	for (auto it : rm_VertexBuffers)
-	{
-		if (it.second != NULL)
-			it.second = NULL;
-	}
-	rm_VertexBuffers.clear();
-
-	for (auto it : rm_IndexBuffers)
-	{
-		if (it.second != NULL)
-			it.second = NULL;
-	}
-	rm_IndexBuffers.clear();
-
 	for (auto it : rm_Shaders)
 	{
 		if (it.second != NULL)
@@ -154,13 +100,4 @@ void ResManager::cleanup()
 		}
 	}
 	rm_Materials.clear();
-
-	for (auto& it : rm_Meshes)
-	{
-		if (it.second != NULL)
-		{
-			it.second = NULL;
-		}
-	}
-	rm_Meshes.clear();
 }

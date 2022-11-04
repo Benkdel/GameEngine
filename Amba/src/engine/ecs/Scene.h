@@ -5,7 +5,6 @@
 #include <bitset>
 #include <vector>
 
-
 const int MAX_COMPONENTS = 32;
 typedef std::bitset<MAX_COMPONENTS> ComponentMask;
 
@@ -17,12 +16,13 @@ namespace Amba {
 	{
 
 	public:
-
-
+		Scene();
 
 	public:
 		// entity handling section
 		EntityId CreateEntity();
+
+		EntityId CopyEntity(EntityId id);
 
 		void DestroyEntity(EntityId id);
 
@@ -81,14 +81,13 @@ namespace Amba {
 	private:
 
 
-
 	};
 
 	template<typename... ComponentTypes>
 	class SceneView
 	{
 	public:
-		SceneView(Scene& scene)
+		SceneView(Scene* scene)
 			: p_Scene(scene), m_All(false)
 		{
 			if (sizeof...(ComponentTypes) == 0)
@@ -108,7 +107,7 @@ namespace Amba {
 
 		struct Iterator
 		{
-			Iterator(Scene& scene, EntityIndex index, ComponentMask mask, bool all)
+			Iterator(Scene* scene, EntityIndex index, ComponentMask mask, bool all)
 				: p_Scene(scene), m_Index(index), m_Mask(mask), m_All(all)
 			{
 				// ... omitted for now?
@@ -117,23 +116,23 @@ namespace Amba {
 			bool isIndexValid()
 			{
 				return
-					IsEntityValid(p_Scene.m_Entities[m_Index].id) &&
+					IsEntityValid(p_Scene->m_Entities[m_Index].id) &&
 					// it has the correct component mask?
-					(m_All || m_Mask == (m_Mask & p_Scene.m_Entities[m_Index].mask));
+					(m_All || m_Mask == (m_Mask & p_Scene->m_Entities[m_Index].mask));
 			}
 
 			EntityId operator* () const
 			{
-				return p_Scene.m_Entities[m_Index].id;
+				return p_Scene->m_Entities[m_Index].id;
 			}
 			bool operator==(const Iterator& other) const
 			{
-				return m_Index == other.m_Index || m_Index == p_Scene.m_Entities.size();
+				return m_Index == other.m_Index || m_Index == p_Scene->m_Entities.size();
 			}
 
 			bool operator!=(const Iterator& other) const
 			{
-				return m_Index != other.m_Index && m_Index != p_Scene.m_Entities.size();
+				return m_Index != other.m_Index && m_Index != p_Scene->m_Entities.size();
 			}
 
 			Iterator& operator++()
@@ -141,11 +140,11 @@ namespace Amba {
 				do
 				{
 					m_Index++;
-				} while (m_Index < p_Scene.m_Entities.size() && !isIndexValid());
+				} while (m_Index < p_Scene->m_Entities.size() && !isIndexValid());
 				return *this;
 			}
 
-			Scene& p_Scene;
+			Scene* p_Scene;
 			EntityIndex m_Index;
 			ComponentMask m_Mask;
 			bool m_All;
@@ -154,9 +153,9 @@ namespace Amba {
 		const Iterator begin() const
 		{
 			int firstIndex = 0;
-			while (firstIndex < p_Scene.m_Entities.size() &&
-				m_ComponentMask != (m_ComponentMask & p_Scene.m_Entities[firstIndex].mask) 
-				|| !IsEntityValid(p_Scene.m_Entities[firstIndex].id))
+			while (firstIndex < p_Scene->m_Entities.size() &&
+				m_ComponentMask != (m_ComponentMask & p_Scene->m_Entities[firstIndex].mask) 
+				|| !IsEntityValid(p_Scene->m_Entities[firstIndex].id))
 			{
 				firstIndex++;
 			}
@@ -166,10 +165,10 @@ namespace Amba {
 		// we are not supporting going backwards for now
 		const Iterator end() const
 		{
-			return Iterator(p_Scene, EntityIndex(p_Scene.m_Entities.size()), m_ComponentMask, m_All);
+			return Iterator(p_Scene, EntityIndex(p_Scene->m_Entities.size()), m_ComponentMask, m_All);
 		}
 
-		Scene& p_Scene;
+		Scene* p_Scene;
 		ComponentMask m_ComponentMask;
 		bool m_All;
 	};

@@ -11,54 +11,47 @@
 #include <vector>
 
 
-
 /* ======================
 	COMPONENTS
 ====================== */
 
-
-
-struct MeshComponent
+class Components
 {
-	std::vector<Amba::Vertex> m_Vertices;
-	std::vector<unsigned int> m_Indices;
-	Amba::Material m_Material;
-	Amba::Texture m_Texture; // for now only one texture
+public:
+	virtual ~Components() {};
+};
+
+
+struct MeshComponent : public Components
+{
+	std::vector<Amba::Vertex>	m_Vertices;
+	std::vector<unsigned int>	m_Indices;
+	Amba::Material*				p_Material;
+	Amba::Texture*				p_Texture; // for now only one texture
 
 	Amba::VertexBufferLayout layout;
 };
 
 
-struct TransformComponent
+struct TransformComponent : public Components
 {
 	glm::vec3 m_Position = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 m_Rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 m_Scale = glm::vec3(1.0f, 1.0f, 1.0f);
 	float m_Angle = 90.0f;
 	float m_Size = 1.0f;
-
+	
 };
 
-struct RendererComponent
+struct CollisionComponent : public Components
 {
 
 };
 
-struct CollisionComponent
+struct AudioComponent : public Components
 {
 
 };
-
-struct AudioComponent
-{
-
-};
-
-struct BioAttributes
-{
-
-};
-
 
 
 
