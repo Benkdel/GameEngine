@@ -40,7 +40,9 @@ struct TransformComponent : public Components
 	glm::vec3 m_Scale = glm::vec3(1.0f, 1.0f, 1.0f);
 	float m_Angle = 90.0f;
 	float m_Size = 1.0f;
-	
+
+	glm::vec3 m_Velocity = glm::vec3(0.0f);
+
 };
 
 struct CollisionComponent : public Components

@@ -11,7 +11,7 @@
 #include <engine/interface/inferface.h>
 #include <engine/renderer/dataTypes.h>
 
-class Scene;
+#include <engine/ecs/Primitives.h>
 
 namespace Amba {
 
@@ -42,6 +42,8 @@ class Application
 		unsigned int AB_ActiveCamera;
 		Amba::Camera AB_Cameras[5];
 
+		glm::mat4 AB_Perspective;
+
 		Scene* p_ActiveScene;
 
 	private:
@@ -59,6 +61,8 @@ class Application
 		unsigned int m_ScrWidth;
 		unsigned int m_ScrHeight;
 
+
+		friend Scene;
 	};
 }
 

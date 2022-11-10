@@ -21,11 +21,7 @@ public:
 	void OnUserUpdate() override;
 
 private:
-
 	GameState AB_State;
-
-	// projection mat
-	glm::mat4 AB_Perspective;
 
 };
 

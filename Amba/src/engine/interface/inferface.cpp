@@ -77,7 +77,6 @@ namespace Amba {
                     {
                         isEntitySelected = true;
                         selectedEntity = ent;
-
                     }
                 }
             }
@@ -86,21 +85,69 @@ namespace Amba {
             {
                 ImGui::SliderFloat("Model - Size:", 
                         &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_Size, 
-                        0.001f, 1.0f, "%.03f");
+                        0.001f, 100.0f, "%.03f");
 
                 ImGui::SliderFloat3("Model - Position:", 
                         &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_Position[0],
-                        -10.0f, 10.0f, "%.03f");
+                        -50.0f, 50.0f, "%.03f");
 
                 if (ImGui::Button("Duplicate"))
                 {
                     p_CurrentScene->CopyEntity(selectedEntity);
                 }
 
+                int cellNum = p_CurrentScene->m_Spatial2DGrid.m_Cells[0].vertices[3].x;
+                ImGui::Text(std::to_string(cellNum).c_str());
             }
 
             ImGui::NewLine();
-            ImGui::Text("Mesh Settings");
+            ImGui::Text("Actions");
+            
+            if (ImGui::Button("Fly!"))
+            {
+                for (EntityId ent : SceneView<MeshComponent, TransformComponent>(p_CurrentScene))
+                {
+                    float x = (rand() % 10 + 1) - 5;
+                    float y = (rand() % 10 + 1) - 5;
+                    float z = (rand() % 10 + 1) - 5;
+                    p_CurrentScene->GetComponent<TransformComponent>(ent)->m_Velocity = glm::vec3(x, y, z);
+                }
+            }
+
+            if (ImGui::Button("Accelerate"))
+            {
+                glm::vec3 topSpeed = glm::vec3(25.0f);
+                for (EntityId ent : SceneView<MeshComponent, TransformComponent>(p_CurrentScene))
+                {
+                    glm::vec3& velocity = p_CurrentScene->GetComponent<TransformComponent>(ent)->m_Velocity;
+                    velocity += glm::vec3(1.0f);
+                    
+                    if (velocity.x > topSpeed.x)
+                        velocity.x = topSpeed.x;
+                    if (velocity.y > topSpeed.y)
+                        velocity.y = topSpeed.y;
+                    if (velocity.z > topSpeed.z)
+                        velocity.z = topSpeed.z;
+                }
+            }
+
+            if (ImGui::Button("Slow down"))
+            {
+                glm::vec3 minSpeed = glm::vec3(0.0f);
+                for (EntityId ent : SceneView<MeshComponent, TransformComponent>(p_CurrentScene))
+                {
+                    glm::vec3& velocity = p_CurrentScene->GetComponent<TransformComponent>(ent)->m_Velocity;
+                    velocity -= glm::vec3(1.0f);
+
+                    if (velocity.x > minSpeed.x)
+                        velocity.x = minSpeed.x;
+                    if (velocity.y > minSpeed.y)
+                        velocity.y = minSpeed.y;
+                    if (velocity.z > minSpeed.z)
+                        velocity.z = minSpeed.z;
+                }
+            }
+
             ImGui::NewLine();
 
             ImGui::End();

@@ -1,11 +1,33 @@
 #include "Scene.h"
 
-#include <application/Application.h>
-
 
 namespace Amba {
 
-	Scene::Scene() {}
+	Scene::Scene() 
+	{
+		m_Spatial2DGrid = Spatial2DGrid(true);
+	}
+
+	void Scene::ApplyPhysics()
+	{
+		for (EntityId ent : SceneView<TransformComponent, MeshComponent>(this))
+		{
+			glm::vec3& position = GetComponent<TransformComponent>(ent)->m_Position;
+			glm::vec3& velocity = GetComponent<TransformComponent>(ent)->m_Velocity;
+
+			position += velocity * glm::vec3(0.01f);
+
+			if (position.x <= 0.0f || position.x >= 5.0f)
+				velocity.x *= -1.0f;
+			if (position.y <= 0.0f || position.y >= 5.0f)
+				velocity.y *= -1.0f;
+			if (position.z <= -5.0f || position.z >= 5.0f)
+				velocity.z *= -1.0f;
+			
+			// assign entity to cell in 2D spatial grid
+			AssignEntity(ent, position);
+		}
+	}
 
 	EntityId Scene::CreateEntity()
 	{
@@ -61,4 +83,17 @@ namespace Amba {
 		m_Entities[oldIdx].mask.reset();
 		m_FreeEntities.push_back(oldIdx);
 	}
+
+	void Scene::AssignEntity(EntityId id)
+	{
+		Cell& cell = m_Spatial2DGrid.GetCell(this->GetComponent<TransformComponent>(id)->m_Position);
+		cell.entities.push_back(id);
+	}
+
+	void Scene::AssignEntity(EntityId id, glm::vec3 position)
+	{
+		Cell& cell = m_Spatial2DGrid.GetCell(position);
+		cell.entities.push_back(id);
+	}
+
 }

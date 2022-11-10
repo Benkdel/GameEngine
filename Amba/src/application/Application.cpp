@@ -5,6 +5,8 @@
 
 #include <engine/interface/inferface.h>
 
+#include <engine/dataStructures/SpatialHashGrid.h>
+
 namespace Amba {
 
 	Application::Application()
@@ -95,20 +97,24 @@ namespace Amba {
 			AB_DeltaTime = AB_TimeElapsed - lastTime;
 			lastTime = AB_TimeElapsed;
 		
+			AB_Perspective = glm::perspective(glm::radians(AB_Cameras[AB_ActiveCamera].GetZoom()), (float)m_ScrWidth / (float)m_ScrHeight, 0.1f, 100.0f);
+
 			// method used by user
 			OnUserUpdate();
-
+			
 			// run interface - ImGui
 			InterfaceHandler();
 
 			p_Window->OnUpdate();
 
 			ProcessInput();
+
 		}
 
 		delete p_Window;
 		p_Interface->Cleanup();
 	}
+
 
 	void Application::ProcessInput()
 	{
