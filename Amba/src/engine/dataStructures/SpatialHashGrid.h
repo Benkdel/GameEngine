@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <engine/ecs/Entcs.h>
-#include <engine/renderer/dataTypes.h>
+#include <engine/dataTypes.h>
 
 #define SPATIAL_GRID_SIDELENGTH 600
 #define NUMBER_OF_CELLS 40
@@ -16,18 +16,6 @@
 
 namespace Amba
 {
-
-	class Cell
-	{
-	public:
-		Cell() {};
-
-		~Cell() {};
-
-		std::vector<EntityId> entities; // entities in current cell
-		std::vector<glm::vec3> vertices; // corners of the cell
-
-	};
 
 	class Spatial2DGrid
 	{
@@ -43,18 +31,16 @@ namespace Amba
 		// vector to do main operations
 		std::vector<Cell> m_Cells;
 
-		Cell GetCell(glm::vec3 position);
-		
-		
+		Cell &GetCell(glm::vec3 position);
 		
 		// for drawing
 		bool m_RenderGrid;
 		std::vector<glm::vec3> m_Vertices;
 		std::vector<unsigned int> m_Indices;
 		
-
-	private:
 		float m_CellSize;
+	private:
+		
 
 	};
 

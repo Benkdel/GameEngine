@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <engine/renderer/dataTypes.h>
+#include <engine/dataTypes.h>
 #include <engine/material/Material.h>
 #include <engine/renderer/Texture.h>
 #include <engine/model/Model.h>
@@ -30,6 +30,8 @@ struct MeshComponent : public Components
 	Amba::Texture*				p_Texture; // for now only one texture
 
 	Amba::VertexBufferLayout layout;
+
+	Amba::Shader* p_Shader;
 };
 
 
@@ -42,6 +44,9 @@ struct TransformComponent : public Components
 	float m_Size = 1.0f;
 
 	glm::vec3 m_Velocity = glm::vec3(0.0f);
+
+	int m_CurrentCell = -1;
+	int m_IndexInCell = -1;
 
 };
 

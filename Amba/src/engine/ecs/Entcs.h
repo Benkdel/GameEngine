@@ -2,20 +2,30 @@
 
 #include "components.h"
 
+#include <engine/dataTypes.h>
+
 // definitions
 #define MAX_ENTITIES 1025
 #define INVALID_ENTITY CreateEntityId(EntityIndex(-1), 0)
-
-// typedefs to increase readability
-typedef unsigned long long EntityId;
-typedef unsigned int EntityIndex;
-typedef unsigned int EntityVersion;
 
 extern int s_CompotentCounter;
 
 namespace Amba {
 
-	
+	// Entity class - TODO
+
+	class Entity
+	{
+	public:
+		Entity() {}
+		~Entity() {}
+
+	private:
+		
+
+	};
+
+
 	template<class t>
 	int GetComponentId()
 	{

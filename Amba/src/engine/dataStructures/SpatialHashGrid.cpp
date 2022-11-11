@@ -28,16 +28,19 @@ namespace Amba
 			{
 				Cell cell;
 
-				cell.vertices.push_back(glm::vec3(x, 0, z));
-				cell.vertices.push_back(glm::vec3(x, 0, z + m_CellSize));
-				cell.vertices.push_back(glm::vec3(x + m_CellSize, 0, z + m_CellSize));
-				cell.vertices.push_back(glm::vec3(x + m_CellSize, 0, z));
+				cell.bottomLeft = glm::vec3(x, 0, z);
+				cell.topLeft = glm::vec3(x, 0, z + m_CellSize);
+				cell.topRight = glm::vec3(x + m_CellSize, 0, z + m_CellSize);
+				cell.bottomRight = glm::vec3(x + m_CellSize, 0, z);
 
 				m_Cells.push_back(cell);
 
 #ifdef AB_ENABLE_ASSERTS
 				// store this only if we want to visualized grid
-				m_Vertices.insert(m_Vertices.end(), std::begin(cell.vertices), std::end(cell.vertices));
+				m_Vertices.push_back(cell.bottomLeft);
+				m_Vertices.push_back(cell.topLeft);
+				m_Vertices.push_back(cell.topRight);
+				m_Vertices.push_back(cell.bottomRight);
 
 				// indices
 				m_Indices.push_back(idx++);
@@ -49,23 +52,21 @@ namespace Amba
 
 			}
 		}
-
-				Cell cell = GetCell(glm::vec3(75.0f, 10.0f, 15.0f));
-				for (int i = 0; i < 4; i++)
-					AB_INFO("Point {0} coords: [x, y, z] -- [{1}, {2}, {3}]", i, cell.vertices[i].x,
-						cell.vertices[i].y, cell.vertices[i].z);
 	}
 
-	Cell Spatial2DGrid::GetCell(glm::vec3 position)
+	Cell &Spatial2DGrid::GetCell(glm::vec3 position)
 	{
-
 		int cell_x = position.x / m_CellSize;
 		int cell_z = position.z / m_CellSize;
 
-		AB_INFO("Cell hit {0}", cell_z * m_CellSize + cell_x);
-
+		// for now
+		if (cell_x < 0)
+			cell_x = 0;
+		if (cell_z < 0)
+			cell_z = 0;
+				
 		return m_Cells[cell_z * m_CellSize + cell_x];
-	
+		
 	}
 
 

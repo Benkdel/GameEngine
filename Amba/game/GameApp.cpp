@@ -69,6 +69,8 @@ GameApp::~GameApp()
 	ResManager::cleanup();
 }
 
+Amba::Cube* cube;
+
 void GameApp::OnUserCreate()
 {
 	// we need to initialize application - Create GLFW window
@@ -166,8 +168,17 @@ void GameApp::OnUserCreate()
 	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(terrain)->m_Size = 0.033f;
 
 
-	Amba::Cube cube(ResManager::GetScene("exampleScene"));
-	ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(cube.m_EntityId)->p_Texture = ResManager::GetTexture("wall");
+	cube = new Amba::Cube(ResManager::GetScene("exampleScene"));
+	ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(cube->m_EntityId)->p_Texture = ResManager::GetTexture("wall");
+
+	
+	EntityId enemy_1 = ResManager::GetScene("exampleScene")->CopyEntity(cube->m_EntityId);
+	EntityId enemy_2 = ResManager::GetScene("exampleScene")->CopyEntity(cube->m_EntityId);
+	EntityId enemy_3 = ResManager::GetScene("exampleScene")->CopyEntity(cube->m_EntityId);
+
+	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(enemy_1)->m_Position = glm::vec3(45.0f, 0.0f, 25.0f);
+	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(enemy_2)->m_Position = glm::vec3(25.0f, 0.0f,  5.0f);
+	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(enemy_3)->m_Position = glm::vec3(25.0f, 0.0f, 50.0f);
 
 	// delete terrain from entities to avoid rendering for now
 	ResManager::GetScene("exampleScene")->DestroyEntity(terrain);
@@ -186,6 +197,8 @@ void GameApp::OnUserUpdate()
 
 	ResManager::GetScene("exampleScene")->ApplyPhysics();
 	
+	ResManager::GetScene("exampleScene")->FindNearEntities(cube->m_EntityId, ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(cube->m_EntityId)->m_Position);
+
 	bool skybox = false;
 
 	if (skybox)

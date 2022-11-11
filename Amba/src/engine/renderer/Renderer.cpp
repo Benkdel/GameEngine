@@ -138,8 +138,9 @@ namespace Amba {
 			AB_ASSERT(!mesh->m_Indices.empty(), "Error in renderer function: DrawMeshes. Indices vector is empty!");
 			AB_ASSERT(!mesh->m_Vertices.empty(), "Error in renderer function: DrawMeshes. Vertices vector is empty!");
 
-			glm::mat4 tsr = glm::scale(glm::mat4(1.0f), glm::vec3(trs->m_Size));
+			glm::mat4 tsr = glm::mat4(1.0f);
 			tsr = glm::translate(tsr, trs->m_Position);
+			tsr = glm::scale(tsr, glm::vec3(trs->m_Size));
 			shader->SetUniform4mat("u_Transform", tsr);
 
 			VertexArray va;

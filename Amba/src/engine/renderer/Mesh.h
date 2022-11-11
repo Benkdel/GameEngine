@@ -2,7 +2,7 @@
 
 #include <GLAD/glad.h>
 
-#include <engine/renderer/dataTypes.h>
+#include <engine/dataTypes.h>
 
 #include <string>
 #include <vector>

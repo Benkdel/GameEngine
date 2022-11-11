@@ -25,7 +25,7 @@ namespace Amba {
 		void AssignEntity(EntityId id);
 		void AssignEntity(EntityId id, glm::vec3 position);
 
-		void FindNearEntities(glm::vec3 position);
+		void FindNearEntities(EntityId id, glm::vec3 position);
 
 
 	public:

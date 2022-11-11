@@ -96,8 +96,13 @@ namespace Amba {
                     p_CurrentScene->CopyEntity(selectedEntity);
                 }
 
-                int cellNum = p_CurrentScene->m_Spatial2DGrid.m_Cells[0].vertices[3].x;
-                ImGui::Text(std::to_string(cellNum).c_str());
+                // temporal
+                glm::vec3& pos = p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_Position;
+                int cellSize = p_CurrentScene->m_Spatial2DGrid.m_CellSize;
+                int cell_x = pos.x / cellSize;
+                int cell_z = pos.z / cellSize;
+                
+                ImGui::Text(std::to_string(cell_z * cellSize + cell_x).c_str());
             }
 
             ImGui::NewLine();

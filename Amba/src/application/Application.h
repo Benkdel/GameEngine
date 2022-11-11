@@ -9,7 +9,7 @@
 #include <engine/renderer/Renderer.h>
 
 #include <engine/interface/inferface.h>
-#include <engine/renderer/dataTypes.h>
+#include <engine/dataTypes.h>
 
 #include <engine/ecs/Primitives.h>
 
