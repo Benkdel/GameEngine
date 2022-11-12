@@ -73,7 +73,7 @@ namespace Amba {
 
 	void Application::InterfaceHandler()
 	{
-		p_Interface->Run();
+		p_Interface->Run(AB_Cameras[AB_ActiveCamera]);
 	}
 
 	void Application::SetWindowShouldClose()
@@ -160,9 +160,13 @@ namespace Amba {
 		// mouse movement
 		double dx = Amba::Mouse::GetDX();
 		double dy = Amba::Mouse::GetDY();
-		if (dx != 0 || dy != 0)
+		
+		if (!Amba::Mouse::isMouseLocked())
 		{
-			AB_Cameras[AB_ActiveCamera].UpdateCameraDirection(dx, dy);
+			if (dx != 0 || dy != 0)
+			{
+				AB_Cameras[AB_ActiveCamera].UpdateCameraDirection(dx, dy);
+			}
 		}
 
 		// zoom

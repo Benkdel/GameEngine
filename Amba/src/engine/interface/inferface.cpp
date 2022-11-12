@@ -11,9 +11,9 @@ namespace Amba {
     const char* glsl_version = "#version 130";
 
     Interface::Interface()
-    : m_Clear_color(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), p_Window(nullptr)
-    {}
-
+    : m_Clear_color(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), m_MousePicker(MousePicker())
+    {
+    }
 
     void Interface::Setup(Window* window)
     {
@@ -28,6 +28,8 @@ namespace Amba {
         // set up placeholders
         m_Clear_color = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f);
         
+        // Set up mouse Picker
+        m_MousePicker.SetUp(window->GetWidth(), window->GetHeight());
     }
 
     void Interface::BindScene(Scene* scene)
@@ -36,12 +38,16 @@ namespace Amba {
         p_CurrentScene = scene;
     }
 
-    void Interface::Run()
+    void Interface::Run(Camera &camera)
     {
         /*
             Positions and sizes of windows
             are being set in imgui.ini file for now (I'm not using docking just yet)
         */
+
+        // update mouse picker
+        m_MousePicker.UpdateMousePos(camera);
+
 
         // runs ImGui interface
         ImGui_ImplOpenGL3_NewFrame();

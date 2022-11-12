@@ -23,6 +23,8 @@ namespace Amba {
 
 	bool Mouse::m_IsLock = false;
 
+	bool Mouse::m_StatusChanged = false;
+
 	void Mouse::CursorPosCallback(GLFWwindow* window, double x, double y)
 	{
 		m_X = x;
@@ -35,11 +37,11 @@ namespace Amba {
 			m_FirstMouse = false;
 		}
 
-		// where should this be??
-		if (m_IsLock)
+		if (m_StatusChanged)
 		{
 			m_LastX = x;
 			m_LastY = y;
+			m_StatusChanged = false;
 			return;
 		}
 
@@ -134,6 +136,7 @@ namespace Amba {
 	void Mouse::ToggleMouseLock()
 	{
 		m_IsLock = (!m_IsLock) ? 1 : 0;
+		m_StatusChanged = true;
 	}
 
 }

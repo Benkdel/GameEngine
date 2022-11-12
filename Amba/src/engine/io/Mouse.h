@@ -26,6 +26,10 @@ namespace Amba {
 
 		static void ToggleMouseLock();
 
+		inline static bool isMouseLocked() { return m_IsLock; }
+
+
+
 	private:
 
 		static double m_X;
@@ -46,5 +50,7 @@ namespace Amba {
 		static bool m_ButtonsChanged[];
 
 		static bool m_IsLock;
+
+		static bool m_StatusChanged;
 	};
 }

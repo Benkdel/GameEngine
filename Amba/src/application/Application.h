@@ -57,7 +57,6 @@ class Application
 		double AB_TimeElapsed;
 		double AB_DeltaTime;
 
-
 		unsigned int m_ScrWidth;
 		unsigned int m_ScrHeight;
 

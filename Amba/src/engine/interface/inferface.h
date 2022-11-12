@@ -10,6 +10,8 @@
 
 #include <engine/ResourceManager.h>
 
+#include <engine/interface/MousePicking.h>
+
 namespace Amba {
 
 	class Interface
@@ -20,7 +22,7 @@ namespace Amba {
 
 		void Setup(Window* window);
 
-		void Run();
+		void Run(Camera& camera);
 
 		void BindScene(Scene* scene);
 
@@ -30,8 +32,8 @@ namespace Amba {
 
 	
 	private:
-		Window* p_Window;
 		Scene* p_CurrentScene;
+		MousePicker m_MousePicker;
 	};
 
 }
