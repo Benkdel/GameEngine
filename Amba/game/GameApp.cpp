@@ -162,19 +162,19 @@ void GameApp::OnUserCreate()
 	layoutTerrain.Push<float>(3);
 	layoutTerrain.Push<float>(3);
 	layoutTerrain.Push<float>(2);
-	ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(terrain)->layout = layoutTerrain;
-
-	
+	ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(terrain)->layout = layoutTerrain;	
 	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(terrain)->m_Size = 0.033f;
 
-
 	cube = new Amba::Cube(ResManager::GetScene("exampleScene"));
-	ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(cube->m_EntityId)->p_Texture = ResManager::GetTexture("wall");
+	cube->Init();
+	ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(cube->m_EntId)->p_Texture = ResManager::GetTexture("wall");
 
-	
-	EntityId enemy_1 = ResManager::GetScene("exampleScene")->CopyEntity(cube->m_EntityId);
-	EntityId enemy_2 = ResManager::GetScene("exampleScene")->CopyEntity(cube->m_EntityId);
-	EntityId enemy_3 = ResManager::GetScene("exampleScene")->CopyEntity(cube->m_EntityId);
+	cube->AddComponent<CollisionComponent>();
+	cube->InitCollider();
+
+	EntityId enemy_1 = ResManager::GetScene("exampleScene")->CopyEntity(cube->m_EntId);
+	EntityId enemy_2 = ResManager::GetScene("exampleScene")->CopyEntity(cube->m_EntId);
+	EntityId enemy_3 = ResManager::GetScene("exampleScene")->CopyEntity(cube->m_EntId);
 
 	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(enemy_1)->m_Position = glm::vec3(45.0f, 0.0f, 25.0f);
 	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(enemy_2)->m_Position = glm::vec3(25.0f, 0.0f,  5.0f);
@@ -182,6 +182,24 @@ void GameApp::OnUserCreate()
 
 	// delete terrain from entities to avoid rendering for now
 	ResManager::GetScene("exampleScene")->DestroyEntity(terrain);
+
+	Amba::Sphere sphere(ResManager::GetScene("exampleScene"), 2.0f, 36, 18);
+	sphere.Init();
+	sphere.AddComponent<CollisionComponent>();
+	ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(sphere.m_EntId)->p_Texture = ResManager::GetTexture("wall");
+	sphere.InitCollider();
+	
+	Amba::Sphere collision(ResManager::GetScene("exampleScene"), 0.86f * SPHERE_COLLIDER_ADJUST, 36, 18);
+	collision.Init();
+	ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(collision.m_EntId)->p_Texture = ResManager::GetTexture("wall");
+	collision.AddComponent<CollisionComponent>();
+
+	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(sphere.m_EntId)->m_Position = glm::vec3(25.0f, 0.0f, 14.0f);
+
+	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(collision.m_EntId)->m_Position = glm::vec3(25.0f, 0.0f, 11.3f);
+
+
+	cube->GetComponent<TransformComponent>()->m_Position = glm::vec3(25.0f, 0.0f, 11.3f);
 
 }
 
@@ -197,7 +215,10 @@ void GameApp::OnUserUpdate()
 
 	ResManager::GetScene("exampleScene")->ApplyPhysics();
 	
-	ResManager::GetScene("exampleScene")->FindNearEntities(cube->m_EntityId, ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(cube->m_EntityId)->m_Position);
+	//ResManager::GetScene("exampleScene")->FindNearEntities(cube->m_EntId);
+	ResManager::GetScene("exampleScene")->CheckForCollision(cube->m_EntId);
+
+
 
 	bool skybox = false;
 
@@ -226,21 +247,3 @@ void GameApp::OnUserUpdate()
 		glDepthFunc(GL_LESS); // set depth function back to default
 	}
 }
-
-
-unsigned int indices[36] = {
-	0, 1, 2, 3, 4, 5, 6, 
-	7, 8, 9, 10, 11, 12,
-	13, 14, 15, 16, 17, 18,
-	19, 20, 21, 22, 23, 24,
-	25, 26, 27, 28, 29, 30,
-	31, 32, 33, 34, 35
-};
-
-// Dir Light for current scene
-Amba::DirLight dirLight = {
-	glm::vec3(-0.2f, -1.0f, -0.3f), // position
-	glm::vec4(0.1f, 0.1f, 0.1f, 1.0f), // ambient
-	glm::vec4(0.4f, 0.4f, 0.4f, 1.0f), // diffuse
-	glm::vec4(0.5f, 0.5f, 0.5f, 1.0f) // specular
-};

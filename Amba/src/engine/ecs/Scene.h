@@ -1,8 +1,10 @@
 #pragma once
 
+#include <engine/ecs/ComponentPool.h>
+#include "components.h"
 
-#include <engine/ecs/Entcs.h>
 #include <engine/dataStructures/SpatialHashGrid.h>
+#include <engine/dataTypes.h>
 
 #include <bitset>
 #include <vector>
@@ -12,6 +14,12 @@ typedef std::bitset<MAX_COMPONENTS> ComponentMask;
 
 namespace Amba {
 
+	// entity handlers
+	EntityId CreateEntityId(EntityIndex index, EntityVersion version);
+	EntityIndex GetEntityIndex(EntityId id);
+	EntityVersion GetEntityVersion(EntityId id);
+	bool IsEntityValid(EntityId id);
+
 	class Scene 
 	{
 
@@ -20,16 +28,20 @@ namespace Amba {
 
 		void ApplyPhysics();
 
-		// spatial grid methods
+	// spatial grid methods
 	public:
 		void AssignEntity(EntityId id);
 		void AssignEntity(EntityId id, glm::vec3 position);
 
-		void FindNearEntities(EntityId id, glm::vec3 position);
+		std::vector<Cell> GetNearbyCells(glm::vec3 position);
+
+		void FindNearEntities(EntityId id);
+
+		void CheckForCollision(EntityId id);
 
 
+	// entity handling section
 	public:
-		// entity handling section
 		EntityId CreateEntity();
 
 		EntityId CopyEntity(EntityId id);
@@ -91,6 +103,8 @@ namespace Amba {
 	
 		Spatial2DGrid m_Spatial2DGrid;
 	
+		void Cleanup();
+
 	private:
 
 

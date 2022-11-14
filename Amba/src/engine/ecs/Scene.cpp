@@ -1,9 +1,37 @@
 #include "Scene.h"
 
+int s_CompotentCounter = 0;
 
 namespace Amba {
 
-	Scene::Scene() 
+	// entity handlers
+	EntityId CreateEntityId(EntityIndex index, EntityVersion version)
+	{
+		// Shifts the index up 32, and puts the version in the bottom
+		return ((EntityId)index << 32) | ((EntityId)version);
+	}
+
+	EntityIndex GetEntityIndex(EntityId id)
+	{
+		// Shifts down 32 so we lose the version part and get our index
+		return id >> 32;
+	}
+
+	EntityVersion GetEntityVersion(EntityId id)
+	{
+		// Cast to a 32 bit int to get our version number (loosing the top 32 bits)
+		return (EntityVersion)id;
+	}
+
+	bool IsEntityValid(EntityId id)
+	{
+		// check if the index is the invalid index
+		return (id >> 32) != EntityIndex(-1);
+	}
+
+	/* ===================================================================================== */
+
+	Scene::Scene()
 	{
 		m_Spatial2DGrid = Spatial2DGrid(true);
 	}
@@ -120,7 +148,7 @@ namespace Amba {
 		tsr = nullptr;
 	}
 
-	void Scene::FindNearEntities(EntityId id, glm::vec3 position)
+	std::vector<Cell> Scene::GetNearbyCells(glm::vec3 position)
 	{
 		Cell& cell = m_Spatial2DGrid.GetCell(position);
 
@@ -139,7 +167,7 @@ namespace Amba {
 		bool BR = position.x + tempSize < cell.bottomRight.x;
 		bool TL = position.z - tempSize > cell.bottomLeft.z;
 		bool TR = position.z + tempSize < cell.topLeft.z;
-		
+
 		if (!BL)
 			cellsToCheck.push_back(m_Spatial2DGrid.GetCell(position - glm::vec3(tempSize, 0.0f, 0.0f)));
 		if (!BR)
@@ -147,8 +175,16 @@ namespace Amba {
 		if (!TL)
 			cellsToCheck.push_back(m_Spatial2DGrid.GetCell(position - glm::vec3(0.0f, 0.0f, tempSize)));
 
-		// find all entities in cells and change their color (implement this option in shader)
+		return cellsToCheck;
+	}
 
+	void Scene::FindNearEntities(EntityId id)
+	{
+		glm::vec3 entPosition = GetComponent<TransformComponent>(id)->m_Position;
+
+		std::vector<Cell> cellsToCheck = GetNearbyCells(entPosition);
+
+		// find all entities in cells and change their color (implement this option in shader)
 		for (auto cell : cellsToCheck)
 		{
 			for (auto ent : cell.entities)
@@ -157,6 +193,47 @@ namespace Amba {
 					this->GetComponent<TransformComponent>(ent)->m_Size = 0.2f;
 			}
 		}
+	}
+
+	void Scene::CheckForCollision(EntityId id)
+	{
+		glm::vec3 entPosition = GetComponent<TransformComponent>(id)->m_Position;
+		float entRadius = GetComponent<CollisionComponent>(id)->m_Radius;
+
+		std::vector<Cell> cellsToCheck = GetNearbyCells(entPosition);
+
+		// find all entities in cells and change their color (implement this option in shader)
+		for (auto cell : cellsToCheck)
+		{
+			for (auto ent : cell.entities)
+			{
+				if (ent != id)
+				{
+					glm::vec3& otherEntPos = GetComponent<TransformComponent>(ent)->m_Position;
+					float& otherRadius = GetComponent<CollisionComponent>(ent)->m_Radius;
+
+					
+					if (otherRadius > 0)
+					{
+						// check if distance from mouse to entPosition is less than radius (squared to avoid heavy computation)
+						float distFromCenter = (otherEntPos.x - entPosition.x) * (otherEntPos.x - entPosition.x) +
+							(otherEntPos.y - entPosition.y) * (otherEntPos.y - entPosition.y) +
+							(otherEntPos.z - entPosition.z) * (otherEntPos.z - entPosition.z);
+						float dist = sqrt(distFromCenter);
+						if (dist < (entRadius + otherRadius))
+						{
+							AB_INFO("COLLISION - Dist: {0} | R1: {1} | R2: {2} | R1+R2: {3}",
+								dist, entRadius, otherRadius, entRadius + otherRadius);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	void Scene::Cleanup()
+	{
+		// todo
 	}
 
 }

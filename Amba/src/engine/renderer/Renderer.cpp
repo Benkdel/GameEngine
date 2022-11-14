@@ -130,7 +130,7 @@ namespace Amba {
 		shader->SetUniform4mat("u_ViewProjection", m_SceneData->ViewProjectionMatrix); // should this be called every frame?
 		shader->SetUniform4mat("u_Perspective", perspective);
 
-		for (EntityId ent : SceneView<MeshComponent, TransformComponent>(m_SceneData->m_Scene))
+		for (EntityId ent : SceneView<MeshComponent>(m_SceneData->m_Scene))
 		{
 			MeshComponent *mesh = m_SceneData->m_Scene->GetComponent<MeshComponent>(ent);
 			TransformComponent* trs = m_SceneData->m_Scene->GetComponent<TransformComponent>(ent);

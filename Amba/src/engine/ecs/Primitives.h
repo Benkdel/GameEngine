@@ -1,6 +1,7 @@
 # pragma once
 
-#include <engine/ecs/Scene.h>
+#include <engine/dataTypes.h>
+#include <engine/ecs/Entcs.h>
 
 static float vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -48,27 +49,16 @@ static float vertices[] = {
 
 namespace Amba {
 
-	class Primitives
+	class Primitives : public Entity
 	{
 	public:
 
-		Primitives() {}
-
-		void Destroy()
-		{
-			p_Scene = nullptr;
-		}
-
-		~Primitives() 
-		{
-			p_Scene = nullptr;
-		}
-
-		EntityId m_EntityId;
+		Primitives(Scene* scene)
+			: Entity(scene) {}
 	
-	protected:
-		virtual void Init() {};
 		Scene* p_Scene;
+	
+		virtual void Init() {};
 
 	private:
 
@@ -79,21 +69,14 @@ namespace Amba {
 	public:
 
 		Cube(Scene* scene)
-		{
-			p_Scene = scene;
-			m_EntityId = scene->CreateEntity();
-
-			Init();
-		}
-
-	private:
+			: Primitives(scene) {}
 
 		void Init()
 		{
-			p_Scene->AddComponent<MeshComponent>(m_EntityId);
-			p_Scene->AddComponent<TransformComponent>(m_EntityId);
-
-			MeshComponent* mesh = p_Scene->GetComponent<MeshComponent>(m_EntityId);
+			AddComponent<MeshComponent>();
+			AddComponent<TransformComponent>();
+			
+			MeshComponent* mesh = GetComponent<MeshComponent>();
 
 			// lets see if we can change this to take a material instead
 			// how to handle when I want a default material, no material, etc.
@@ -116,15 +99,116 @@ namespace Amba {
 
 			mesh = nullptr;
 		}
+	
+	private:
+
 	};
 
 	class Sphere : public Primitives
 	{
 	public:
+		Sphere(Scene* scene, float radius, int stacks, int sectors) 
+			: Primitives(scene)
+			{
+				m_Radius = radius;
+				m_Stacks = stacks;
+				m_Sectors = sectors;
+				m_Center = glm::vec3(0.0f);
+			}
 
+		float m_Radius;
+		glm::vec3 m_Center;
 
-	private:
+		void Init()
+		{
+			AddComponent<MeshComponent>();
+			AddComponent<TransformComponent>();
 
+			MeshComponent* mesh = GetComponent<MeshComponent>();
+
+			float x, y, z, xy;									// vertex position
+			float nx, ny, nz, lengthInv = 1.0f / m_Radius;		// normal
+			float s, t;											// texCoord
+
+			float sectorStep = 2 * PI_VALUE / m_Sectors;
+			float stackStep = PI_VALUE / m_Stacks;
+			float sectorAngle, stackAngle;
+
+			for (int i = 0; i <= m_Stacks; ++i)
+			{
+				stackAngle = PI_VALUE / 2 - i * stackStep;        // starting from pi/2 to -pi/2
+				xy = m_Radius * cosf(stackAngle);             // r * cos(u)
+				z = m_Radius * sinf(stackAngle);              // r * sin(u)
+
+				// add (sectorCount+1) vertices per stack
+				// the first and last vertices have same position and normal, but different tex coords
+				for (int j = 0; j <= m_Sectors; ++j)
+				{
+					sectorAngle = j * sectorStep;           // starting from 0 to 2pi
+
+					// vertex position
+					x = xy * cosf(sectorAngle);             // r * cos(u) * cos(v)
+					y = xy * sinf(sectorAngle);             // r * cos(u) * sin(v)
+					glm::vec3 position(x, y, z);
+
+					// normalized vertex normal
+					nx = x * lengthInv;
+					ny = y * lengthInv;
+					nz = z * lengthInv;
+					glm::vec3 normals(nx, ny, nz);
+
+					// vertex tex coord between [0, 1]
+					s = (float)j / m_Sectors;
+					t = (float)i / m_Stacks;
+					glm::vec2 texCoords(s, t);
+
+					mesh->m_Vertices.push_back({ position, normals, texCoords });
+				}
+			}
+
+			// indices
+			//  k1--k1+1
+			//  |  / |
+			//  | /  |
+			//  k2--k2+1
+			unsigned int k1, k2;
+			for (int i = 0; i < m_Stacks; ++i)
+			{
+				k1 = i * (m_Sectors + 1);     // beginning of current stack
+				k2 = k1 + m_Sectors + 1;      // beginning of next stack
+
+				for (int j = 0; j < m_Sectors; ++j, ++k1, ++k2)
+				{
+					// 2 triangles per sector excluding 1st and last stacks
+					if (i != 0)
+					{
+						mesh->m_Indices.push_back(k1);
+						mesh->m_Indices.push_back(k2);
+						mesh->m_Indices.push_back(k1 + 1);		// k1---k2---k1+1
+					}
+
+					if (i != (m_Stacks - 1))
+					{
+						mesh->m_Indices.push_back(k1 + 1);
+						mesh->m_Indices.push_back(k2);
+						mesh->m_Indices.push_back(k2 + 1);		// k1+1---k2---k2+1
+					}
+				}
+			}
+			
+			Amba::VertexBufferLayout layout;
+			layout.Push<float>(3);
+			layout.Push<float>(3);
+			layout.Push<float>(2);
+
+			mesh->layout = layout;
+
+			mesh = nullptr;
+		}
+
+		private:
+			int m_Stacks;
+			int m_Sectors;
 	};
 
 }

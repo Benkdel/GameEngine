@@ -8,6 +8,11 @@ typedef unsigned long long EntityId;
 typedef unsigned int EntityIndex;
 typedef unsigned int EntityVersion;
 
+// definitions
+
+#define BOX_COLLIDER_SIZE 5.0f
+#define PI_VALUE 3.141592653589793
+
 namespace Amba {
 	
 	// data types
@@ -30,7 +35,6 @@ namespace Amba {
 		//std::vector<glm::vec3> vertices; // corners of the cell
 
 	};
-
 
 	struct Rotation {
 		float angle;

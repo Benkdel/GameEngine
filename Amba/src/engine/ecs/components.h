@@ -51,7 +51,10 @@ struct TransformComponent : public Components
 };
 
 struct CollisionComponent : public Components
-{
+{	
+	// for now. Sphere only
+	float m_Radius = 0.0f;
+	glm::vec3 m_Center = glm::vec3(0.0f);
 
 };
 

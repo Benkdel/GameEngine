@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <engine/ecs/Entcs.h>
 #include <engine/dataTypes.h>
 
 #define SPATIAL_GRID_SIDELENGTH 600

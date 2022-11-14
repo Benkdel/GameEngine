@@ -5,6 +5,7 @@ static bool isEntitySelected = false;
 static EntityId selectedEntity;
 static std::string entityName;
 
+float sizeOfRay = 5.0f;
 
 namespace Amba {
 
@@ -36,6 +37,7 @@ namespace Amba {
     {
         // check if scene is null, where?
         p_CurrentScene = scene;
+        m_MousePicker.UpdateScene(p_CurrentScene);
     }
 
     void Interface::Run(Camera &camera)
@@ -48,11 +50,53 @@ namespace Amba {
         // update mouse picker
         m_MousePicker.UpdateMousePos(camera);
 
+        bool entFound = false;
+        EntityId pickedEntity;
+        if (Amba::Mouse::isMouseLocked)
+            pickedEntity = m_MousePicker.SelectEntity(camera, entFound);
+
+        if (entFound)
+            AB_INFO("Entity found: {0}", pickedEntity);
+
 
         // runs ImGui interface
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
+        {
+            ImGui::Begin("Testing");
+           
+            
+            glm::vec3& camPos = camera.GetCamPos();
+            glm::vec3& camDir = camera.GetCamFront();
+
+            ImGui::Text("Camera pos: %f, %f, %f", camPos.x, camPos.y, camPos.z);
+            ImGui::Text("Camera direction: %f, %f, %f", camDir.x, camDir.y, camDir.z);
+            
+            ImGui::InputFloat("Size of ray: ", &sizeOfRay, 1.0f, 1.0f, "%.3f");
+
+            glm::vec3& mouseRay = m_MousePicker.GetMouseRay();
+            glm::vec3& mousePos = mouseRay * sizeOfRay;
+            int cellSize2 = p_CurrentScene->m_Spatial2DGrid.m_CellSize;
+            int cell_x2 = mousePos.x / cellSize2;
+            int cell_z2 = mousePos.z / cellSize2;
+
+            ImGui::Text("Mouse cell: ");
+            ImGui::Text(std::to_string(cell_z2 * cellSize2 + cell_x2).c_str());
+            ImGui::Text("Mouse pos: %f, %f, %f", mousePos.x, mousePos.y, mousePos.z);
+            ImGui::Text("Mouse Ray: %f, %f, %f", mouseRay.x, mouseRay.y, mouseRay.z);
+            
+            glm::vec3 rayFromCameraDir = camDir + mouseRay;
+            glm::vec3 rayFromCameraPos = camPos + mousePos;
+
+            ImGui::Text("MousefromCameraPos: %f, %f, %f", rayFromCameraPos.x, rayFromCameraPos.y, rayFromCameraPos.z);
+            ImGui::Text("MouseFromCameraDir: %f, %f, %f", rayFromCameraDir.x, rayFromCameraDir.y, rayFromCameraDir.z);
+
+            ImGui::End();
+
+        }
+
 
         // main menu - right column
         {
@@ -89,6 +133,8 @@ namespace Amba {
             ImGui::EndListBox();
             if (isEntitySelected)
             {
+                ImGui::Text("Drag:");
+
                 ImGui::SliderFloat("Model - Size:", 
                         &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_Size, 
                         0.001f, 100.0f, "%.03f");
@@ -96,6 +142,12 @@ namespace Amba {
                 ImGui::SliderFloat3("Model - Position:", 
                         &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_Position[0],
                         -50.0f, 50.0f, "%.03f");
+
+
+                ImGui::Text("Input:");
+
+                ImGui::InputFloat3("Model - Position: 2",
+                    &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_Position[0], "%.03f");
 
                 if (ImGui::Button("Duplicate"))
                 {
@@ -158,6 +210,8 @@ namespace Amba {
                         velocity.z = minSpeed.z;
                 }
             }
+
+            
 
             ImGui::NewLine();
 

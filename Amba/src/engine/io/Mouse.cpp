@@ -48,6 +48,8 @@ namespace Amba {
 		m_Dx = x - m_LastX;
 		m_Dy = m_LastY - y; // inverted
 
+		//AB_INFO("Mouse pos right out of GLFW: {0} - {1}", m_X, m_Y);
+
 		m_LastX = x;
 		m_LastY = y;
 	}
