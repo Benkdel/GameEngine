@@ -161,6 +161,7 @@ namespace Amba {
 		double dx = Amba::Mouse::GetDX();
 		double dy = Amba::Mouse::GetDY();
 		
+		// not sure if this is necessary - mouse dx and dy to interface? used them for testing only
 		p_Interface->UpdateMouseD(dx, dy);
 
 		if (!Amba::Mouse::isMouseLocked())

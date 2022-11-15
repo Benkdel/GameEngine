@@ -19,7 +19,7 @@ namespace Amba {
 
 		void SetUp(unsigned int scr_Width, unsigned int scr_Height);
 
-		void UpdateMousePos(Camera& camera, double dx, double dy);
+		void UpdateMousePos(Camera& camera);
 
 		inline void UpdateScene(Scene* scene) { p_Scene = scene; };
 

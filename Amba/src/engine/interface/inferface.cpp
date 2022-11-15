@@ -1,11 +1,24 @@
 #include "inferface.h"
 
 
+#include <engine/io/Keyboard.h>
+
 static bool isEntitySelected = false;
 static EntityId selectedEntity;
 static std::string entityName;
 
 float sizeOfRay = 5.0f;
+
+bool entFound = false;
+EntityId entHold;
+
+bool isEntBeingHold = false;
+
+glm::vec3 currentEntPos = glm::vec3(0.0f);
+glm::vec3 lastMousePos = glm::vec3(0.0f);
+
+int axisSelected = 0; /* 0: x, 1: y, 2: z */
+
 
 namespace Amba {
 
@@ -47,55 +60,66 @@ namespace Amba {
             are being set in imgui.ini file for now (I'm not using docking just yet)
         */
 
+        /*
+            MOUSE PICKER SECTION
+            LATER: ORGANIZE INTERFACE FILES
+        */
+
         // update mouse picker
-        m_MousePicker.UpdateMousePos(camera, m_Yaw, m_Pitch);
+        m_MousePicker.UpdateMousePos(camera);
 
-        bool entFound = false;
-        EntityId pickedEntity;
         if (Amba::Mouse::isMouseLocked)
-            pickedEntity = m_MousePicker.SelectEntity(camera, entFound);
+        {
+            if (!isEntBeingHold)
+                entHold = m_MousePicker.SelectEntity(camera, entFound);
 
-        if (entFound)
-            AB_INFO("Entity found: {0}", pickedEntity);
+            if (entFound)
+            {
+                if (/*Amba::Mouse::ButtonWentDown(GLFW_MOUSE_BUTTON_1) ||*/ Amba::KeyBoard::KeyWentDown(GLFW_KEY_P))
+                {
+                    isEntBeingHold = !isEntBeingHold;
+                    lastMousePos = m_MousePicker.GetMouseRay();
+                }
+
+                if (isEntBeingHold)
+                {
+                    // change axis
+                    if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_O))
+                    {
+                        axisSelected++;
+                        if (axisSelected > 2)
+                            axisSelected = 0;
+                    }
+
+                    glm::vec3& entPos = p_CurrentScene->GetComponent<TransformComponent>(entHold)->m_Position;
+
+                    if (m_MousePicker.GetMouseRay() != lastMousePos)
+                    {
+                        glm::vec3 movement = m_MousePicker.GetMouseRay() - lastMousePos;
+
+                        float speed = 10.0f;
+
+                        if (axisSelected == 0)
+                            entPos.x += movement.x * (speed + 50.0f);
+                        else if (axisSelected == 1)
+                            entPos.y += movement.y * speed;
+                        else
+                            entPos.z += movement.z * (speed + 25.0f);
+
+                        currentEntPos = entPos;
+
+                        lastMousePos = m_MousePicker.GetMouseRay();
+                    }
+                }
+
+            }
+        }
 
 
         // runs ImGui interface
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-
-        {
-            ImGui::Begin("Testing");
-           
-            glm::vec3& camPos = camera.GetCamPos();
-            glm::vec3& camDir = camera.GetCamFront();
-
-            ImGui::Text("Camera pos: %f, %f, %f", camPos.x, camPos.y, camPos.z);
-            ImGui::Text("Camera direction: %f, %f, %f", camDir.x, camDir.y, camDir.z);
-            
-            ImGui::InputFloat("Size of ray: ", &sizeOfRay, 1.0f, 1.0f, "%.3f");
-
-            glm::vec3& mouseRay = m_MousePicker.GetMouseRay();
-            glm::vec3& mousePos = mouseRay * sizeOfRay;
-            int cellSize2 = p_CurrentScene->m_Spatial2DGrid.m_CellSize;
-            int cell_x2 = mousePos.x / cellSize2;
-            int cell_z2 = mousePos.z / cellSize2;
-
-            ImGui::Text("Mouse cell: ");
-            ImGui::Text(std::to_string(cell_z2 * cellSize2 + cell_x2).c_str());
-            ImGui::Text("Mouse pos: %f, %f, %f", mousePos.x, mousePos.y, mousePos.z);
-            ImGui::Text("Mouse Ray: %f, %f, %f", mouseRay.x, mouseRay.y, mouseRay.z);
-            
-            glm::vec3 rayFromCameraDir = camDir + mouseRay;
-            glm::vec3 rayFromCameraPos = camPos + mousePos;
-
-            ImGui::Text("MousefromCameraPos: %f, %f, %f", rayFromCameraPos.x, rayFromCameraPos.y, rayFromCameraPos.z);
-            ImGui::Text("MouseFromCameraDir: %f, %f, %f", rayFromCameraDir.x, rayFromCameraDir.y, rayFromCameraDir.z);
-
-            ImGui::End();
-
-        }
-
 
         // main menu - right column
         {
@@ -130,8 +154,12 @@ namespace Amba {
                 }
             }
             ImGui::EndListBox();
-            if (isEntitySelected)
+
+            if (isEntitySelected || isEntBeingHold)
             {
+                if (isEntBeingHold)
+                    selectedEntity = entHold;
+
                 ImGui::Text("Drag:");
 
                 ImGui::SliderFloat("Model - Size:", 
@@ -209,9 +237,27 @@ namespace Amba {
                 }
             }
 
-            
-
             ImGui::NewLine();
+
+            ImGui::Text("Entity selected:");
+            ImGui::NextColumn();
+            ImGui::Text(std::to_string(entHold).c_str());
+            ImGui::NewLine();
+            std::string s = (isEntBeingHold) ? "Entity is being holded" : "No entity is being holded";
+            ImGui::Text(s.c_str());
+            ImGui::NewLine();
+            ImGui::Text("Axis selected: ");
+            ImGui::NextColumn();
+            
+            std::string axis;
+            if (axisSelected == 0)
+                axis = "X";
+            else if (axisSelected == 1)
+                axis = "Y";
+            else
+                axis = "Z";
+            ImGui::Text(axis.c_str());
+
 
             ImGui::End();
         }

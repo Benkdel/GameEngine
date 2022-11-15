@@ -16,48 +16,15 @@ namespace Amba {
 	static double yaw = 0.0f;
 	static double pitch = 0.0f;
 
-	void MousePicker::UpdateMousePos(Camera& camera, double dx, double dy)
+	void MousePicker::UpdateMousePos(Camera& camera)
 	{
 		double mouseX = Mouse::GetMouseX();
 		double mouseY = Mouse::GetMouseY();
 
-		int method = 1;
-
-		switch (method)
-		{
-		case 1:
-			glm::vec3 normSpace = NormalizeDeviceSpace(glm::vec3(mouseX, mouseY, 0.0f));
-			glm::vec4 clipSpace = ClipSpace(normSpace);
-			glm::vec4 eyeSpace = EyeSpace(clipSpace, camera);
-			m_MouseRay = WorldSpace(eyeSpace, camera);
-			break;
-		case 2:
-			yaw += dx;
-			pitch += dy;
-
-			// AB_INFO("yaw: {0} | pitch: {1} ", yaw, pitch);
-
-			if (yaw > 0.0f )
-
-			if (pitch > 89.0f)
-				pitch = 89.0f;
-
-			if (pitch < -89.0f)
-				pitch = -89.0f;
-
-			glm::vec3 direction;
-			direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-			direction.y = sin(glm::radians(pitch));
-			direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-			m_MouseRay = glm::normalize(direction);
-
-			break;
-		default:
-			break;
-		}
-
-		//AB_INFO("Ray: [{0} , {1} , {2}] || CamPos: [{3} , {4} , {5}] ", 
-		//	m_MouseRay.x, m_MouseRay.y, m_MouseRay.z, camera.GetCamPos().x, camera.GetCamPos().y, camera.GetCamPos().z);
+		glm::vec3 normSpace = NormalizeDeviceSpace(glm::vec3(mouseX, mouseY, 0.0f));
+		glm::vec4 clipSpace = ClipSpace(normSpace);
+		glm::vec4 eyeSpace = EyeSpace(clipSpace, camera);
+		m_MouseRay = WorldSpace(eyeSpace, camera);
 	}
 
 	// returns boolean - check if true before using entity (default will return number 0)
