@@ -1,5 +1,6 @@
 #pragma once
 
+// TODO: change file name to something more meaninfull
 
 #include <engine/importer/Importer.h>
 
@@ -12,6 +13,9 @@ typedef unsigned int EntityVersion;
 
 #define BOX_COLLIDER_SIZE 5.0f
 #define PI_VALUE 3.141592653589793
+
+#define NEAR_PLANE 0.1f
+#define FAR_PLANE 100.f
 
 namespace Amba {
 	

@@ -30,10 +30,14 @@ namespace Amba {
 
 		glm::vec4 m_Clear_color;
 
+		inline void UpdateMouseD(double dx, double dy) { m_Yaw = dx; m_Pitch = dy; };
 	
 	private:
 		Scene* p_CurrentScene;
 		MousePicker m_MousePicker;
+
+		double m_Yaw = 0.0f;
+		double m_Pitch = 0.0f;
 	};
 
 }

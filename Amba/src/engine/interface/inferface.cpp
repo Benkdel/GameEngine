@@ -48,7 +48,7 @@ namespace Amba {
         */
 
         // update mouse picker
-        m_MousePicker.UpdateMousePos(camera);
+        m_MousePicker.UpdateMousePos(camera, m_Yaw, m_Pitch);
 
         bool entFound = false;
         EntityId pickedEntity;
@@ -67,7 +67,6 @@ namespace Amba {
         {
             ImGui::Begin("Testing");
            
-            
             glm::vec3& camPos = camera.GetCamPos();
             glm::vec3& camDir = camera.GetCamFront();
 
@@ -142,7 +141,6 @@ namespace Amba {
                 ImGui::SliderFloat3("Model - Position:", 
                         &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_Position[0],
                         -50.0f, 50.0f, "%.03f");
-
 
                 ImGui::Text("Input:");
 

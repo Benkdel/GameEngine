@@ -189,16 +189,9 @@ void GameApp::OnUserCreate()
 	ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(sphere.m_EntId)->p_Texture = ResManager::GetTexture("wall");
 	sphere.InitCollider();
 	
-	Amba::Sphere collision(ResManager::GetScene("exampleScene"), 0.86f * SPHERE_COLLIDER_ADJUST, 36, 18);
-	collision.Init();
-	ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(collision.m_EntId)->p_Texture = ResManager::GetTexture("wall");
-	collision.AddComponent<CollisionComponent>();
-
 	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(sphere.m_EntId)->m_Position = glm::vec3(25.0f, 0.0f, 14.0f);
-
-	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(collision.m_EntId)->m_Position = glm::vec3(25.0f, 0.0f, 11.3f);
-
-
+	
+	
 	cube->GetComponent<TransformComponent>()->m_Position = glm::vec3(25.0f, 0.0f, 11.3f);
 
 }

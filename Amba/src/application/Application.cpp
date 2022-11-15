@@ -97,7 +97,7 @@ namespace Amba {
 			AB_DeltaTime = AB_TimeElapsed - lastTime;
 			lastTime = AB_TimeElapsed;
 		
-			AB_Perspective = glm::perspective(glm::radians(AB_Cameras[AB_ActiveCamera].GetZoom()), (float)m_ScrWidth / (float)m_ScrHeight, 0.1f, 100.0f);
+			AB_Perspective = glm::perspective(glm::radians(AB_Cameras[AB_ActiveCamera].GetZoom()), (float)m_ScrWidth / (float)m_ScrHeight, NEAR_PLANE, FAR_PLANE);
 
 			// method used by user
 			OnUserUpdate();
@@ -161,6 +161,8 @@ namespace Amba {
 		double dx = Amba::Mouse::GetDX();
 		double dy = Amba::Mouse::GetDY();
 		
+		p_Interface->UpdateMouseD(dx, dy);
+
 		if (!Amba::Mouse::isMouseLocked())
 		{
 			if (dx != 0 || dy != 0)
