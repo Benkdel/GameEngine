@@ -26,7 +26,23 @@ namespace Amba {
 	public:
 		Scene();
 
-		void ApplyPhysics();
+		void ApplyPhysics(float dt);
+
+		template <typename T>
+		bool EntHasComponent(EntityId id)
+		{
+			// get component id for collision and check if entiy has it
+			int componentId = GetComponentId<T>();
+			ComponentMask comp;
+			comp.set(componentId);
+
+			// check if entity in cell has collision component
+			if (m_Entities[GetEntityIndex(id)].mask ==
+				(m_Entities[GetEntityIndex(id)].mask | comp))
+				return true;
+
+			return false;
+		}
 
 	// spatial grid methods
 	public:

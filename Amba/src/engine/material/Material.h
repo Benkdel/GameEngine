@@ -1,6 +1,8 @@
 #pragma once
 
 #include <engine/material/Shader.h>
+#include <engine/lighting/BasicLighting.h>
+#include <engine/lighting/PbrLighting.h>
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -19,6 +21,13 @@ namespace Amba {
 		~Material();
 
 		void SetMaterial(Shader& shader);
+
+		glm::vec3 m_Albedo;
+		
+		float m_Ao;
+		float m_Metallic;
+		float m_Roughness;
+
 
 	private:
 

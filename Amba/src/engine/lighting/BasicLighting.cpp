@@ -1,4 +1,4 @@
-#include "Light.h"
+#include "BasicLighting.h"
 
 void Amba::DirLight::render(Shader* shader)
 {

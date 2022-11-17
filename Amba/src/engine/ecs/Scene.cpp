@@ -2,6 +2,8 @@
 
 int s_CompotentCounter = 0;
 
+#include <engine/io/Mouse.h>
+
 namespace Amba {
 
 	// entity handlers
@@ -36,24 +38,34 @@ namespace Amba {
 		m_Spatial2DGrid = Spatial2DGrid(true);
 	}
 
-	void Scene::ApplyPhysics()
+	void Scene::ApplyPhysics(float dt)
 	{
-		for (EntityId ent : SceneView<TransformComponent, MeshComponent>(this))
+		if (Amba::Mouse::isMouseLocked())
+			return;
+
+		for (EntityId ent : SceneView<TransformComponent, MeshComponent, CollisionComponent>(this))
 		{
+
 			glm::vec3& position = GetComponent<TransformComponent>(ent)->m_Position;
 			glm::vec3& velocity = GetComponent<TransformComponent>(ent)->m_Velocity;
 
 			position += velocity * glm::vec3(0.01f);
 
-			if (position.x <= 0.0f || position.x >= 5.0f)
+			if (position.x <= 0.0f || position.x >= 50.0f)
 				velocity.x *= -1.0f;
-			if (position.y <= 0.0f || position.y >= 5.0f)
+			if (position.y <= 0.0f || position.y >= 50.0f)
 				velocity.y *= -1.0f;
-			if (position.z <= -5.0f || position.z >= 5.0f)
+			if (position.z <= 0.0f || position.z >= 50.0f)
 				velocity.z *= -1.0f;
 			
 			// assign entity to cell in 2D spatial grid
 			AssignEntity(ent, position);
+
+			// apply gravity
+			float gravity = 9.8f;
+
+			position.y = (position.y <= 1.0f) ? 1.0f : position.y - gravity * dt;
+
 		}
 	}
 

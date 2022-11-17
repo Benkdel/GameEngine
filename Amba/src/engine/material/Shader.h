@@ -11,6 +11,8 @@ namespace Amba {
 	{
 	public:
 
+		Shader() = default;
+
 		Shader(const char* vsPath, const char* fsPath);
 		~Shader();
 

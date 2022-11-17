@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 #include <glm/gtc/type_ptr.hpp>
-#include <engine/lighting/Light.h>
+#include <engine/lighting/BasicLighting.h>
 
 #include <engine/importer/Importer.h>
 
@@ -176,12 +176,12 @@ void GameApp::OnUserCreate()
 	EntityId enemy_2 = ResManager::GetScene("exampleScene")->CopyEntity(cube->m_EntId);
 	EntityId enemy_3 = ResManager::GetScene("exampleScene")->CopyEntity(cube->m_EntId);
 
-	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(enemy_1)->m_Position = glm::vec3(45.0f, 0.0f, 25.0f);
-	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(enemy_2)->m_Position = glm::vec3(25.0f, 0.0f,  5.0f);
-	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(enemy_3)->m_Position = glm::vec3(25.0f, 0.0f, 50.0f);
+	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(enemy_1)->m_Position = glm::vec3(45.0f, 4.0f, 25.0f);
+	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(enemy_2)->m_Position = glm::vec3(25.0f, 4.0f,  5.0f);
+	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(enemy_3)->m_Position = glm::vec3(25.0f, 4.0f, 50.0f);
 
 	// delete terrain from entities to avoid rendering for now
-	ResManager::GetScene("exampleScene")->DestroyEntity(terrain);
+	// ResManager::GetScene("exampleScene")->DestroyEntity(terrain);
 
 	Amba::Sphere sphere(ResManager::GetScene("exampleScene"), 2.0f, 36, 18);
 	sphere.Init();
@@ -189,11 +189,50 @@ void GameApp::OnUserCreate()
 	ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(sphere.m_EntId)->p_Texture = ResManager::GetTexture("wall");
 	sphere.InitCollider();
 	
-	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(sphere.m_EntId)->m_Position = glm::vec3(25.0f, 0.0f, 14.0f);
+	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(sphere.m_EntId)->m_Position = glm::vec3(25.0f, 4.0f, 14.0f);
 	
-	
-	cube->GetComponent<TransformComponent>()->m_Position = glm::vec3(25.0f, 0.0f, 11.3f);
+	cube->GetComponent<TransformComponent>()->m_Position = glm::vec3(25.0f, 4.0f, 11.3f);
+	cube->GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("simpleShader");
 
+	// test basic PBR lighting
+	Amba::Sphere pbrSphere(ResManager::GetScene("exampleScene"), 2.0f, 36, 18);
+	pbrSphere.Init();
+	pbrSphere.AddComponent<CollisionComponent>();
+	pbrSphere.InitCollider();
+
+	ResManager::CreateShader("src/engine/res/shaders/pbrVS.glsl", "src/engine/res/shaders/pbrFS.glsl", "pbrLighting");
+	pbrSphere.GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("pbrLighting");
+
+	// set all uniforms and light positions
+	Amba::Shader* pbrShader = ResManager::GetShader("pbrLighting");
+	
+	pbrShader->Bind();
+	pbrShader->SetUniform3f("u_Albedo", glm::vec3(0.5f, 0.0f, 0.0f));
+	pbrShader->SetUniform1f("u_Ao", 1.0f);
+	pbrShader->SetUniform1f("u_Metallic", 0.4f);
+	pbrShader->SetUniform1f("u_Roughness", 0.25f);
+
+	glm::vec3 lightPositions[] = {
+		glm::vec3(-10.0f,  10.0f, 10.0f),
+		glm::vec3(10.0f,  10.0f, 10.0f),
+		glm::vec3(-10.0f, -10.0f, 10.0f),
+		glm::vec3(10.0f, -10.0f, 10.0f),
+	};
+	glm::vec3 lightColors[] = {
+		glm::vec3(300.0f, 300.0f, 300.0f),
+		glm::vec3(300.0f, 300.0f, 300.0f),
+		glm::vec3(300.0f, 300.0f, 300.0f),
+		glm::vec3(300.0f, 300.0f, 300.0f)
+	};
+
+	for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
+	{
+		glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
+		newPos = lightPositions[i];
+		pbrShader->SetUniform3f("u_LightPositions[" + std::to_string(i) + "]", newPos);
+		pbrShader->SetUniform3f("u_LightColors[" + std::to_string(i) + "]", lightColors[i]);
+	}
+	pbrShader = nullptr;
 }
 
 void GameApp::OnUserUpdate()
@@ -201,19 +240,26 @@ void GameApp::OnUserUpdate()
 	// pass camera and Scene to renderer
 	Amba::Renderer::BeginScene(AB_Cameras[0], ResManager::GetScene("exampleScene"));
 
+	// for now setting cam
+	ResManager::GetShader("pbrLighting")->Bind();
+	ResManager::GetShader("pbrLighting")->SetUniform3f("u_CamPos", AB_Cameras[0].GetCamPos());
+
 	Amba::Renderer::DrawActiveScene(ResManager::GetShader("simpleShader"), AB_Perspective);
 	
 	// for debugging
-	Amba::Renderer::DrawGrid(ResManager::GetScene("exampleScene"), AB_Perspective);
+	//Amba::Renderer::DrawGrid(ResManager::GetScene("exampleScene"), AB_Perspective);
 
-	ResManager::GetScene("exampleScene")->ApplyPhysics();
+	ResManager::GetScene("exampleScene")->ApplyPhysics(AB_DeltaTime);
 	
-	//ResManager::GetScene("exampleScene")->FindNearEntities(cube->m_EntId);
 	ResManager::GetScene("exampleScene")->CheckForCollision(cube->m_EntId);
 
 
 
-	bool skybox = false;
+
+
+
+
+	bool skybox = true;
 
 	if (skybox)
 	{

@@ -126,14 +126,22 @@ namespace Amba {
 
 	void Renderer::DrawActiveScene(Shader* shader, const glm::mat4& perspective)
 	{
-		shader->Bind();
-		shader->SetUniform4mat("u_ViewProjection", m_SceneData->ViewProjectionMatrix); // should this be called every frame?
-		shader->SetUniform4mat("u_Perspective", perspective);
+		// need to optimize sorting entities by shader so I minimize bind / unbind
+		Shader* sh;
 
 		for (EntityId ent : SceneView<MeshComponent>(m_SceneData->m_Scene))
 		{
 			MeshComponent *mesh = m_SceneData->m_Scene->GetComponent<MeshComponent>(ent);
 			TransformComponent* trs = m_SceneData->m_Scene->GetComponent<TransformComponent>(ent);
+
+			if (mesh->p_Shader != nullptr)
+				sh = mesh->p_Shader;
+			else
+				sh = shader;
+
+			sh->Bind();
+			sh->SetUniform4mat("u_ViewProjection", m_SceneData->ViewProjectionMatrix); // should this be called every frame?
+			sh->SetUniform4mat("u_Perspective", perspective);
 
 			AB_ASSERT(!mesh->m_Indices.empty(), "Error in renderer function: DrawMeshes. Indices vector is empty!");
 			AB_ASSERT(!mesh->m_Vertices.empty(), "Error in renderer function: DrawMeshes. Vertices vector is empty!");
@@ -141,7 +149,7 @@ namespace Amba {
 			glm::mat4 tsr = glm::mat4(1.0f);
 			tsr = glm::translate(tsr, trs->m_Position);
 			tsr = glm::scale(tsr, glm::vec3(trs->m_Size));
-			shader->SetUniform4mat("u_Transform", tsr);
+			sh->SetUniform4mat("u_Transform", tsr);
 
 			VertexArray va;
 			VertexBuffer vbo(&mesh->m_Vertices[0], (unsigned int)mesh->m_Vertices.size() * sizeof(Vertex));
@@ -149,8 +157,11 @@ namespace Amba {
 			va.AddBuffer(&vbo, mesh->layout);
 			IndexBuffer ib(&mesh->m_Indices[0], (unsigned int)mesh->m_Indices.size());
 
-			mesh->p_Texture->Bind();
-			shader->SetUniform1i("u_Texture", 0);
+			if (mesh->p_Texture != nullptr)
+			{
+				mesh->p_Texture->Bind();
+				sh->SetUniform1i("u_Texture", 0);
+			}
 
 			va.Bind();
 			ib.Bind();

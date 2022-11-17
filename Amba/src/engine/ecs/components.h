@@ -26,12 +26,12 @@ struct MeshComponent : public Components
 {
 	std::vector<Amba::Vertex>	m_Vertices;
 	std::vector<unsigned int>	m_Indices;
-	Amba::Material*				p_Material;
-	Amba::Texture*				p_Texture; // for now only one texture
+	Amba::Material*				p_Material = nullptr;
+	Amba::Texture*				p_Texture = nullptr; // for now only one texture
 
 	Amba::VertexBufferLayout layout;
 
-	Amba::Shader* p_Shader;
+	Amba::Shader* p_Shader = nullptr;
 };
 
 
@@ -53,7 +53,7 @@ struct TransformComponent : public Components
 struct CollisionComponent : public Components
 {	
 	// for now. Sphere only
-	float m_Radius = 0.0f;
+	float m_Radius = -1.0f;
 	glm::vec3 m_Center = glm::vec3(0.0f);
 
 };
