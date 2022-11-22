@@ -1,6 +1,7 @@
 #include "Model.h"
 
 #include <engine/core.h>
+#include <engine/ecs/Entcs.h>
 
 namespace Amba {
     
@@ -19,7 +20,7 @@ namespace Amba {
 
     void Model::LoadModel(const std::string& path)
     {
-        ABImp::Importer* importer = new ABImp::Importer();
+        ABImp::Importer* importer = new ABImp::Importer();  
         importer->LoadData(path);
 
         m_Directory = path.substr(0, path.find_last_of('/') + 1);

@@ -8,6 +8,7 @@ in vec2 TexCoord;
 
 // --------- FLAGS ----------------------------------
 uniform int u_PBR;
+uniform int u_texturedPBR;
 
 
 // --------- PBR - without texture -------------------
@@ -28,6 +29,7 @@ uniform sampler2D u_AoMap;
 
 
 // ---------- lights ---------------------------------
+uniform int u_NumOfLights;
 uniform vec3 u_LightPositions[4];
 uniform vec3 u_LightColors[4];
 
@@ -41,25 +43,51 @@ out vec4 FragColor;
 
 
 // ---------- lighting methods declaration -----------
+vec3 GetNormalFromMap();
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
-vec3 fresnelSchlick(float cosTheta, vec3 F0);
+vec3 FresnelSchlick(float cosTheta, vec3 F0);
 
 
 void main()
 {	
-    vec3 N = normalize(Normal);
-    vec3 V = normalize(u_CamPos - WorldPos);
+    vec3  albedo;    
+    float metallic;  
+    float roughness;
+    float ao;        
+        
+    vec3 N;
 
+    if (u_texturedPBR == 1)
+    {
+        albedo    = pow(texture(u_AlbedoMap, TexCoord).rgb, vec3(2.2));
+        metallic  = texture(u_MetallicMap, TexCoord).r;
+        roughness = texture(u_RoughnessMap, TexCoord).r;
+        ao        = texture(u_AoMap, TexCoord).r;
+        
+        N = GetNormalFromMap();    
+    }
+    else
+    {    
+        albedo    = u_Albedo;
+        metallic  = u_Metallic;
+        roughness = u_Roughness;
+        ao        = u_Ao;
+        
+        N = normalize(Normal);
+    }
+
+    vec3 V = normalize(u_CamPos - WorldPos);
+    
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
     // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
     vec3 F0 = vec3(0.04); 
-    F0 = mix(F0, u_Albedo, u_Metallic);
+    F0 = mix(F0, albedo, metallic);
 
     // reflectance equation
     vec3 Lo = vec3(0.0);
-    for(int i = 0; i < 4; ++i) 
+    for(int i = 0; i < u_NumOfLights; ++i) 
     {
         // calculate per-light radiance
         vec3 L = normalize(u_LightPositions[i] - WorldPos);
@@ -69,9 +97,9 @@ void main()
         vec3 radiance = u_LightColors[i] * attenuation;
 
         // Cook-Torrance BRDF
-        float NDF = DistributionGGX(N, H, u_Roughness);
-        float G   = GeometrySmith(N, V, L, u_Roughness);
-        vec3 F    = fresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
+        float NDF = DistributionGGX(N, H, roughness);
+        float G   = GeometrySmith(N, V, L, roughness);
+        vec3 F    = FresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
            
         vec3 numerator    = NDF * G * F; 
         float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero
@@ -86,18 +114,18 @@ void main()
         // multiply kD by the inverse metalness such that only non-metals 
         // have diffuse lighting, or a linear blend if partly metal (pure metals
         // have no diffuse light).
-        kD *= 1.0 - u_Metallic;	  
+        kD *= 1.0 - metallic;	  
 
         // scale light by NdotL
         float NdotL = max(dot(N, L), 0.0);        
 
         // add to outgoing radiance Lo
-        Lo += (kD * u_Albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+        Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
     }   
     
     // ambient lighting (note that the next IBL tutorial will replace 
     // this ambient lighting with environment lighting).
-    vec3 ambient = vec3(0.03) * u_Albedo * u_Ao;
+    vec3 ambient = vec3(0.03) * albedo * ao;
 
     vec3 color = ambient + Lo;
 
@@ -111,6 +139,23 @@ void main()
 }
 
 // ----------------- PBR LIGHTING METHODS -------------------------------------
+vec3 GetNormalFromMap()
+{
+    vec3 tangentNormal = texture(u_NormalMap, TexCoord).xyz * 2.0 - 1.0;
+
+    vec3 Q1  = dFdx(WorldPos);
+    vec3 Q2  = dFdy(WorldPos);
+    vec2 st1 = dFdx(TexCoord);
+    vec2 st2 = dFdy(TexCoord);
+
+    vec3 N   = normalize(Normal);
+    vec3 T  = normalize(Q1*st2.t - Q2*st1.t);
+    vec3 B  = -normalize(cross(N, T));
+    mat3 TBN = mat3(T, B, N);
+
+    return normalize(TBN * tangentNormal);
+}
+
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
@@ -147,7 +192,7 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
     return ggx1 * ggx2;
 }
 // ----------------------------------------------------------------------------
-vec3 fresnelSchlick(float cosTheta, vec3 F0)
+vec3 FresnelSchlick(float cosTheta, vec3 F0)
 {
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }

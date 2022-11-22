@@ -38,35 +38,24 @@ namespace Amba {
 		m_Spatial2DGrid = Spatial2DGrid(true);
 	}
 
-	void Scene::ApplyPhysics(float dt)
+	void Scene::Update(float dt)
 	{
+		// if game is paused, exit.
 		if (Amba::Mouse::isMouseLocked())
 			return;
+		
+		// assign entities to spatial grid in scene
+		for (EntityId ent : SceneView<TransformComponent, MeshComponent, SphereCollider>(this))			
+			AssignEntity(ent, GetComponent<TransformComponent>(ent)->m_Position);
+		
 
-		for (EntityId ent : SceneView<TransformComponent, MeshComponent, CollisionComponent>(this))
-		{
 
-			glm::vec3& position = GetComponent<TransformComponent>(ent)->m_Position;
-			glm::vec3& velocity = GetComponent<TransformComponent>(ent)->m_Velocity;
+		// Apply physics
 
-			position += velocity * glm::vec3(0.01f);
-
-			if (position.x <= 0.0f || position.x >= 50.0f)
-				velocity.x *= -1.0f;
-			if (position.y <= 0.0f || position.y >= 50.0f)
-				velocity.y *= -1.0f;
-			if (position.z <= 0.0f || position.z >= 50.0f)
-				velocity.z *= -1.0f;
-			
-			// assign entity to cell in 2D spatial grid
-			AssignEntity(ent, position);
-
-			// apply gravity
-			float gravity = 9.8f;
-
-			position.y = (position.y <= 1.0f) ? 1.0f : position.y - gravity * dt;
-
-		}
+		Amba::Physics::SolveCollisions(this);
+		Amba::Physics::ApplyMotion(this, dt);
+		
+		
 	}
 
 	EntityId Scene::CreateEntity()
@@ -102,12 +91,18 @@ namespace Amba {
 				// add to this whenever a new component is added
 				MeshComponent* mesh = dynamic_cast<MeshComponent*>((Components*)component);
 				TransformComponent* tsr = dynamic_cast<TransformComponent*>((Components*)component);
-				CollisionComponent* col = dynamic_cast<CollisionComponent*>((Components*)component);
+				SphereCollider* spColl = dynamic_cast<SphereCollider*>((Components*)component);
+				AABCollider* aabColl = dynamic_cast<AABCollider*>((Components*)component);
+				PlaneCollider* planeColl = dynamic_cast<PlaneCollider*>((Components*)component);
+				PhysicsComponent* physics = dynamic_cast<PhysicsComponent*>((Components*)component);
 				AudioComponent* audio = dynamic_cast<AudioComponent*>((Components*)component);
 
 				if (mesh != NULL)			*AddComponent<MeshComponent>(target)		= *GetComponent<MeshComponent>(source);
 				else if (tsr != NULL)		*AddComponent<TransformComponent>(target)	= *GetComponent<TransformComponent>(source);
-				else if (col != NULL)		*AddComponent<CollisionComponent>(target)	= *GetComponent<CollisionComponent>(source);
+				else if (spColl != NULL)	*AddComponent<SphereCollider>(target)		= *GetComponent<SphereCollider>(source);
+				else if (aabColl != NULL)	*AddComponent<AABCollider>(target)			= *GetComponent<AABCollider>(source);
+				else if (planeColl != NULL)	*AddComponent<PlaneCollider>(target)		= *GetComponent<PlaneCollider>(source);
+				else if (physics != NULL)	*AddComponent<PhysicsComponent>(target)		= *GetComponent<PhysicsComponent>(source);
 				else if (audio != NULL)		*AddComponent<AudioComponent>(target)		= *GetComponent<AudioComponent>(source);
 				else						AB_WARN("Component not recognized!");
 			}
@@ -123,15 +118,20 @@ namespace Amba {
 		m_Entities[oldIdx].id = newId;
 		m_Entities[oldIdx].mask.reset();
 		m_FreeEntities.push_back(oldIdx);
-	}
 
-	// spatial grid methods
-	void Scene::AssignEntity(EntityId id)
-	{
-		AB_WARN("DONT USE THIS VERSION OF ASSIGN ENTITY FOR NOW! USE THE ONE THAT TAKES POSITION ALSO");
-		m_Spatial2DGrid.GetCell(this->GetComponent<TransformComponent>(id)->m_Position).entities.push_back(id);
+		// remove entity from assigned cell
+		if (EntHasComponent<TransformComponent>(id))
+		{
+			int currCell = GetComponent<TransformComponent>(id)->m_CurrentCell;
+			if (currCell > 0)
+			{
+				Cell& cell = m_Spatial2DGrid.m_Cells[currCell];
+				int idx = GetComponent<TransformComponent>(id)->m_IndexInCell;
+				cell.entities.erase(cell.entities.begin() + idx);
+			}
+		}
 	}
-
+	
 	void Scene::AssignEntity(EntityId id, glm::vec3 position)
 	{
 		TransformComponent* tsr = GetComponent<TransformComponent>(id);
@@ -207,41 +207,6 @@ namespace Amba {
 		}
 	}
 
-	void Scene::CheckForCollision(EntityId id)
-	{
-		glm::vec3 entPosition = GetComponent<TransformComponent>(id)->m_Position;
-		float entRadius = GetComponent<CollisionComponent>(id)->m_Radius;
-
-		std::vector<Cell> cellsToCheck = GetNearbyCells(entPosition);
-
-		// find all entities in cells and change their color (implement this option in shader)
-		for (auto cell : cellsToCheck)
-		{
-			for (auto ent : cell.entities)
-			{
-				if (ent != id)
-				{
-					glm::vec3& otherEntPos = GetComponent<TransformComponent>(ent)->m_Position;
-					float& otherRadius = GetComponent<CollisionComponent>(ent)->m_Radius;
-
-					
-					if (otherRadius > 0)
-					{
-						// check if distance from mouse to entPosition is less than radius (squared to avoid heavy computation)
-						float distFromCenter = (otherEntPos.x - entPosition.x) * (otherEntPos.x - entPosition.x) +
-							(otherEntPos.y - entPosition.y) * (otherEntPos.y - entPosition.y) +
-							(otherEntPos.z - entPosition.z) * (otherEntPos.z - entPosition.z);
-						float dist = sqrt(distFromCenter);
-						if (dist < (entRadius + otherRadius))
-						{
-							AB_INFO("COLLISION - Dist: {0} | R1: {1} | R2: {2} | R1+R2: {3}",
-								dist, entRadius, otherRadius, entRadius + otherRadius);
-						}
-					}
-				}
-			}
-		}
-	}
 
 	void Scene::Cleanup()
 	{

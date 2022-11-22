@@ -52,10 +52,10 @@ namespace Amba {
 				for (auto& ent : cell.entities)
 				{
 					// get component id for collision and check if entiy has it
-					if (p_Scene->EntHasComponent<CollisionComponent>(ent))
+					if (p_Scene->EntHasComponent<SphereCollider>(ent))
 					{
 						glm::vec3 &entPos = p_Scene->GetComponent<TransformComponent>(ent)->m_Position;
-						float& radius = p_Scene->GetComponent<CollisionComponent>(ent)->m_Radius;
+						float radius = p_Scene->GetComponent<SphereCollider>(ent)->GetRadius();
 
 						// check if distance from mouse to entPosition is less than radius
 						float distFromCenter = (ray.x - entPos.x) * (ray.x - entPos.x) +

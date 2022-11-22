@@ -75,7 +75,7 @@ namespace Amba {
 
             if (entFound)
             {
-                if (/*Amba::Mouse::ButtonWentDown(GLFW_MOUSE_BUTTON_1) ||*/ Amba::KeyBoard::KeyWentDown(GLFW_KEY_P))
+                if (Amba::Mouse::ButtonWentDown(GLFW_MOUSE_BUTTON_1) || Amba::KeyBoard::KeyWentDown(GLFW_KEY_P))
                 {
                     isEntBeingHold = !isEntBeingHold;
                     lastMousePos = m_MousePicker.GetMouseRay();

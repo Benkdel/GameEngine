@@ -4,7 +4,6 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
-
 #define DEFAULT_FOV 45.0f
 
 namespace Amba {

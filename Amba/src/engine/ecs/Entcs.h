@@ -41,9 +41,9 @@ namespace Amba {
 		}
 
 		template<typename T>
-		void AddComponent()
+		T* AddComponent()
 		{
-			p_Scene->AddComponent<T>(m_EntId);
+			return p_Scene->AddComponent<T>(m_EntId);
 		}
 
 		template<typename T>
@@ -66,7 +66,7 @@ namespace Amba {
 			// iterate and get max and mid point se we can set up radius
 			MeshComponent* mesh = GetComponent<MeshComponent>();
 
-			glm::vec3& center = GetComponent<TransformComponent>()->m_Position;
+			glm::vec3 center = GetComponent<TransformComponent>()->m_Position;
 
 			float dist = 0.0f;
 
@@ -79,13 +79,12 @@ namespace Amba {
 			// calculate actual distance, sqroot
 			dist = sqrt(dist);
 
-			//AB_INFO("Sphere radius: {0} ", dist);
+			SphereCollider* collider = GetComponent<SphereCollider>();
 
-			CollisionComponent* collision = GetComponent<CollisionComponent>();
+			collider->SetColliderParameters(dist * SPHERE_COLLIDER_ADJUST, center);
+			//collider->m_Radius = dist * SPHERE_COLLIDER_ADJUST;
 
-			collision->m_Radius = dist * SPHERE_COLLIDER_ADJUST;
-
-			collision = nullptr;
+			collider = nullptr;
 			mesh = nullptr;
 		}
 

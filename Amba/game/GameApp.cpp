@@ -162,30 +162,30 @@ void GameApp::OnUserCreate()
 	layoutTerrain.Push<float>(3);
 	layoutTerrain.Push<float>(3);
 	layoutTerrain.Push<float>(2);
-	ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(terrain)->layout = layoutTerrain;	
+	ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(terrain)->layout = layoutTerrain;
 	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(terrain)->m_Size = 0.033f;
 
 	cube = new Amba::Cube(ResManager::GetScene("exampleScene"));
 	cube->Init();
 	ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(cube->m_EntId)->p_Texture = ResManager::GetTexture("wall");
 
-	cube->AddComponent<CollisionComponent>();
+	cube->AddComponent<SphereCollider>();
 	cube->InitCollider();
 
-	EntityId enemy_1 = ResManager::GetScene("exampleScene")->CopyEntity(cube->m_EntId);
-	EntityId enemy_2 = ResManager::GetScene("exampleScene")->CopyEntity(cube->m_EntId);
-	EntityId enemy_3 = ResManager::GetScene("exampleScene")->CopyEntity(cube->m_EntId);
+	//EntityId enemy_1 = ResManager::GetScene("exampleScene")->CopyEntity(cube->m_EntId);
+	//EntityId enemy_2 = ResManager::GetScene("exampleScene")->CopyEntity(cube->m_EntId);
+	//EntityId enemy_3 = ResManager::GetScene("exampleScene")->CopyEntity(cube->m_EntId);
 
-	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(enemy_1)->m_Position = glm::vec3(45.0f, 4.0f, 25.0f);
-	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(enemy_2)->m_Position = glm::vec3(25.0f, 4.0f,  5.0f);
-	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(enemy_3)->m_Position = glm::vec3(25.0f, 4.0f, 50.0f);
+	//ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(enemy_1)->m_Position = glm::vec3(45.0f, 4.0f, 25.0f);
+	//ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(enemy_2)->m_Position = glm::vec3(25.0f, 4.0f,  5.0f);
+	//ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(enemy_3)->m_Position = glm::vec3(25.0f, 4.0f, 50.0f);
 
 	// delete terrain from entities to avoid rendering for now
-	// ResManager::GetScene("exampleScene")->DestroyEntity(terrain);
+	ResManager::GetScene("exampleScene")->DestroyEntity(terrain);
 
 	Amba::Sphere sphere(ResManager::GetScene("exampleScene"), 2.0f, 36, 18);
 	sphere.Init();
-	sphere.AddComponent<CollisionComponent>();
+	sphere.AddComponent<SphereCollider>();
 	ResManager::GetScene("exampleScene")->GetComponent<MeshComponent>(sphere.m_EntId)->p_Texture = ResManager::GetTexture("wall");
 	sphere.InitCollider();
 	
@@ -195,9 +195,9 @@ void GameApp::OnUserCreate()
 	cube->GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("simpleShader");
 
 	// test basic PBR lighting
-	Amba::Sphere pbrSphere(ResManager::GetScene("exampleScene"), 2.0f, 36, 18);
+	Amba::Sphere pbrSphere(ResManager::GetScene("exampleScene"), 2.0f, 36, 36);
 	pbrSphere.Init();
-	pbrSphere.AddComponent<CollisionComponent>();
+	pbrSphere.AddComponent<SphereCollider>();
 	pbrSphere.InitCollider();
 
 	ResManager::CreateShader("src/engine/res/shaders/pbrVS.glsl", "src/engine/res/shaders/pbrFS.glsl", "pbrLighting");
@@ -207,10 +207,12 @@ void GameApp::OnUserCreate()
 	Amba::Shader* pbrShader = ResManager::GetShader("pbrLighting");
 	
 	pbrShader->Bind();
-	pbrShader->SetUniform3f("u_Albedo", glm::vec3(0.5f, 0.0f, 0.0f));
+	pbrShader->SetUniform3f("u_Albedo", glm::vec3(0.0f, 0.5f, 0.0f));
 	pbrShader->SetUniform1f("u_Ao", 1.0f);
 	pbrShader->SetUniform1f("u_Metallic", 0.4f);
 	pbrShader->SetUniform1f("u_Roughness", 0.25f);
+	pbrShader->SetUniform1i("u_texturedPBR", 0);
+	pbrShader->SetUniform1i("u_NumOfLights", 4);
 
 	glm::vec3 lightPositions[] = {
 		glm::vec3(-10.0f,  10.0f, 10.0f),
@@ -233,6 +235,49 @@ void GameApp::OnUserCreate()
 		pbrShader->SetUniform3f("u_LightColors[" + std::to_string(i) + "]", lightColors[i]);
 	}
 	pbrShader = nullptr;
+
+	Amba::Cube cube2(ResManager::GetScene("exampleScene"));
+	cube2.Init();
+	cube2.GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("pbrLighting");
+	cube2.AddComponent<SphereCollider>();
+	cube2.InitCollider();
+	cube2.GetComponent<TransformComponent>()->m_Position = glm::vec3(0.0f, 0.0f, 18.0f);
+
+	cube->Destroy();
+	sphere.Destroy();
+
+	PhysicsComponent* cube2Physics = cube2.AddComponent<PhysicsComponent>();
+	cube2Physics->m_Mass = 10.0f;
+	cube2Physics->m_Velocity = glm::vec3(0.0f, 0.0f, -1.0f);
+	cube2Physics = nullptr;
+
+	PhysicsComponent* spherePhysics = pbrSphere.AddComponent<PhysicsComponent>();
+	spherePhysics->m_Mass = 10.0f;
+	spherePhysics->m_Velocity = glm::vec3(0.0f, 0.0f, 1.0f);
+	spherePhysics = nullptr;
+
+	// How I envision my gameObject API
+	// I want to create a character
+	/*
+	*   
+	*	(return a reference)
+		GameObject player1 = ResManager::CreateGameObject("player1");
+
+		player1.LoadModel("path"); (will have multiple entities)
+
+		or 
+
+		
+		
+		player1.Getcomponent<MeshComponent>();
+
+		player1.AddMaterial(
+
+	
+	
+	*/
+
+
 }
 
 void GameApp::OnUserUpdate()
@@ -249,15 +294,8 @@ void GameApp::OnUserUpdate()
 	// for debugging
 	//Amba::Renderer::DrawGrid(ResManager::GetScene("exampleScene"), AB_Perspective);
 
-	ResManager::GetScene("exampleScene")->ApplyPhysics(AB_DeltaTime);
+	ResManager::GetScene("exampleScene")->Update(AB_DeltaTime);
 	
-	ResManager::GetScene("exampleScene")->CheckForCollision(cube->m_EntId);
-
-
-
-
-
-
 
 	bool skybox = true;
 

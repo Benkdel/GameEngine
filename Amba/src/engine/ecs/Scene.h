@@ -2,6 +2,8 @@
 
 #include <engine/ecs/ComponentPool.h>
 #include "components.h"
+#include <engine/physics/Collision.h>
+#include <engine/physics/Physics.h>
 
 #include <engine/dataStructures/SpatialHashGrid.h>
 #include <engine/dataTypes.h>
@@ -26,8 +28,21 @@ namespace Amba {
 	public:
 		Scene();
 
-		void ApplyPhysics(float dt);
+		void Update(float dt);
 
+
+	public: // spatial grid methods
+	
+		void AssignEntity(EntityId id, glm::vec3 position);
+		std::vector<Cell> GetNearbyCells(glm::vec3 position);
+		void FindNearEntities(EntityId id);
+
+	public: // entity handling section
+	
+		EntityId CreateEntity();
+		EntityId CopyEntity(EntityId id);
+		void DestroyEntity(EntityId id);
+		
 		template <typename T>
 		bool EntHasComponent(EntityId id)
 		{
@@ -43,26 +58,6 @@ namespace Amba {
 
 			return false;
 		}
-
-	// spatial grid methods
-	public:
-		void AssignEntity(EntityId id);
-		void AssignEntity(EntityId id, glm::vec3 position);
-
-		std::vector<Cell> GetNearbyCells(glm::vec3 position);
-
-		void FindNearEntities(EntityId id);
-
-		void CheckForCollision(EntityId id);
-
-
-	// entity handling section
-	public:
-		EntityId CreateEntity();
-
-		EntityId CopyEntity(EntityId id);
-
-		void DestroyEntity(EntityId id);
 
 		template<typename T>
 		T* AddComponent(EntityId id)
@@ -84,6 +79,16 @@ namespace Amba {
 			m_Entities[GetEntityIndex(id)].mask.set(componentId);
 
 			return newComponent;
+		}
+
+		template <typename T>
+		T* GetComponentWithId(EntityId id, int componentId)
+		{
+			if (!m_Entities[GetEntityIndex(id)].mask.test(componentId))
+				return nullptr;
+
+			T* component = static_cast<T*>(m_ComponentPools[componentId]->get(GetEntityIndex(id)));
+			return component;
 		}
 
 		template<typename T>
@@ -125,6 +130,9 @@ namespace Amba {
 
 
 	};
+
+
+	// helpful Iterator to loop throught entities that have indicated components
 
 	template<typename... ComponentTypes>
 	class SceneView

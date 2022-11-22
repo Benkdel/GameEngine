@@ -1,6 +1,8 @@
 #pragma once
 
 #include <engine/renderer/Mesh.h>
+#include <engine/dataTypes.h>
+
 
 namespace Amba {
 
@@ -12,6 +14,8 @@ namespace Amba {
 		void LoadModel(const std::string& path);
 
 		void Cleanup();
+
+		std::vector<EntityId> m_Entities;
 
 	private:
 		std::vector<Mesh> m_Meshes;

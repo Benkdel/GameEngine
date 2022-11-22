@@ -8,6 +8,8 @@
 
 #include <engine/renderer/Buffers.h>
 
+#include <engine/dataStructures/SpatialHashGrid.h>
+
 #include <vector>
 
 
@@ -22,8 +24,11 @@ public:
 };
 
 
-struct MeshComponent : public Components
+class MeshComponent : public Components
 {
+public:
+	MeshComponent() = default;
+
 	std::vector<Amba::Vertex>	m_Vertices;
 	std::vector<unsigned int>	m_Indices;
 	Amba::Material*				p_Material = nullptr;
@@ -35,31 +40,86 @@ struct MeshComponent : public Components
 };
 
 
-struct TransformComponent : public Components
+class TransformComponent : public Components
 {
+public:
+	TransformComponent() = default;
+
 	glm::vec3 m_Position = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 m_Rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 m_Scale = glm::vec3(1.0f, 1.0f, 1.0f);
+
 	float m_Angle = 90.0f;
 	float m_Size = 1.0f;
 
 	glm::vec3 m_Velocity = glm::vec3(0.0f);
 
-	int m_CurrentCell = -1;
-	int m_IndexInCell = -1;
+	int m_CurrentCell = -1.0f;
+	int m_IndexInCell = -1.0f;
 
 };
 
-struct CollisionComponent : public Components
+// Collider component should be updated if entity changes size
+class ColliderComponent : public Components
 {	
-	// for now. Sphere only
-	float m_Radius = -1.0f;
-	glm::vec3 m_Center = glm::vec3(0.0f);
+public:
+
+	enum
+	{
+		TYPE_SPHERE,
+		TYPE_AAB,
+		TYPE_PLANE,
+		TYPE_SIZE
+	};
+
+	ColliderComponent() = default;
+
+	ColliderComponent(int type)
+	{
+		m_Type = type;
+	};
+	
+	~ColliderComponent() {};
+	
+	virtual void SetColliderParameters() {};
+	
+	virtual IntersectData Intersect(const ColliderComponent& other) const;
+
+	// Use derived classes in physics folder:
+	// * SphereCollider
+	// * AABCollider
+	// * PlaneCollider
+	// * etc
+
+	inline int GetType() const { return m_Type; };
+
+	virtual inline void TransformCollider(TransformComponent* tsr) {};
+
+private:
+	int m_Type;
 
 };
 
-struct AudioComponent : public Components
+
+class PhysicsComponent : public Components
 {
+public:
+	PhysicsComponent() = default;
+
+
+	glm::vec3 m_Velocity = glm::vec3(0.0f);
+	float m_Mass = 0.0f;
+
+private:
+
+
+};
+
+
+class AudioComponent : public Components
+{
+public:
+	AudioComponent() = default;
 
 };
 

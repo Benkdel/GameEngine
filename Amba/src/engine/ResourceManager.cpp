@@ -3,7 +3,7 @@
 using namespace Amba;
 
 // initialice static variables
-std::unordered_map<std::string, Scene*>				ResManager::rm_Scenes;
+std::unordered_map<std::string, Scene*>		ResManager::rm_Scenes;
 std::unordered_map<std::string, Entity>				ResManager::rm_Entities;
 std::unordered_map<std::string, Shader*>			ResManager::rm_Shaders;
 std::unordered_map<std::string, Material*>			ResManager::rm_Materials;
@@ -12,7 +12,7 @@ std::unordered_map<std::string, Model*>				ResManager::rm_Models;
 
 void ResManager::CreateScene(const std::string& name)
 {
-	rm_Scenes.insert(std::pair<std::string, Scene*>(name, new Scene()));
+	rm_Scenes.insert(std::pair<std::string, Scene*>(name, new Amba::Scene()));
 }
 
 void ResManager::CreateEntity(const std::string& name, Scene* scene)
@@ -45,7 +45,7 @@ Scene* ResManager::GetScene(const std::string& name)
 	return rm_Scenes[name];
 }
 
-Amba::Entity& ResManager::GetEntity(const std::string& name)
+Entity& ResManager::GetEntity(const std::string& name)
 {
 	return rm_Entities[name];
 }

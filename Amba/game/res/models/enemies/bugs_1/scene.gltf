@@ -5177,13 +5177,13 @@
   ],
   "images": [
     {
-      "uri": "textures/body_baseColor.jpeg"
+      "uri": "textures/albedo.jpeg"
     },
     {
-      "uri": "textures/body_metallicRoughness.png"
+      "uri": "textures/roughness.png"
     },
     {
-      "uri": "textures/body_normal.png"
+      "uri": "textures/normalMap.png"
     }
   ],
   "materials": [
