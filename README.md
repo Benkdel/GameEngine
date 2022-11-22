@@ -41,7 +41,8 @@ My intention with this project is to write a simple graphics/game engine using O
 
 # Examples
 Testing simple collision resolution
-<iframe width="560" height="315" src="https://www.youtube.com/embed/XUE1GN2Yaz0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+![](https://github.com/Benkdel/GameEngine/blob/main/img/ezgif.com-gif-maker.mp4)
+
 
 
 ### Simple Tree model loaded
