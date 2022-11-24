@@ -13,7 +13,7 @@ namespace Amba {
 	class Camera
 	{
 	public:
-		Camera(glm::vec3 pos = glm::vec3(-25.0f, 8.0f, 2.0f));
+		Camera(glm::vec3 pos = glm::vec3(-10.0f, 8.0f, -2.0f));
 
 		void UpdateCameraDirection(double dx, double dy);
 

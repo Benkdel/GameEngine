@@ -6,21 +6,28 @@
 class SphereCollider : public ColliderComponent
 {
 public:
+
 	SphereCollider();
 
-	void SetColliderParameters(float radius, glm::vec3 center);
+	void InitCollider(MeshComponent* mesh, TransformComponent* tsr);
 
-	IntersectData Intersect(SphereCollider& other) const;
+	// for mouse picker
+	void InitMouseCollider(float radius, glm::vec3 center);
+		
+	IntersectData Intersect(ColliderComponent& other) const;
+	IntersectData IntersectAAB(ColliderComponent& other) const;
+	IntersectData IntersectPlane(ColliderComponent& other) const;
 
 	inline float GetRadius()		const { return m_Radius; };
 	inline glm::vec3 GetCenter()	const { return m_Center; };
 
-	virtual inline void TransformCollider(TransformComponent* tsr) { m_Center = tsr->m_Position; };
+	inline void TransformCollider(TransformComponent* tsr) { m_Center = tsr->m_Position; };
 
 private:
 
 	float m_Radius = -1.0f;
 	glm::vec3 m_Center = glm::vec3(0.0f);
+
 };
 
 
@@ -30,15 +37,20 @@ public:
 
 	AABCollider();
 
-	// to be implemented
-	void SetColliderParameters() {};
+	void InitCollider(MeshComponent* mesh, TransformComponent* tsr);
+	
+	IntersectData Intersect(ColliderComponent& other);
+	IntersectData IntersectPlane(ColliderComponent& other);
+	
+	inline void TransformCollider(TransformComponent* tsr) { m_Center = tsr->m_Position; };
 
-	void CheckForCollision(ColliderComponent& other);
-
-	virtual inline void TransformCollider(TransformComponent* tsr) { m_Center = tsr->m_Position; };
+	inline glm::vec3 GetMinExtents() { return m_MinExtents; };
+	inline glm::vec3 GetMaxExtents() { return m_MaxExtents; };
 
 private:
-
+	glm::vec3 m_MinExtents = glm::vec3(0.0f);
+	glm::vec3 m_MaxExtents = glm::vec3(0.0f);
+	
 	glm::vec3 m_Center = glm::vec3(0.0f);
 
 };
@@ -50,15 +62,24 @@ class PlaneCollider : public ColliderComponent
 public:
 	PlaneCollider();
 
-	// to be implemented
-	void SetColliderParameters() {};
+	PlaneCollider(glm::vec3 normal, float distance);
 
-	void CheckForCollision(ColliderComponent& other);
+	void InitCollider(MeshComponent* mesh, TransformComponent* tsr);
+
+	IntersectData Intersect(ColliderComponent& other);
+
+	PlaneCollider Normalize() const;
 
 	virtual inline void TransformCollider(TransformComponent* tsr) { m_Center = tsr->m_Position; };
 
-private:
+	inline glm::vec3 GetNormal()	{ return m_Normal; };
+	inline float GetDistance()		{ return m_Distance; };
+	inline glm::vec3 GetCenter()	{ return m_Center; };
 
+private:
+	glm::vec3 m_Normal = glm::vec3(0.0f);
+	float m_Distance = 0.0f;
+	
 	glm::vec3 m_Center = glm::vec3(0.0f);
 
 };

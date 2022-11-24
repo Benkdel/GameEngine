@@ -2,6 +2,7 @@
 
 
 #include <engine/io/Keyboard.h>
+#include <engine/io/Mouse.h>
 
 static bool isEntitySelected = false;
 static EntityId selectedEntity;
@@ -68,7 +69,7 @@ namespace Amba {
         // update mouse picker
         m_MousePicker.UpdateMousePos(camera);
 
-        if (Amba::Mouse::isMouseLocked)
+        if (Amba::Mouse::isMouseLocked())
         {
             if (!isEntBeingHold)
                 entHold = m_MousePicker.SelectEntity(camera, entFound);
@@ -186,6 +187,7 @@ namespace Amba {
                 int cell_x = pos.x / cellSize;
                 int cell_z = pos.z / cellSize;
                 
+                ImGui::Text("Entity is in cell: ");
                 ImGui::Text(std::to_string(cell_z * cellSize + cell_x).c_str());
             }
 

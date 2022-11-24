@@ -22,7 +22,6 @@ namespace Amba {
 	private:
 		static IntersectData CheckForCollision(EntityId id, Scene* scene);
 
-
 	};
 
 }

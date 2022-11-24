@@ -39,38 +39,44 @@ namespace Amba {
 
 		glm::vec3 ray = camera.GetCamPos();
 		glm::vec3 step = m_MouseRay * shootDistance;
+
+		// create collider for mouse
+		SphereCollider mouseCollider;
+		mouseCollider.InitMouseCollider(1.0f, ray);
+		TransformComponent tsr;
+
 		// shoot ray from camera into mouse direction
 		while (accumDistance <= maxRayDistance)
 		{
 			ray += step;
+			tsr.m_Position = ray;
+			mouseCollider.TransformCollider(&tsr);
 
 			std::vector<Cell> cellsToCheck = p_Scene->GetNearbyCells(ray);
 
-			// find all entities in cells and change their color (implement this option in shader)
 			for (auto& cell : cellsToCheck)
 			{
 				for (auto& ent : cell.entities)
 				{
-					// get component id for collision and check if entiy has it
-					if (p_Scene->EntHasComponent<SphereCollider>(ent))
+					// checks ------------------------------------------------------------
+					int componentID = GetColliderTypeIndex(ent, p_Scene);
+					if (componentID < 0)
+						continue;
+					ComponentMask entMask = p_Scene->m_Entities[GetEntityIndex(ent)].mask;
+					if (!entMask.test(componentID))
+						continue;
+					// -------------------------------------------------------------------
+
+					ColliderComponent* otherCollider = p_Scene->GetComponentWithId<ColliderComponent>(ent, componentID);
+					IntersectData intersect = mouseCollider.Intersect(*otherCollider);
+
+					if (intersect.GetDoesIntersect())
 					{
-						glm::vec3 &entPos = p_Scene->GetComponent<TransformComponent>(ent)->m_Position;
-						float radius = p_Scene->GetComponent<SphereCollider>(ent)->GetRadius();
-
-						// check if distance from mouse to entPosition is less than radius
-						float distFromCenter = (ray.x - entPos.x) * (ray.x - entPos.x) +
-							(ray.y - entPos.y) * (ray.y - entPos.y) +
-							(ray.z - entPos.z) * (ray.z - entPos.z);
-
-						if (sqrt(distFromCenter) < radius)
-						{
-							found = true;
-							return ent;
-						}					
-					}
+						found = true;
+						return ent;
+					}					
 				}
 			}
-			
 			accumDistance += shootDistance;
 		}
 		return default;

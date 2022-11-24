@@ -22,15 +22,17 @@ class IntersectData
 {
 public:
 
-	IntersectData(const bool doesIntersect, const float distance) :
-		m_DoesIntersect(doesIntersect), m_Distance(distance) {}
+	IntersectData(const bool doesIntersect, const glm::vec3 distance) :
+		m_DoesIntersect(doesIntersect), m_Direction(distance) {}
 
-	inline bool GetDoesIntersect() const { return m_DoesIntersect; };
-	inline float GetDistance() const { return m_Distance; };
+	inline bool GetDoesIntersect()		const { return m_DoesIntersect; };
+	inline float GetDistance()			const { return glm::length(m_Direction); };
+	inline glm::vec3 GetDirection()		const { return m_Direction; };
+
 private:
 
 	const bool m_DoesIntersect = false;
-	const float m_Distance;
+	const glm::vec3 m_Direction = glm::vec3(0.0f);
 };
 
 

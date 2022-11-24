@@ -13,6 +13,7 @@
 #include <vector>
 
 
+
 /* ======================
 	COMPONENTS
 ====================== */
@@ -81,9 +82,11 @@ public:
 	
 	~ColliderComponent() {};
 	
-	virtual void SetColliderParameters() {};
-	
+	virtual void InitCollider(MeshComponent* mesh, TransformComponent* tsr) {};
+
+	// see if later we can implement template functions or dynamic casting
 	virtual IntersectData Intersect(const ColliderComponent& other) const;
+
 
 	// Use derived classes in physics folder:
 	// * SphereCollider

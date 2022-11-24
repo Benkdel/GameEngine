@@ -44,11 +44,10 @@ namespace Amba {
 		if (Amba::Mouse::isMouseLocked())
 			return;
 		
-		// assign entities to spatial grid in scene
-		for (EntityId ent : SceneView<TransformComponent, MeshComponent, SphereCollider>(this))			
+		// assign entities to spatial grid in scene - exclude plane colliders for now
+		for (EntityId ent : SceneView<TransformComponent, MeshComponent>(this))
 			AssignEntity(ent, GetComponent<TransformComponent>(ent)->m_Position);
 		
-
 
 		// Apply physics
 

@@ -2,18 +2,6 @@
 
 #include <engine/ecs/Scene.h>
 
-// to reduced radius a bit
-#define SPHERE_COLLIDER_ADJUST 0.88f
-
-
-static float SquaredDistance(glm::vec3& vec1, glm::vec3& vec2)
-{
-	// not using sqr root for comparison
-	return (vec1.x - vec2.x) * (vec1.x - vec2.x) +
-		(vec1.y - vec2.y) * (vec1.y - vec2.y) +
-		(vec1.z - vec2.z) * (vec1.z - vec2.z);
-}
-
 
 namespace Amba {
 		
@@ -31,7 +19,10 @@ namespace Amba {
 
 		~Entity()
 		{
-			//Destroy();
+			// Im not destroying this because when class goes out of scope I still have
+			// the EntityId types in the scene class
+
+			// Destroy();
 		}
 
 		void Destroy()
@@ -58,39 +49,37 @@ namespace Amba {
 			p_Scene->RemoveComponent(m_EntId);
 		}
 
-		EntityId m_EntId;
-		Scene* p_Scene;
+		inline EntityId GetEntId() { return m_EntId; };
+		inline Scene* GetScene() { return p_Scene; };
 
-		void InitCollider()
+		bool InitCollider()
 		{
-			// iterate and get max and mid point se we can set up radius
+			int componentID = GetColliderTypeIndex(m_EntId, p_Scene);
+
+			if (componentID < 0)
+				return false;
+
+			ComponentMask entMask = p_Scene->m_Entities[GetEntityIndex(m_EntId)].mask;
+
+			if (!entMask.test(componentID))
+				return false;
+
+			ColliderComponent* collider = p_Scene->GetComponentWithId<ColliderComponent>(m_EntId, componentID);
+
 			MeshComponent* mesh = GetComponent<MeshComponent>();
+			TransformComponent* tsr = GetComponent<TransformComponent>();
 
-			glm::vec3 center = GetComponent<TransformComponent>()->m_Position;
-
-			float dist = 0.0f;
-
-			for (auto& vec : mesh->m_Vertices)
-			{
-				float newDist = SquaredDistance(center, vec.v_Position);
-				dist = (newDist > dist) ? newDist : dist;
-			}
-
-			// calculate actual distance, sqroot
-			dist = sqrt(dist);
-
-			SphereCollider* collider = GetComponent<SphereCollider>();
-
-			collider->SetColliderParameters(dist * SPHERE_COLLIDER_ADJUST, center);
-			//collider->m_Radius = dist * SPHERE_COLLIDER_ADJUST;
+			collider->InitCollider(mesh, tsr);
 
 			collider = nullptr;
 			mesh = nullptr;
+			tsr = nullptr;
 		}
 
 	private:
+		EntityId m_EntId;
+		Scene* p_Scene;
 
-		
 	};
 
 }

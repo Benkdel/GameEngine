@@ -28,6 +28,7 @@ namespace Amba {
 		inline glm::vec3 GetMouseRay() { return m_MouseRay; };
 
 
+
 	private:
 		glm::vec3 NormalizeDeviceSpace(glm::vec3 mousePosition);
 		glm::vec4 ClipSpace(glm::vec3 mousePos);

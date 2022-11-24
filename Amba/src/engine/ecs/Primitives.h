@@ -56,8 +56,6 @@ namespace Amba {
 		Primitives(Scene* scene)
 			: Entity(scene) {}
 	
-		Scene* p_Scene;
-	
 		virtual void Init() {};
 
 	private:
@@ -209,6 +207,96 @@ namespace Amba {
 		private:
 			int m_Stacks;
 			int m_Sectors;
+	};
+
+
+	// work in progress
+	class Plane : public Primitives
+	{
+	public:
+		Plane(Scene* scene, glm::vec3 normal, float length, float width)
+			: m_Normal(glm::normalize(normal)), m_Length(length), m_Width(width), Primitives(scene)
+		{
+		}
+
+		void Init()
+		{
+			AddComponent<MeshComponent>();
+			AddComponent<TransformComponent>();
+
+			MeshComponent* mesh = GetComponent<MeshComponent>();
+
+			// rendering a plane using normal
+
+			// (use width and length for x and z, solve for y)
+			float x0 = -m_Length / 2.0f;
+			float x1 = -x0;
+			float z0 = -m_Width / 2.0f;
+			float z1 = -z0;
+
+			glm::vec3 positions[4] = {
+				{x0, 0.0f, z0},
+				{x0, 0.0f, z1},
+				{x1, 0.0f, z1},
+				{x1, 0.0f, z0}
+			};
+
+			glm::vec2 texCoords[4] = {
+				{0.0f, 0.0f},
+				{1.0f, 0.0f},
+				{0.0f, 1.0f},
+				{1.0f, 1.0f}
+			};
+
+			// solve for y values and populate mesh
+			// then we could add the option to have many more vertices, for now just corners
+			int row = 0;
+			int col = 0;
+			int numQuads = 1;
+			int numIterations = numQuads * 4 / 2;
+			
+			for (int i = 0; i < numIterations * 2; i++)
+			{
+				positions[i].y = (m_Normal.x / m_Normal.y * (positions[i].x - x0) -
+					m_Normal.z / m_Normal.y * (positions[i].z - z0) + 0.0f);
+			
+				glm::vec2 texCoords = glm::vec2(0.0f);
+				switch (i % 4)
+				{
+				case 0: break;
+				case 1: texCoords = glm::vec2(1.0f, 0.0f); break;
+				case 2: texCoords = glm::vec2(1.0f, 1.0f); break;
+				case 3: texCoords = glm::vec2(0.0f, 1.0f); break;
+				default: break;
+				}
+
+				mesh->m_Vertices.push_back({ positions[i], m_Normal, texCoords });
+			}
+
+			// only for now:
+
+			mesh->m_Indices.push_back(0);
+			mesh->m_Indices.push_back(1);
+			mesh->m_Indices.push_back(2);
+			mesh->m_Indices.push_back(0);
+			mesh->m_Indices.push_back(2);
+			mesh->m_Indices.push_back(1);
+
+			Amba::VertexBufferLayout layout;
+			layout.Push<float>(3);
+			layout.Push<float>(3);
+			layout.Push<float>(2);
+
+			mesh->layout = layout;
+
+			mesh = nullptr;
+		}
+
+	private:
+		glm::vec3 m_Normal = glm::vec3(0.0f);
+		float m_Length = 0.0f;
+		float m_Width = 0.0f;
+
 	};
 
 }

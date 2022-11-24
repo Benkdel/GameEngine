@@ -14,6 +14,9 @@
 const int MAX_COMPONENTS = 32;
 typedef std::bitset<MAX_COMPONENTS> ComponentMask;
 
+static int GetColliderTypeIndex(EntityId id, Amba::Scene* scene);
+
+
 namespace Amba {
 
 	// entity handlers
@@ -223,4 +226,28 @@ namespace Amba {
 		ComponentMask m_ComponentMask;
 		bool m_All;
 	};
+}
+
+// utils
+static int GetColliderTypeIndex(EntityId id, Amba::Scene* scene)
+{
+	ComponentMask mask = scene->m_Entities[Amba::GetEntityIndex(id)].mask;
+
+	for (int bit = 0; bit < mask.size(); bit++)
+	{
+		if (mask.test(bit))
+		{
+			void* component = scene->m_ComponentPools[bit]->get(Amba::GetEntityIndex(id));
+			SphereCollider* spColl = dynamic_cast<SphereCollider*>((Components*)component);
+			AABCollider* aabColl = dynamic_cast<AABCollider*>((Components*)component);
+			PlaneCollider* planeColl = dynamic_cast<PlaneCollider*>((Components*)component);
+
+			if (spColl != NULL)			return Amba::GetComponentId<SphereCollider>();
+			else if (aabColl != NULL)	return Amba::GetComponentId<AABCollider>();
+			else if (planeColl != NULL)	return Amba::GetComponentId<PlaneCollider>();
+			else;
+		}
+	}
+
+	return -1;
 }
