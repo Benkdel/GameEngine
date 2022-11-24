@@ -40,6 +40,10 @@ My intention with this project is to write a simple graphics/game engine using O
     -   clone repo and execute GenerateProject.bat file, it should work fine
 
 # Examples
+
+### Testing simple collision resolution, skybox and pbr lighting
+<br>![sample ode output (dark)](https://github.com/Benkdel/GameEngine/blob/main/img/ezgif.com-gif-maker.gif)
+
 ### Simple Tree model loaded
 Model created by: aliyeredon (https://sketchfab.com/aliyeredon).
 <br>![sample code output (dark)](https://github.com/Benkdel/Resurge-Gamedev/blob/main/img/GLTFTreeLoader.png)
