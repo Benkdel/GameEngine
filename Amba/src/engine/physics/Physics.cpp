@@ -31,8 +31,8 @@ namespace Amba {
 
 				glm::vec3 overlap = intersect.GetDirection() * 0.5f;
 
-				scene->GetComponent<TransformComponent>(ent)->m_Position += overlap * 0.8f;
-				scene->GetComponent<TransformComponent>(intersect.GetOtherEnt())->m_Position -= overlap * 0.8f;
+				scene->GetComponent<TransformComponent>(ent)->m_Position += overlap;
+				scene->GetComponent<TransformComponent>(intersect.GetOtherEnt())->m_Position -= overlap;
 			}
 		}
 	}

@@ -49,7 +49,6 @@ namespace Amba {
 			AssignEntity(ent);
 		
 		// Apply physics
-
 		Amba::Physics::SolveCollisions(this);
 		Amba::Physics::ApplyMotion(this, dt);
 		
@@ -116,9 +115,9 @@ namespace Amba {
 			int currCell = GetComponent<TransformComponent>(id)->m_CurrentCell;
 			if (currCell > 0)
 			{
-				Cell& cell = m_Spatial2DGrid->m_Cells[currCell];
-				int idx = GetComponent<TransformComponent>(id)->m_IndexInCell;
-				cell.entities.erase(cell.entities.begin() + idx);
+				//Cell& cell = m_Spatial2DGrid->m_Cells[currCell];
+				//int idx = GetComponent<TransformComponent>(id)->m_IndexInCell;
+				//cell.entities.erase(cell.entities.begin() + idx);
 			}
 		}
 
@@ -138,21 +137,29 @@ namespace Amba {
 
 		TransformComponent* tsr = GetComponent<TransformComponent>(id);
 
-		int oldCellIndex = tsr->m_CurrentCell;
-		int newCellIndex = m_Spatial2DGrid->GetCell(tsr->m_Position).GetCellIdx();
+		int oldCellIndex		= tsr->m_CurrentCell;
+		int newCellIndex		= m_Spatial2DGrid->GetCell(tsr->m_Position).GetCellIdx();
+		int oldIndexInCell		= tsr->m_IndexInCell;
 
 		if (oldCellIndex == newCellIndex)
 			return;
 
 		tsr->m_CurrentCell = newCellIndex;
-		tsr->m_IndexInCell = m_Spatial2DGrid->m_Cells[newCellIndex].entities.size() - 1;
 		m_Spatial2DGrid->m_Cells[newCellIndex].entities.push_back(id);
+		tsr->m_IndexInCell = m_Spatial2DGrid->m_Cells[newCellIndex].entities.size() - 1;
 		
+		// delete entity from old cell vector (bookkeeping)
 		if (oldCellIndex >= 0)
 		{
-			// delete entity from old cell vector (bookkeeping)
-			int idx = tsr->m_IndexInCell;
-			m_Spatial2DGrid->m_Cells[oldCellIndex].entities.erase(m_Spatial2DGrid->m_Cells[oldCellIndex].entities.begin() + idx);
+			Cell& oldCell = m_Spatial2DGrid->m_Cells[oldCellIndex];
+			oldCell.entities.
+					erase(oldCell.entities.begin() + oldIndexInCell);
+
+			// for now, move all entities to the right of ent being assigned one position to the left (vector size is reduced)
+			for (size_t i = oldIndexInCell; i < oldCell.entities.size(); i++)
+			{
+				GetComponent<TransformComponent>(oldCell.entities[i])->m_IndexInCell -= 1;
+			}
 		}
 
 		// if entity is out of world map boundaries, destroy it.

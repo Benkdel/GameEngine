@@ -170,9 +170,11 @@ void GameApp::OnUserCreate()
 	terrainPhysics->ToggleEntGravity(false);
 	terrainPhysics = nullptr;
 
+	terrain.Destroy();
+	pbrSphere.Destroy();
 
-	EntityId entities[10];
-	for (int i = 0; i < 10; i++)
+	EntityId entities[3];
+	for (int i = 0; i < 3; i++)
 	{
 		entities[i] = ResManager::GetScene("exampleScene")->CopyEntity(cube.GetEntId());
 		ResManager::GetScene("exampleScene")->
