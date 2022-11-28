@@ -22,17 +22,19 @@ class IntersectData
 {
 public:
 
-	IntersectData(const bool doesIntersect, const glm::vec3 distance) :
-		m_DoesIntersect(doesIntersect), m_Direction(distance) {}
+	IntersectData(const bool doesIntersect, const glm::vec3 distance, const EntityId otherEnt = -1) :
+		m_DoesIntersect(doesIntersect), m_Direction(distance), m_OtherEnt(otherEnt) {}
 
 	inline bool GetDoesIntersect()		const { return m_DoesIntersect; };
 	inline float GetDistance()			const { return glm::length(m_Direction); };
 	inline glm::vec3 GetDirection()		const { return m_Direction; };
+	inline EntityId GetOtherEnt()		const { return m_OtherEnt; };
 
 private:
 
 	const bool m_DoesIntersect = false;
 	const glm::vec3 m_Direction = glm::vec3(0.0f);
+	const EntityId m_OtherEnt = -1;
 };
 
 
@@ -45,6 +47,8 @@ namespace Amba {
 	public:
 		Cell() {};
 
+		Cell(int idx) { m_CellIdx = idx; };
+
 		~Cell() {};
 
 		std::vector<EntityId> entities; // entities in current cell
@@ -55,8 +59,11 @@ namespace Amba {
 		glm::vec3 topRight;
 		glm::vec3 bottomRight;
 		
-		//std::vector<glm::vec3> vertices; // corners of the cell
+		inline int GetCellIdx() { return m_CellIdx; };
 
+	private:
+
+		int m_CellIdx;
 	};
 
 	struct Rotation {

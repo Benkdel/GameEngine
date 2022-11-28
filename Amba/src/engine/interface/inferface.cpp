@@ -20,6 +20,7 @@ glm::vec3 lastMousePos = glm::vec3(0.0f);
 
 int axisSelected = 0; /* 0: x, 1: y, 2: z */
 
+glm::vec3 accumForce = glm::vec3(0.0f);
 
 namespace Amba {
 
@@ -116,7 +117,6 @@ namespace Amba {
             }
         }
 
-
         // runs ImGui interface
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -161,84 +161,50 @@ namespace Amba {
                 if (isEntBeingHold)
                     selectedEntity = entHold;
 
-                ImGui::Text("Drag:");
+                EntityId selEnt2 = selectedEntity >> 32;
+                bool hasEntBeingFreed = std::find(p_CurrentScene->m_FreeEntities.begin(), p_CurrentScene->m_FreeEntities.end(), selEnt2)
+                                        != p_CurrentScene->m_FreeEntities.end();
 
-                ImGui::SliderFloat("Model - Size:", 
-                        &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_Size, 
+                if (IsEntityValid(selectedEntity) && !hasEntBeingFreed)
+                {
+                    ImGui::Text("Drag:");
+
+                    ImGui::SliderFloat("Model - Size:",
+                        &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_Size,
                         0.001f, 100.0f, "%.03f");
 
-                ImGui::SliderFloat3("Model - Position:", 
+                    //AB_INFO("Is entity Valid: {0}", selectedEntity >> 32);
+                    ImGui::SliderFloat3("Model - Position:",
                         &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_Position[0],
                         -50.0f, 50.0f, "%.03f");
 
-                ImGui::Text("Input:");
+                    ImGui::Text("Input:");
 
-                ImGui::InputFloat3("Model - Position: 2",
-                    &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_Position[0], "%.03f");
+                    ImGui::InputFloat3("Model - Position: 2",
+                        &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_Position[0], "%.03f");
 
-                if (ImGui::Button("Duplicate"))
+                    if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_LEFT))
+                        p_CurrentScene->GetComponent<PhysicsComponent>(selectedEntity)->IncreaseForce(glm::vec3(-0.5f, 0.0f, 0.0f));
+                    if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_RIGHT))
+                        p_CurrentScene->GetComponent<PhysicsComponent>(selectedEntity)->IncreaseForce(glm::vec3(0.5f, 0.0f, 0.0f));
+
+                    if (ImGui::Button("Duplicate"))
+                    {
+                        p_CurrentScene->CopyEntity(selectedEntity);
+                    }
+
+                    ImGui::Text("Entity is in cell: ");
+                    ImGui::Text(std::to_string(p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_CurrentCell).c_str());
+                }
+                else
                 {
-                    p_CurrentScene->CopyEntity(selectedEntity);
+                    isEntitySelected = false;
+                    isEntBeingHold = false;
+                    selectedEntity = -1;
                 }
 
-                // temporal
-                glm::vec3& pos = p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_Position;
-                int cellSize = p_CurrentScene->m_Spatial2DGrid.m_CellSize;
-                int cell_x = pos.x / cellSize;
-                int cell_z = pos.z / cellSize;
-                
-                ImGui::Text("Entity is in cell: ");
-                ImGui::Text(std::to_string(cell_z * cellSize + cell_x).c_str());
             }
-
-            ImGui::NewLine();
-            ImGui::Text("Actions");
             
-            if (ImGui::Button("Fly!"))
-            {
-                for (EntityId ent : SceneView<MeshComponent, TransformComponent>(p_CurrentScene))
-                {
-                    float x = (rand() % 10 + 1) - 5;
-                    float y = (rand() % 10 + 1) - 5;
-                    float z = (rand() % 10 + 1) - 5;
-                    p_CurrentScene->GetComponent<TransformComponent>(ent)->m_Velocity = glm::vec3(x, y, z);
-                }
-            }
-
-            if (ImGui::Button("Accelerate"))
-            {
-                glm::vec3 topSpeed = glm::vec3(25.0f);
-                for (EntityId ent : SceneView<MeshComponent, TransformComponent>(p_CurrentScene))
-                {
-                    glm::vec3& velocity = p_CurrentScene->GetComponent<TransformComponent>(ent)->m_Velocity;
-                    velocity += glm::vec3(1.0f);
-                    
-                    if (velocity.x > topSpeed.x)
-                        velocity.x = topSpeed.x;
-                    if (velocity.y > topSpeed.y)
-                        velocity.y = topSpeed.y;
-                    if (velocity.z > topSpeed.z)
-                        velocity.z = topSpeed.z;
-                }
-            }
-
-            if (ImGui::Button("Slow down"))
-            {
-                glm::vec3 minSpeed = glm::vec3(0.0f);
-                for (EntityId ent : SceneView<MeshComponent, TransformComponent>(p_CurrentScene))
-                {
-                    glm::vec3& velocity = p_CurrentScene->GetComponent<TransformComponent>(ent)->m_Velocity;
-                    velocity -= glm::vec3(1.0f);
-
-                    if (velocity.x > minSpeed.x)
-                        velocity.x = minSpeed.x;
-                    if (velocity.y > minSpeed.y)
-                        velocity.y = minSpeed.y;
-                    if (velocity.z > minSpeed.z)
-                        velocity.z = minSpeed.z;
-                }
-            }
-
             ImGui::NewLine();
 
             ImGui::Text("Entity selected:");

@@ -31,12 +31,14 @@ namespace Amba {
 	public:
 		Scene();
 
+		~Scene() { AB_WARN("Scene destructor called!"); };
+
 		void Update(float dt);
 
 
 	public: // spatial grid methods
 	
-		void AssignEntity(EntityId id, glm::vec3 position);
+		void AssignEntity(EntityId id);
 		std::vector<Cell> GetNearbyCells(glm::vec3 position);
 		void FindNearEntities(EntityId id);
 
@@ -125,7 +127,7 @@ namespace Amba {
 		std::vector<EntityIndex> m_FreeEntities;
 		std::vector<ComponentPool*> m_ComponentPools;
 	
-		Spatial2DGrid m_Spatial2DGrid;
+		Spatial2DGrid* m_Spatial2DGrid;
 	
 		void Cleanup();
 

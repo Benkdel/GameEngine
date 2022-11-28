@@ -3,8 +3,9 @@
 #include <vector>
 #include <engine/dataTypes.h>
 
-#define SPATIAL_GRID_SIDELENGTH 600
-#define NUMBER_OF_CELLS 40
+#define SPATIAL_GRID_SIDELENGTH 200
+#define NUMBER_OF_CELLS 10
+#define MAX_HEIGHT 100.0f
 
 /*
 	To simplify the collision algo, the spatial grid will be 2D
@@ -15,6 +16,13 @@
 
 namespace Amba
 {
+
+	struct Boundaries
+	{
+		glm::vec3 min = glm::vec3(0.0f);
+		glm::vec3 max = glm::vec3(0.0f);
+	};
+
 
 	class Spatial2DGrid
 	{
@@ -37,9 +45,14 @@ namespace Amba
 		std::vector<glm::vec3> m_Vertices;
 		std::vector<unsigned int> m_Indices;
 		
-		float m_CellSize;
-	private:
+		bool IsOutsideBoundaries(glm::vec3 position);
 		
+		float inline GetCellSize()	{ return m_CellSize; };
+
+	private:
+		float m_CellSize;
+		glm::vec3 m_InitialCorner = glm::vec3(0.0f);
+		Boundaries m_Boundaries;
 
 	};
 

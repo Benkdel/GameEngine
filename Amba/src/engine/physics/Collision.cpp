@@ -32,7 +32,7 @@ void SphereCollider::InitMouseCollider(float radius, glm::vec3 center)
 	m_Center = center;
 }
 
-IntersectData SphereCollider::Intersect(ColliderComponent& other) const
+IntersectData SphereCollider::Intersect(ColliderComponent& other, EntityId otherEnt) const
 {
 	SphereCollider& _other = (SphereCollider&)other;
 	
@@ -44,10 +44,10 @@ IntersectData SphereCollider::Intersect(ColliderComponent& other) const
 
 	float distance = centerDistance - radiusDistance;
 
-	return IntersectData(distance < 0, direction * distance);
+	return IntersectData(distance < 0, direction * distance, otherEnt);
 }
 
-IntersectData SphereCollider::IntersectAAB(ColliderComponent& other) const
+IntersectData SphereCollider::IntersectAAB(ColliderComponent& other, EntityId otherEnt) const
 {
 	AABCollider& _other = (AABCollider&)other;
 
@@ -55,10 +55,10 @@ IntersectData SphereCollider::IntersectAAB(ColliderComponent& other) const
 
 	//AB_WARN("Collision between Sphere and AAB not yet implemented!");
 
-	return IntersectData(false, glm::vec3(0.0f));
+	return IntersectData(false, glm::vec3(0.0f), otherEnt);
 }
 
-IntersectData SphereCollider::IntersectPlane(ColliderComponent& other) const
+IntersectData SphereCollider::IntersectPlane(ColliderComponent& other, EntityId otherEnt) const
 {
 	PlaneCollider& _other = (PlaneCollider&)other;
 	float distanceFromCenter = glm::dot(_other.GetNormal(), m_Center) + _other.GetDistance();
@@ -66,7 +66,7 @@ IntersectData SphereCollider::IntersectPlane(ColliderComponent& other) const
 
 	float distanceFromSphere = distanceFromCenter - m_Radius;
 
-	return IntersectData(distanceFromSphere < 0, _other.GetNormal() * distanceFromSphere);
+	return IntersectData(distanceFromSphere < 0, _other.GetNormal() * distanceFromSphere, otherEnt);
 }
 
 
@@ -95,7 +95,7 @@ void AABCollider::InitCollider(MeshComponent* mesh, TransformComponent* tsr)
 	m_MaxExtents = max;
 }
 
-IntersectData AABCollider::Intersect(ColliderComponent& other)
+IntersectData AABCollider::Intersect(ColliderComponent& other, EntityId otherEnt)
 {
 	AABCollider& _other = (AABCollider&)other;
 
@@ -107,10 +107,10 @@ IntersectData AABCollider::Intersect(ColliderComponent& other)
 	for (int i = 0; i < 3; i++)
 		maxDistance = (distance[0] > maxDistance) ? distance[0] : maxDistance;
 
-	return IntersectData(maxDistance > 0, distance);
+	return IntersectData(maxDistance > 0, distance, otherEnt);
 }
 
-IntersectData AABCollider::IntersectPlane(ColliderComponent& other)
+IntersectData AABCollider::IntersectPlane(ColliderComponent& other, EntityId otherEnt)
 {
 	// TODO: IMPLEMENT
 	//AB_WARN("Collision between AAB and Plane not yet implemented!");
@@ -147,14 +147,14 @@ PlaneCollider PlaneCollider::Normalize() const
 	return PlaneCollider(m_Normal / magnitude, m_Distance / magnitude);
 }
 
-IntersectData PlaneCollider::Intersect(ColliderComponent& other)
+IntersectData PlaneCollider::Intersect(ColliderComponent& other, EntityId otherEnt)
 {
 	PlaneCollider& _other = (PlaneCollider&)other;
 
 	// TODO: test collision
 	//AB_WARN("Collision between Plane and Plane not yet implemented!");
 
-	return IntersectData(false, glm::vec3(0.0f));
+	return IntersectData(false, glm::vec3(0.0f), otherEnt);
 }
 
 

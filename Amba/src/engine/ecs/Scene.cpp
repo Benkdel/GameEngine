@@ -35,7 +35,7 @@ namespace Amba {
 
 	Scene::Scene()
 	{
-		m_Spatial2DGrid = Spatial2DGrid(true);
+		m_Spatial2DGrid = new Spatial2DGrid(false);
 	}
 
 	void Scene::Update(float dt)
@@ -46,9 +46,8 @@ namespace Amba {
 		
 		// assign entities to spatial grid in scene - exclude plane colliders for now
 		for (EntityId ent : SceneView<TransformComponent, MeshComponent>(this))
-			AssignEntity(ent, GetComponent<TransformComponent>(ent)->m_Position);
+			AssignEntity(ent);
 		
-
 		// Apply physics
 
 		Amba::Physics::SolveCollisions(this);
@@ -111,57 +110,64 @@ namespace Amba {
 
 	void Scene::DestroyEntity(EntityId id)
 	{
-		EntityId newId = CreateEntityId((EntityIndex)-1, GetEntityVersion(id) + 1);
-		EntityIndex oldIdx = GetEntityIndex(id);
-
-		m_Entities[oldIdx].id = newId;
-		m_Entities[oldIdx].mask.reset();
-		m_FreeEntities.push_back(oldIdx);
-
 		// remove entity from assigned cell
 		if (EntHasComponent<TransformComponent>(id))
 		{
 			int currCell = GetComponent<TransformComponent>(id)->m_CurrentCell;
 			if (currCell > 0)
 			{
-				Cell& cell = m_Spatial2DGrid.m_Cells[currCell];
+				Cell& cell = m_Spatial2DGrid->m_Cells[currCell];
 				int idx = GetComponent<TransformComponent>(id)->m_IndexInCell;
 				cell.entities.erase(cell.entities.begin() + idx);
 			}
 		}
+
+		// make entity invalid (-1) and save old id in free entities so we can use it later
+		EntityId newId = CreateEntityId((EntityIndex)-1, GetEntityVersion(id) + 1);
+		EntityIndex oldIdx = GetEntityIndex(id);
+
+		m_Entities[oldIdx].id = newId;
+		m_Entities[oldIdx].mask.reset();
+		m_FreeEntities.push_back(oldIdx);
 	}
 	
-	void Scene::AssignEntity(EntityId id, glm::vec3 position)
+	void Scene::AssignEntity(EntityId id)
 	{
+		if (!IsEntityValid(id))
+			return;
+
 		TransformComponent* tsr = GetComponent<TransformComponent>(id);
-		
+
 		int oldCellIndex = tsr->m_CurrentCell;
-		
-		int cell_x = position.x / m_Spatial2DGrid.m_CellSize;
-		int cell_z = position.z / m_Spatial2DGrid.m_CellSize;
-		int newCellIndex = cell_z * m_Spatial2DGrid.m_CellSize + cell_x;
+		int newCellIndex = m_Spatial2DGrid->GetCell(tsr->m_Position).GetCellIdx();
 
 		if (oldCellIndex == newCellIndex)
 			return;
 
+		tsr->m_CurrentCell = newCellIndex;
+		tsr->m_IndexInCell = m_Spatial2DGrid->m_Cells[newCellIndex].entities.size() - 1;
+		m_Spatial2DGrid->m_Cells[newCellIndex].entities.push_back(id);
+		
 		if (oldCellIndex >= 0)
 		{
 			// delete entity from old cell vector (bookkeeping)
 			int idx = tsr->m_IndexInCell;
-			m_Spatial2DGrid.m_Cells[oldCellIndex].entities.erase(m_Spatial2DGrid.m_Cells[oldCellIndex].entities.begin() + idx);
+			m_Spatial2DGrid->m_Cells[oldCellIndex].entities.erase(m_Spatial2DGrid->m_Cells[oldCellIndex].entities.begin() + idx);
 		}
 
-		tsr->m_CurrentCell = newCellIndex;
-		tsr->m_IndexInCell = (int)m_Spatial2DGrid.GetCell(position).entities.size();
+		// if entity is out of world map boundaries, destroy it.
+		if (m_Spatial2DGrid->IsOutsideBoundaries(tsr->m_Position))
+		{
+			DestroyEntity(id);
+			return;
+		}
 
-		m_Spatial2DGrid.GetCell(position).entities.push_back(id);
-	
 		tsr = nullptr;
 	}
 
 	std::vector<Cell> Scene::GetNearbyCells(glm::vec3 position)
 	{
-		Cell& cell = m_Spatial2DGrid.GetCell(position);
+		Cell& cell = m_Spatial2DGrid->GetCell(position);
 
 		std::vector<Cell> cellsToCheck;
 
@@ -180,11 +186,11 @@ namespace Amba {
 		bool TR = position.z + tempSize < cell.topLeft.z;
 
 		if (!BL)
-			cellsToCheck.push_back(m_Spatial2DGrid.GetCell(position - glm::vec3(tempSize, 0.0f, 0.0f)));
+			cellsToCheck.push_back(m_Spatial2DGrid->GetCell(position - glm::vec3(tempSize, 0.0f, 0.0f)));
 		if (!BR)
-			cellsToCheck.push_back(m_Spatial2DGrid.GetCell(position + glm::vec3(tempSize, 0.0f, 0.0f)));
+			cellsToCheck.push_back(m_Spatial2DGrid->GetCell(position + glm::vec3(tempSize, 0.0f, 0.0f)));
 		if (!TL)
-			cellsToCheck.push_back(m_Spatial2DGrid.GetCell(position - glm::vec3(0.0f, 0.0f, tempSize)));
+			cellsToCheck.push_back(m_Spatial2DGrid->GetCell(position - glm::vec3(0.0f, 0.0f, tempSize)));
 
 		return cellsToCheck;
 	}

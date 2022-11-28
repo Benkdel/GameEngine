@@ -96,7 +96,7 @@ namespace Amba {
 			AB_TimeElapsed = glfwGetTime();
 			AB_DeltaTime = AB_TimeElapsed - lastTime;
 			lastTime = AB_TimeElapsed;
-		
+
 			AB_Perspective = glm::perspective(glm::radians(AB_Cameras[AB_ActiveCamera].GetZoom()), (float)m_ScrWidth / (float)m_ScrHeight, NEAR_PLANE, FAR_PLANE);
 
 			// method used by user

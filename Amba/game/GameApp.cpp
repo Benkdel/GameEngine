@@ -110,7 +110,7 @@ void GameApp::OnUserCreate()
 	pbrSphere.Init();
 	pbrSphere.AddComponent<SphereCollider>();
 	pbrSphere.InitCollider();
-	pbrSphere.GetComponent<TransformComponent>()->m_Position = glm::vec3(0.0f, 10.0f, 0.0f);
+	pbrSphere.GetComponent<TransformComponent>()->m_Position = glm::vec3(10.0f, 10.0f, 20.0f);
 
 	pbrSphere.GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("pbrLighting");
 
@@ -152,23 +152,33 @@ void GameApp::OnUserCreate()
 	cube.GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("pbrLighting");
 	cube.AddComponent<SphereCollider>();
 	cube.InitCollider();
-	cube.GetComponent<TransformComponent>()->m_Position = glm::vec3(0.0f, 10.0f, 18.0f);
+	cube.GetComponent<TransformComponent>()->m_Position = glm::vec3(10.0f, 10.0f, 10.0f);
 	 
-	PhysicsComponent* cube2Physics = cube.AddComponent<PhysicsComponent>();
-	cube2Physics->m_Mass = 10.0f;
-	cube2Physics->m_Velocity = glm::vec3(0.0f, 0.0f, -1.0f);
-	cube2Physics = nullptr;
+	PhysicsComponent* cubePhysics = cube.AddComponent<PhysicsComponent>();
+	cubePhysics->m_Mass = 100.0f;
+	cubePhysics->ApplyForce(glm::vec3(0.0f, 0.0f, 0.0f));
+	cubePhysics = nullptr;
 
 	PhysicsComponent* spherePhysics = pbrSphere.AddComponent<PhysicsComponent>();
-	spherePhysics->m_Mass = 10.0f;
-	spherePhysics->m_Velocity = glm::vec3(0.0f, -1.0f, 0.0f);
+	spherePhysics->m_Mass = 100.0f;
+	spherePhysics->ApplyForce(glm::vec3(0.0f, 0.0f, 0.0f));
 	spherePhysics = nullptr;
 
 	// fow now. add physics component to plane
 	PhysicsComponent* terrainPhysics = terrain.AddComponent<PhysicsComponent>();
-	terrainPhysics->m_Mass = 10.0f;
-	terrainPhysics->m_Velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+	terrainPhysics->m_Mass = 1000000000.0f;
+	terrainPhysics->ToggleEntGravity(false);
 	terrainPhysics = nullptr;
+
+
+	EntityId entities[10];
+	for (int i = 0; i < 10; i++)
+	{
+		entities[i] = ResManager::GetScene("exampleScene")->CopyEntity(cube.GetEntId());
+		ResManager::GetScene("exampleScene")->
+					GetComponent<TransformComponent>(entities[i])->m_Position = 
+																		glm::vec3(5.0f * (float)i, 10.0f, 10.0f * (float)(i / 5));
+	}
 
 	// How I envision my gameObject API
 	// I want to create a character

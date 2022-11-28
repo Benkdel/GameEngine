@@ -85,7 +85,7 @@ public:
 	virtual void InitCollider(MeshComponent* mesh, TransformComponent* tsr) {};
 
 	// see if later we can implement template functions or dynamic casting
-	virtual IntersectData Intersect(const ColliderComponent& other) const;
+	virtual IntersectData Intersect(const ColliderComponent& other, EntityId otherEnt = -1) const;
 
 
 	// Use derived classes in physics folder:
@@ -109,12 +109,30 @@ class PhysicsComponent : public Components
 public:
 	PhysicsComponent() = default;
 
+	void Integrate(MeshComponent* mesh, TransformComponent* tsr, float dt);
+	void CalculateNetForce(glm::vec3 collisionForces = glm::vec3(0.0f));
 
-	glm::vec3 m_Velocity = glm::vec3(0.0f);
+	void inline ApplyForce(glm::vec3 force)			{ m_AppliedForce = force; };
+	void inline IncreaseForce(glm::vec3 force) { m_AppliedForce += force; };
+
+	glm::vec3 inline GetForce()				{ return m_AppliedForce; };
+	
 	float m_Mass = 0.0f;
+
+	inline glm::vec3 GetVelocity()			{ return m_Velocity; };
+	inline bool GetEntGravityStatus()		{ return m_EntGravityActive; };
+
+	inline void ToggleEntGravity(bool isActive) { m_EntGravityActive = isActive; };
 
 private:
 
+	glm::vec3 m_Velocity			= glm::vec3(0.0f);
+	glm::vec3 m_NetForce			= glm::vec3(0.0f);
+	glm::vec3 m_AppliedForce		= glm::vec3(0.0f);
+
+	
+	bool m_EntGravityActive = true;
+	
 
 };
 

@@ -37,7 +37,7 @@ namespace Amba {
 
 		shader.SetUniform4f("u_Color", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
-		Spatial2DGrid& grid = scene->m_Spatial2DGrid;
+		Spatial2DGrid grid = *scene->m_Spatial2DGrid;
 
 		Amba::VertexArray va;
 		Amba::VertexBuffer vbo(&grid.m_Vertices[0], (unsigned int)grid.m_Vertices.size() * sizeof(glm::vec3));

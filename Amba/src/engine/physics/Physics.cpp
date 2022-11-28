@@ -5,35 +5,34 @@
 
 namespace Amba {
 
-	float Physics::m_Gravity = 9.8f;
+	glm::vec3 Physics::m_Gravity = glm::vec3(0.0f, -9.8f, 0.0f);
+	bool Physics::m_IsGravityOn = false;
 
 	void Physics::ApplyMotion(Scene* scene, float dt)
 	{
 		for (EntityId ent : SceneView<TransformComponent, PhysicsComponent>(scene))
 		{
-			TransformComponent* tsr = scene->GetComponent<TransformComponent>(ent);
-			PhysicsComponent* physics = scene->GetComponent<PhysicsComponent>(ent);
-
-			tsr->m_Position += physics->m_Velocity * dt;
+			scene->GetComponent<PhysicsComponent>(ent)
+						->Integrate(scene->GetComponent<MeshComponent>(ent),
+									scene->GetComponent<TransformComponent>(ent), dt);
 		}
 	}
-
 
 	void Physics::SolveCollisions(Scene* scene)
 	{
 		for (EntityId ent : SceneView<TransformComponent, MeshComponent>(scene))
 		{
-			// check 
+			// check
 			IntersectData intersect = CheckForCollision(ent, scene);
 			
 			if (intersect.GetDoesIntersect())
 			{
-				AB_INFO("COLLISION - Entity: {0} || Dist: {1} ", ent, intersect.GetDistance());
+				//AB_INFO("COLLISION - Entity: {0} || Dist: {1} ", ent, intersect.GetDistance());
 
-				glm::vec3 direction = glm::normalize(intersect.GetDirection());
+				glm::vec3 overlap = intersect.GetDirection() * 0.5f;
 
-				scene->GetComponent<PhysicsComponent>(ent)->m_Velocity = glm::reflect(
-					scene->GetComponent<PhysicsComponent>(ent)->m_Velocity, direction);
+				scene->GetComponent<TransformComponent>(ent)->m_Position += overlap * 0.8f;
+				scene->GetComponent<TransformComponent>(intersect.GetOtherEnt())->m_Position -= overlap * 0.8f;
 			}
 		}
 	}
@@ -51,7 +50,7 @@ namespace Amba {
 			return IntersectData(false, glm::vec3(0.0f));
 
 		TransformComponent* tsr = scene->GetComponent<TransformComponent>(id);
-		Cell& cell = scene->m_Spatial2DGrid.GetCell(tsr->m_Position);
+		Cell& cell = scene->m_Spatial2DGrid->GetCell(tsr->m_Position);
 		ColliderComponent* collider = scene->GetComponentWithId<ColliderComponent>(id, componentID);
 
 		// update collider position (center)
@@ -68,7 +67,7 @@ namespace Amba {
 				if (otherMask.test(componentID))
 				{
 					ColliderComponent* otherCollider = scene->GetComponentWithId<ColliderComponent>(other, componentID);
-					IntersectData intersect = collider->Intersect(*otherCollider);
+					IntersectData intersect = collider->Intersect(*otherCollider, other);
 
 					if (intersect.GetDoesIntersect())
 					{
@@ -82,7 +81,7 @@ namespace Amba {
 		for (EntityId plane : SceneView<PlaneCollider>(scene))
 		{
 			PlaneCollider* otherCollider = scene->GetComponent<PlaneCollider>(plane);
-			IntersectData intersect = collider->Intersect(*otherCollider);
+			IntersectData intersect = collider->Intersect(*otherCollider, plane);
 
 			if (intersect.GetDoesIntersect())
 			{

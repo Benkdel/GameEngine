@@ -68,7 +68,7 @@ namespace Amba {
 					// -------------------------------------------------------------------
 
 					ColliderComponent* otherCollider = p_Scene->GetComponentWithId<ColliderComponent>(ent, componentID);
-					IntersectData intersect = mouseCollider.Intersect(*otherCollider);
+					IntersectData intersect = mouseCollider.Intersect(*otherCollider, -1);
 
 					if (intersect.GetDoesIntersect())
 					{

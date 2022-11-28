@@ -14,9 +14,9 @@ public:
 	// for mouse picker
 	void InitMouseCollider(float radius, glm::vec3 center);
 		
-	IntersectData Intersect(ColliderComponent& other) const;
-	IntersectData IntersectAAB(ColliderComponent& other) const;
-	IntersectData IntersectPlane(ColliderComponent& other) const;
+	IntersectData Intersect(ColliderComponent& other, EntityId otherEnt) const;
+	IntersectData IntersectAAB(ColliderComponent& other, EntityId otherEnt) const;
+	IntersectData IntersectPlane(ColliderComponent& other, EntityId otherEnt) const;
 
 	inline float GetRadius()		const { return m_Radius; };
 	inline glm::vec3 GetCenter()	const { return m_Center; };
@@ -39,8 +39,8 @@ public:
 
 	void InitCollider(MeshComponent* mesh, TransformComponent* tsr);
 	
-	IntersectData Intersect(ColliderComponent& other);
-	IntersectData IntersectPlane(ColliderComponent& other);
+	IntersectData Intersect(ColliderComponent& other, EntityId otherEnt);
+	IntersectData IntersectPlane(ColliderComponent& other, EntityId otherEnt);
 	
 	inline void TransformCollider(TransformComponent* tsr) { m_Center = tsr->m_Position; };
 
@@ -66,7 +66,7 @@ public:
 
 	void InitCollider(MeshComponent* mesh, TransformComponent* tsr);
 
-	IntersectData Intersect(ColliderComponent& other);
+	IntersectData Intersect(ColliderComponent& other, EntityId otherEnt);
 
 	PlaneCollider Normalize() const;
 
