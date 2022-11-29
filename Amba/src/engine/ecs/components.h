@@ -112,8 +112,10 @@ public:
 	void Integrate(MeshComponent* mesh, TransformComponent* tsr, float dt);
 	void CalculateNetForce(glm::vec3 collisionForces = glm::vec3(0.0f));
 
+	void SolveCollision(float impulse, glm::vec3 normal);
+
 	void inline ApplyForce(glm::vec3 force)			{ m_AppliedForce = force; };
-	void inline IncreaseForce(glm::vec3 force) { m_AppliedForce += force; };
+	void inline IncreaseForce(glm::vec3 force)		{ m_AppliedForce += force; };
 
 	glm::vec3 inline GetForce()				{ return m_AppliedForce; };
 	

@@ -125,11 +125,19 @@ void PhysicsComponent::Integrate(MeshComponent* mesh, TransformComponent* tsr, f
 
 	glm::vec3 acceleration = glm::vec3(0.0f);
 
-	acceleration += m_Mass * m_NetForce;
+	acceleration += m_NetForce / m_Mass;
 
-	m_Velocity += acceleration / m_Mass * dt;
+	m_Velocity += acceleration;
 	tsr->m_Position += m_Velocity * dt;
 	
 	m_NetForce = glm::vec3(0.0f);
+}
+
+void PhysicsComponent::SolveCollision(float impulse, glm::vec3 normal)
+{
+	m_Velocity = m_Velocity + (impulse / m_Mass) * normal;
+
+	// reset applied force to 0 after collision
+	m_AppliedForce = glm::vec3(0.0f);
 }
 

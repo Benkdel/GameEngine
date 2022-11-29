@@ -28,11 +28,42 @@ namespace Amba {
 			if (intersect.GetDoesIntersect())
 			{
 				AB_INFO("COLLISION - Entity: {0} || Dist: {1} ", ent, intersect.GetDistance());
+				AB_INFO("DIRECTION: {0}, {1}, {2}", intersect.GetDirection().x, intersect.GetDirection().y, 
+					intersect.GetDirection().z);
 
-				glm::vec3 overlap = intersect.GetDirection() * 0.5f;
+				//glm::vec3 overlap = intersect.GetDirection() * 0.5f;
 
-				scene->GetComponent<TransformComponent>(ent)->m_Position += overlap;
-				scene->GetComponent<TransformComponent>(intersect.GetOtherEnt())->m_Position -= overlap;
+				//scene->GetComponent<TransformComponent>(ent)->m_Position += overlap;
+				//scene->GetComponent<TransformComponent>(intersect.GetOtherEnt())->m_Position -= overlap;
+			
+				// lets try momentum equations
+				// momentum is conserved assuming there is no friction
+				// elastic collision
+				
+				glm::vec3 entV0 = scene->GetComponent<PhysicsComponent>(ent)->GetVelocity();
+				glm::vec3 otherEntV0 = scene->GetComponent<PhysicsComponent>(intersect.GetOtherEnt())->GetVelocity();
+			
+				float entMass = scene->GetComponent<PhysicsComponent>(ent)->m_Mass;
+				float otherEntMass = scene->GetComponent<PhysicsComponent>(intersect.GetOtherEnt())->m_Mass;
+
+				glm::vec3 relVelocity = entV0 - otherEntV0;
+
+				// I know objects will collide in X and normal vector pointing to ent is x negative
+				// implement getting real normal from IntersectData
+				glm::vec3 normal = glm::vec3(-1.0f, 0.0f, 0.0f);//glm::normalize(intersect.GetDirection());
+
+				float e = 1.0f; // 100% elastic
+
+				float numerator		= glm::dot(- 1 * (1 + e) * relVelocity, normal);
+				float denominator	= glm::dot(normal, normal * (1 / entMass + 1 / otherEntMass)); // 1 instead of dot normal normal, because is the same when unit length?
+
+				float impulse = numerator / denominator;
+
+				AB_INFO("Impulse: {0}", impulse);
+
+				scene->GetComponent<PhysicsComponent>(ent)->SolveCollision(impulse, normal);
+				scene->GetComponent<PhysicsComponent>(intersect.GetOtherEnt())->SolveCollision(-impulse, normal);
+			
 			}
 		}
 	}
