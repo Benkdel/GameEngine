@@ -51,11 +51,13 @@ IntersectData SphereCollider::IntersectAAB(ColliderComponent& other, EntityId ot
 {
 	AABCollider& _other = (AABCollider&)other;
 
-	// TODO: test collision
+	glm::vec3 distance1 = _other.GetMinExtents() - m_Center;
+	glm::vec3 distance2 = m_Center - _other.GetMaxExtents();
+	glm::vec3 direction = glm::max(distance1, distance2);
 
-	//AB_WARN("Collision between Sphere and AAB not yet implemented!");
-
-	return IntersectData(false, glm::vec3(0.0f), otherEnt);
+	float distance = glm::length(direction);
+	
+	return IntersectData(distance < m_Radius, direction, otherEnt);
 }
 
 IntersectData SphereCollider::IntersectPlane(ColliderComponent& other, EntityId otherEnt) const
@@ -87,8 +89,19 @@ void AABCollider::InitCollider(MeshComponent* mesh, TransformComponent* tsr)
 
 	for (auto& vec : mesh->m_Vertices)
 	{
-		min = (glm::distance(min, vec.v_Position) > 0) ? vec.v_Position : min;
-		max = (glm::distance(max, vec.v_Position) < 0) ? vec.v_Position : max;
+		// transform vertex
+		glm::mat4 matrix = glm::mat4(1.0f);
+		matrix = glm::translate(matrix, m_Center);
+		matrix = glm::scale(matrix, glm::vec3(tsr->m_Size));
+		glm::vec4 v4 = matrix * glm::vec4(vec.v_Position, 1.0f);
+
+		glm::vec3 tsrVertexPosition = glm::vec3(v4.x, v4.y, v4.z);
+
+		float dist1 = (min.x - tsrVertexPosition.x + min.y - tsrVertexPosition.y + min.z - tsrVertexPosition.z);
+		float dist2 = (max.x - tsrVertexPosition.x + max.y - tsrVertexPosition.y + max.z - tsrVertexPosition.z);
+
+		min = (dist1 > 0) ? tsrVertexPosition : min;
+		max = (dist2 < 0) ? tsrVertexPosition : max;
 	}
 
 	m_MinExtents = min;
@@ -101,13 +114,13 @@ IntersectData AABCollider::Intersect(ColliderComponent& other, EntityId otherEnt
 
 	glm::vec3 distance1 = _other.GetMinExtents() - m_MaxExtents;
 	glm::vec3 distance2 = m_MinExtents - _other.GetMaxExtents();
-	glm::vec3 distance = glm::max(distance1, distance2);
+	glm::vec3 direction = glm::max(distance1, distance2);
 
-	float maxDistance = 0.0f;
+	float maxDistance = direction.x;
 	for (int i = 0; i < 3; i++)
-		maxDistance = (distance[0] > maxDistance) ? distance[0] : maxDistance;
+		maxDistance = (direction[i] > maxDistance) ? direction[i] : maxDistance;
 
-	return IntersectData(maxDistance > 0, distance, otherEnt);
+	return IntersectData(maxDistance < 0, direction, otherEnt);
 }
 
 IntersectData AABCollider::IntersectPlane(ColliderComponent& other, EntityId otherEnt)

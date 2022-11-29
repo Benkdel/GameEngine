@@ -27,7 +27,7 @@ namespace Amba {
 			
 			if (intersect.GetDoesIntersect())
 			{
-				//AB_INFO("COLLISION - Entity: {0} || Dist: {1} ", ent, intersect.GetDistance());
+				AB_INFO("COLLISION - Entity: {0} || Dist: {1} ", ent, intersect.GetDistance());
 
 				glm::vec3 overlap = intersect.GetDirection() * 0.5f;
 

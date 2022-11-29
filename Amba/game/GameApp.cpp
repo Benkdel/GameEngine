@@ -150,7 +150,7 @@ void GameApp::OnUserCreate()
 	Amba::Cube cube(ResManager::GetScene("exampleScene"));
 	cube.Init();
 	cube.GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("pbrLighting");
-	cube.AddComponent<SphereCollider>();
+	cube.AddComponent<AABCollider>();
 	cube.InitCollider();
 	cube.GetComponent<TransformComponent>()->m_Position = glm::vec3(10.0f, 10.0f, 10.0f);
 	 
@@ -173,14 +173,20 @@ void GameApp::OnUserCreate()
 	terrain.Destroy();
 	pbrSphere.Destroy();
 
-	EntityId entities[3];
-	for (int i = 0; i < 3; i++)
+	EntityId copy = ResManager::GetScene("exampleScene")->CopyEntity(cube.GetEntId());
+	ResManager::GetScene("exampleScene")->
+		GetComponent<TransformComponent>(copy)->m_Position +=
+		glm::vec3(15.0f, 0.0f, 0.0f);
+
+
+	/*EntityId entities[10];
+	for (int i = 0; i < 10; i++)
 	{
 		entities[i] = ResManager::GetScene("exampleScene")->CopyEntity(cube.GetEntId());
 		ResManager::GetScene("exampleScene")->
 					GetComponent<TransformComponent>(entities[i])->m_Position = 
 																		glm::vec3(5.0f * (float)i, 10.0f, 10.0f * (float)(i / 5));
-	}
+	}*/
 
 	// How I envision my gameObject API
 	// I want to create a character

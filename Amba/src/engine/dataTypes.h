@@ -22,8 +22,8 @@ class IntersectData
 {
 public:
 
-	IntersectData(const bool doesIntersect, const glm::vec3 distance, const EntityId otherEnt = -1) :
-		m_DoesIntersect(doesIntersect), m_Direction(distance), m_OtherEnt(otherEnt) {}
+	IntersectData(const bool doesIntersect, const glm::vec3 direction, const EntityId otherEnt = -1) :
+		m_DoesIntersect(doesIntersect), m_Direction(direction), m_OtherEnt(otherEnt) {}
 
 	inline bool GetDoesIntersect()		const { return m_DoesIntersect; };
 	inline float GetDistance()			const { return glm::length(m_Direction); };

@@ -35,7 +35,7 @@ namespace Amba {
 		float accumDistance = 0.0f;
 		float maxRayDistance = 600.0f;
 
-		EntityId default = 0;
+		EntityId default = -1;
 
 		glm::vec3 ray = camera.GetCamPos();
 		glm::vec3 step = m_MouseRay * shootDistance;
@@ -68,13 +68,22 @@ namespace Amba {
 					// -------------------------------------------------------------------
 
 					ColliderComponent* otherCollider = p_Scene->GetComponentWithId<ColliderComponent>(ent, componentID);
-					IntersectData intersect = mouseCollider.Intersect(*otherCollider, -1);
+					
+					IntersectData* intersect;
 
-					if (intersect.GetDoesIntersect())
+					if (otherCollider->GetType() == ColliderComponent::TYPE_SPHERE)
+						intersect = new IntersectData(mouseCollider.Intersect(*otherCollider, -1));
+					else if (otherCollider->GetType() == ColliderComponent::TYPE_AAB)
+						intersect = new IntersectData(mouseCollider.IntersectAAB(*otherCollider, -1));
+					else
+						intersect = new IntersectData(mouseCollider.IntersectPlane(*otherCollider, -1));
+
+					if (intersect->GetDoesIntersect())
 					{
 						found = true;
+						intersect = nullptr;
 						return ent;
-					}					
+					}
 				}
 			}
 			accumDistance += shootDistance;
@@ -114,7 +123,7 @@ namespace Amba {
 	{
 		glm::mat4 InvertedViewMatrix = glm::inverse(camera.GetViewMatrix());
 		glm::vec4 transformed = InvertedViewMatrix * mousePos;
-		glm::vec3 mouseRay = glm::vec3(transformed.x, transformed.y, transformed.z);;
+		glm::vec3 mouseRay = glm::vec3(transformed.x, transformed.y, transformed.z);
 		mouseRay = glm::normalize(mouseRay);
 
 		return mouseRay;

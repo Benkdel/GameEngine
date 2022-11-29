@@ -75,7 +75,7 @@ namespace Amba {
             if (!isEntBeingHold)
                 entHold = m_MousePicker.SelectEntity(camera, entFound);
 
-            if (entFound)
+            if (entFound && IsEntityValid(entHold))
             {
                 if (Amba::Mouse::ButtonWentDown(GLFW_MOUSE_BUTTON_1) || Amba::KeyBoard::KeyWentDown(GLFW_KEY_P))
                 {
@@ -156,7 +156,7 @@ namespace Amba {
             }
             ImGui::EndListBox();
 
-            if (isEntitySelected || isEntBeingHold)
+            if ((isEntitySelected || isEntBeingHold) && IsEntityValid(selectedEntity))
             {
                 if (isEntBeingHold)
                     selectedEntity = entHold;
@@ -209,7 +209,15 @@ namespace Amba {
 
             ImGui::Text("Entity selected:");
             ImGui::NextColumn();
-            ImGui::Text(std::to_string(entHold).c_str());
+            if (IsEntityValid(entHold))
+            {
+                ImGui::Text(std::to_string(entHold).c_str());
+            }
+            else
+            {
+                ImGui::Text("No entity");
+            }
+
             ImGui::NewLine();
             std::string s = (isEntBeingHold) ? "Entity is being holded" : "No entity is being holded";
             ImGui::Text(s.c_str());

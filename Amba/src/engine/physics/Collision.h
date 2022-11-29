@@ -42,7 +42,10 @@ public:
 	IntersectData Intersect(ColliderComponent& other, EntityId otherEnt);
 	IntersectData IntersectPlane(ColliderComponent& other, EntityId otherEnt);
 	
-	inline void TransformCollider(TransformComponent* tsr) { m_Center = tsr->m_Position; };
+	void TransformCollider(TransformComponent* tsr) 
+	{ 
+		UpdateCollisionVertex(tsr);
+	};
 
 	inline glm::vec3 GetMinExtents() { return m_MinExtents; };
 	inline glm::vec3 GetMaxExtents() { return m_MaxExtents; };
@@ -52,6 +55,19 @@ private:
 	glm::vec3 m_MaxExtents = glm::vec3(0.0f);
 	
 	glm::vec3 m_Center = glm::vec3(0.0f);
+
+	void UpdateCollisionVertex(TransformComponent* tsr)
+	{
+		if (m_Center == tsr->m_Position)
+			return;
+
+		glm::vec3 prevPosition = m_Center;
+
+		m_Center = tsr->m_Position;
+
+		m_MinExtents += m_Center - prevPosition;
+		m_MaxExtents += m_Center - prevPosition;
+	}
 
 };
 
