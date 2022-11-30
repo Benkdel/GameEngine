@@ -21,7 +21,7 @@ public:
 	inline float GetRadius()		const { return m_Radius; };
 	inline glm::vec3 GetCenter()	const { return m_Center; };
 
-	inline void TransformCollider(TransformComponent* tsr) { m_Center = tsr->m_Position; };
+	inline void TransformCollider(TransformComponent* tsr) { m_Center = tsr->GetPosition(); };
 
 private:
 
@@ -42,9 +42,10 @@ public:
 	IntersectData Intersect(ColliderComponent& other, EntityId otherEnt);
 	IntersectData IntersectPlane(ColliderComponent& other, EntityId otherEnt);
 	
-	void TransformCollider(TransformComponent* tsr) 
+	void TransformCollider(TransformComponent* tsr)
 	{ 
-		UpdateCollisionVertex(tsr);
+		if (tsr->IsTransformRequired())
+			UpdateCollisionVertex(tsr);
 	};
 
 	inline glm::vec3 GetMinExtents() { return m_MinExtents; };
@@ -59,12 +60,12 @@ private:
 
 	void UpdateCollisionVertex(TransformComponent* tsr)
 	{
-		if (m_Center == tsr->m_Position)
+		if (m_Center == tsr->GetPosition())
 			return;
 
 		glm::vec3 prevPosition = m_Center;
 
-		m_Center = tsr->m_Position;
+		m_Center = tsr->GetPosition();
 
 		m_MinExtents += m_Center - prevPosition;
 		m_MaxExtents += m_Center - prevPosition;
@@ -87,16 +88,40 @@ public:
 
 	PlaneCollider Normalize() const;
 
-	virtual inline void TransformCollider(TransformComponent* tsr) { m_Center = tsr->m_Position; };
+	void TransformCollider(TransformComponent* tsr)
+	{
+		tsr->IsTransformRequired();
+			UpdateCollisionVertex(tsr);
+	};
 
 	inline glm::vec3 GetNormal()	{ return m_Normal; };
+	inline glm::vec3 GetMinExtents() { return m_MinExtents; };
+	inline glm::vec3 GetMaxExtents() { return m_MaxExtents; };
+
 	inline float GetDistance()		{ return m_Distance; };
 	inline glm::vec3 GetCenter()	{ return m_Center; };
 
 private:
+	glm::vec3 m_MaxExtents = glm::vec3(0.0f);
+	glm::vec3 m_MinExtents = glm::vec3(0.0f);
+
 	glm::vec3 m_Normal = glm::vec3(0.0f);
 	float m_Distance = 0.0f;
 	
 	glm::vec3 m_Center = glm::vec3(0.0f);
 
+	void UpdateCollisionVertex(TransformComponent* tsr)
+	{
+		if (m_Center == tsr->GetPosition())
+			return;
+
+		glm::vec3 prevPosition = m_Center;
+
+		m_Center = tsr->GetPosition();
+
+		m_MinExtents += m_Center - prevPosition;
+		m_MaxExtents += m_Center - prevPosition;
+
+
+	}
 };

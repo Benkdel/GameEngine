@@ -49,7 +49,7 @@ namespace Amba {
 		while (accumDistance <= maxRayDistance)
 		{
 			ray += step;
-			tsr.m_Position = ray;
+			tsr.UpdatePosition(ray);
 			mouseCollider.TransformCollider(&tsr);
 
 			std::vector<Cell> cellsToCheck = p_Scene->GetNearbyCells(ray);

@@ -138,7 +138,7 @@ namespace Amba {
 		TransformComponent* tsr = GetComponent<TransformComponent>(id);
 
 		int oldCellIndex		= tsr->m_CurrentCell;
-		int newCellIndex		= m_Spatial2DGrid->GetCell(tsr->m_Position).GetCellIdx();
+		int newCellIndex		= m_Spatial2DGrid->GetCell(tsr->GetPosition()).GetCellIdx();
 		int oldIndexInCell		= tsr->m_IndexInCell;
 
 		if (oldCellIndex == newCellIndex)
@@ -163,7 +163,7 @@ namespace Amba {
 		}
 
 		// if entity is out of world map boundaries, destroy it.
-		if (m_Spatial2DGrid->IsOutsideBoundaries(tsr->m_Position))
+		if (m_Spatial2DGrid->IsOutsideBoundaries(tsr->GetPosition()))
 		{
 			DestroyEntity(id);
 			return;
@@ -204,7 +204,7 @@ namespace Amba {
 
 	void Scene::FindNearEntities(EntityId id)
 	{
-		glm::vec3 entPosition = GetComponent<TransformComponent>(id)->m_Position;
+		glm::vec3 entPosition = GetComponent<TransformComponent>(id)->GetPosition();
 
 		std::vector<Cell> cellsToCheck = GetNearbyCells(entPosition);
 

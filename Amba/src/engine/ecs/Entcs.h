@@ -17,12 +17,24 @@ namespace Amba {
 			m_EntId = scene->CreateEntity();
 		}
 
+		Entity(Scene* scene, EntityId id)
+		{
+			p_Scene = scene;
+			m_EntId = id;
+		}
+
 		~Entity()
 		{
 			// Im not destroying this because when class goes out of scope I still have
 			// the EntityId types in the scene class
 
 			// Destroy();
+		}
+
+		Entity CopyEntity()
+		{
+			EntityId newEnt = p_Scene->CopyEntity(m_EntId);
+			return Entity(p_Scene, newEnt);
 		}
 
 		void Destroy()
@@ -76,10 +88,10 @@ namespace Amba {
 			tsr = nullptr;
 		}
 
+
 	private:
 		EntityId m_EntId;
 		Scene* p_Scene;
-
 	};
 
 }

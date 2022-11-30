@@ -214,8 +214,8 @@ namespace Amba {
 	class Plane : public Primitives
 	{
 	public:
-		Plane(Scene* scene, glm::vec3 normal, float length, float width)
-			: m_Normal(glm::normalize(normal)), m_Length(length), m_Width(width), Primitives(scene)
+		Plane(Scene* scene, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, unsigned int div)
+			: m_V0(v0), m_V1(v1), m_V2(v2), m_V3(v3), m_Division(div), Primitives(scene)
 		{
 		}
 
@@ -226,61 +226,55 @@ namespace Amba {
 
 			MeshComponent* mesh = GetComponent<MeshComponent>();
 
-			// rendering a plane using normal
+			float factor = 1 / (float)m_Division;
 
-			// (use width and length for x and z, solve for y)
-			float x0 = -m_Length / 2.0f;
-			float x1 = -x0;
-			float z0 = -m_Width / 2.0f;
-			float z1 = -z0;
+			glm::vec3 vec03 = (m_V3 - m_V0) * factor;
+			glm::vec3 vec12 = (m_V2 - m_V1) * factor;
 
-			glm::vec3 positions[4] = {
-				{x0, 0.0f, z0},
-				{x0, 0.0f, z1},
-				{x1, 0.0f, z1},
-				{x1, 0.0f, z0}
-			};
-
-			glm::vec2 texCoords[4] = {
-				{0.0f, 0.0f},
-				{1.0f, 0.0f},
-				{0.0f, 1.0f},
-				{1.0f, 1.0f}
-			};
-
-			// solve for y values and populate mesh
-			// then we could add the option to have many more vertices, for now just corners
-			int row = 0;
-			int col = 0;
-			int numQuads = 1;
-			int numIterations = numQuads * 4 / 2;
-			
-			for (int i = 0; i < numIterations * 2; i++)
+			for (unsigned int row = 0; row < m_Division + 1; row++)
 			{
-				positions[i].y = (m_Normal.x / m_Normal.y * (positions[i].x - x0) -
-					m_Normal.z / m_Normal.y * (positions[i].z - z0) + 0.0f);
-			
-				glm::vec2 texCoords = glm::vec2(0.0f);
-				switch (i % 4)
-				{
-				case 0: break;
-				case 1: texCoords = glm::vec2(1.0f, 0.0f); break;
-				case 2: texCoords = glm::vec2(1.0f, 1.0f); break;
-				case 3: texCoords = glm::vec2(0.0f, 1.0f); break;
-				default: break;
-				}
+				glm::vec3 start = m_V0 + vec03 * (float)row;
+				glm::vec3 end = m_V1 + vec12 * (float)row;
+				glm::vec3 vecDiv = (end - start) * factor;
 
-				mesh->m_Vertices.push_back({ positions[i], m_Normal, texCoords });
+				for (unsigned int col = 0; col < m_Division + 1; col++)
+				{
+					glm::vec3 pos = start + vecDiv * (float)col;
+
+					// calculate normals from tangents?
+					glm::vec3 tangent = glm::normalize(vecDiv);
+					glm::vec3 nextStart = start + vec03;
+					glm::vec3 nextEnd = end + vec12;
+					glm::vec3 nextVecDiv = (nextEnd - nextStart) * factor;
+					glm::vec3 nextRowPos = nextStart + nextVecDiv * (float)col;
+					glm::vec3 possibleBiTangent = glm::normalize(nextRowPos - pos);
+
+					glm::vec3 normal = glm::cross(tangent, possibleBiTangent);
+
+					glm::vec2 texCoords = glm::vec2((float)col * factor, (float)row * factor);
+
+					mesh->m_Vertices.push_back({ pos, normal, texCoords });
+				}
 			}
 
-			// only for now:
+			// indices
+			for (unsigned int row = 0; row < m_Division; row++)
+			{
+				for (unsigned int col = 0; col < m_Division; col++)
+				{
+					unsigned int index = row * (m_Division + 1) + col;
 
-			mesh->m_Indices.push_back(0);
-			mesh->m_Indices.push_back(1);
-			mesh->m_Indices.push_back(2);
-			mesh->m_Indices.push_back(0);
-			mesh->m_Indices.push_back(2);
-			mesh->m_Indices.push_back(1);
+					// top triangle
+					mesh->m_Indices.push_back(index);
+					mesh->m_Indices.push_back(index + (m_Division + 1) + 1);
+					mesh->m_Indices.push_back(index + (m_Division + 1));
+
+					// bottom triangle
+					mesh->m_Indices.push_back(index);
+					mesh->m_Indices.push_back(index + 1);
+					mesh->m_Indices.push_back(index + (m_Division + 1) + 1);
+				}
+			}
 
 			Amba::VertexBufferLayout layout;
 			layout.Push<float>(3);
@@ -293,9 +287,13 @@ namespace Amba {
 		}
 
 	private:
-		glm::vec3 m_Normal = glm::vec3(0.0f);
-		float m_Length = 0.0f;
-		float m_Width = 0.0f;
+		
+		glm::vec3 m_V0 = glm::vec3(0.0f);
+		glm::vec3 m_V1 = glm::vec3(0.0f);
+		glm::vec3 m_V2 = glm::vec3(0.0f);
+		glm::vec3 m_V3 = glm::vec3(0.0f);
+		unsigned int m_Division = 0;
+
 
 	};
 

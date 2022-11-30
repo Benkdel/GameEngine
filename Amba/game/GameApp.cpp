@@ -110,7 +110,7 @@ void GameApp::OnUserCreate()
 	pbrSphere.Init();
 	pbrSphere.AddComponent<SphereCollider>();
 	pbrSphere.InitCollider();
-	pbrSphere.GetComponent<TransformComponent>()->m_Position = glm::vec3(10.0f, 10.0f, 20.0f);
+	pbrSphere.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(0.0f, 0.0f, 0.0f));
 
 	pbrSphere.GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("pbrLighting");
 
@@ -152,15 +152,15 @@ void GameApp::OnUserCreate()
 	cube.GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("pbrLighting");
 	cube.AddComponent<AABCollider>();
 	cube.InitCollider();
-	cube.GetComponent<TransformComponent>()->m_Position = glm::vec3(10.0f, 10.0f, 10.0f);
+	cube.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(10.0f, 0.0f, 0.0f));
 	 
 	PhysicsComponent* cubePhysics = cube.AddComponent<PhysicsComponent>();
-	cubePhysics->m_Mass = 100.0f;
+	cubePhysics->m_Mass = 20.0f;
 	cubePhysics->ApplyForce(glm::vec3(0.0f, 0.0f, 0.0f));
 	cubePhysics = nullptr;
 
 	PhysicsComponent* spherePhysics = pbrSphere.AddComponent<PhysicsComponent>();
-	spherePhysics->m_Mass = 100.0f;
+	spherePhysics->m_Mass = 80.0f;
 	spherePhysics->ApplyForce(glm::vec3(0.0f, 0.0f, 0.0f));
 	spherePhysics = nullptr;
 
@@ -172,15 +172,55 @@ void GameApp::OnUserCreate()
 
 	terrain.Destroy();
 	pbrSphere.Destroy();
-
+	
 	EntityId copy = ResManager::GetScene("exampleScene")->CopyEntity(cube.GetEntId());
 	ResManager::GetScene("exampleScene")->
-		GetComponent<TransformComponent>(copy)->m_Position +=
-		glm::vec3(15.0f, 0.0f, 0.0f);
-
+		GetComponent<TransformComponent>(copy)->UpdatePosition(
+		glm::vec3(25.0f, 0.0f, 0.0f));
 	ResManager::GetScene("exampleScene")->GetComponent<PhysicsComponent>(copy)->m_Mass = 10.0f;
-	
+		
 
+	ResManager::GetScene("exampleScene")->DestroyEntity(copy);
+
+	// create walls
+	Amba::Plane wall_1(ResManager::GetScene("exampleScene"),
+						glm::vec3(0.0f, 0.0f, 0.0f), // v0
+						glm::vec3(0.0f, 0.0f, 10.0f), // v1
+						glm::vec3(10.0f, 0.0f, 10.0f), // v2
+						glm::vec3(10.0f, 0.0f, 0.0f), // v3
+						5);
+	wall_1.Init();
+	wall_1.GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("pbrLighting");
+
+	wall_1.GetComponent<TransformComponent>()->m_Radians = glm::radians(90.0f);
+	wall_1.GetComponent<TransformComponent>()->UpdateRotationAxis(glm::vec3(0.0f, 0.0f, 1.0f));
+	wall_1.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(0.0f, -2.0f, 0.0f));
+	wall_1.AddComponent<PlaneCollider>();
+	wall_1.InitCollider();
+	wall_1.AddComponent<PhysicsComponent>();
+	wall_1.GetComponent<PhysicsComponent>()->m_Mass = 100000000.0f;
+
+	// create 3 more walls
+	EntityId walls[3];
+	for (int i = 0; i < 3; i++)
+		walls[i] = ResManager::GetScene("exampleScene")->CopyEntity(wall_1.GetEntId());
+
+	// second wall
+	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(walls[0])->UpdatePosition(glm::vec3(40.0f, -2.0f, 0.0f));
+
+	// third wall
+	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(walls[1])->m_Radians = glm::radians(180.0f);
+	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(walls[1])->UpdatePosition(glm::vec3(0.0f, 0.0f, 40.0f));
+
+	// fourth wall
+	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(walls[2])->UpdatePosition(glm::vec3(40.0f, 0.0f, 0.0f));
+	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(walls[2])->m_Radians = glm::radians(-90.0f);
+
+	ResManager::GetScene("exampleScene")->DestroyEntity(walls[0]);
+	ResManager::GetScene("exampleScene")->DestroyEntity(walls[1]);
+	ResManager::GetScene("exampleScene")->DestroyEntity(walls[2]);
+
+	
 	/*EntityId entities[10];
 	for (int i = 0; i < 10; i++)
 	{

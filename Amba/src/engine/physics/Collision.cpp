@@ -15,7 +15,7 @@ void SphereCollider::InitCollider(MeshComponent* mesh, TransformComponent* tsr)
 	// to reduced radius a bit
 	float SPHERE_COLLIDER_ADJUST = 0.88f;
 
-	m_Center = tsr->m_Position;
+	m_Center = tsr->GetPosition();
 
 	for (auto& vec : mesh->m_Vertices)
 	{
@@ -84,7 +84,7 @@ AABCollider::AABCollider()
 
 void AABCollider::InitCollider(MeshComponent* mesh, TransformComponent* tsr)
 {
-	m_Center = tsr->m_Position;
+	m_Center = tsr->GetPosition();
 
 	glm::vec3 min = glm::vec3(0.0f);
 	glm::vec3 max = glm::vec3(0.0f);
@@ -129,9 +129,10 @@ IntersectData AABCollider::Intersect(ColliderComponent& other, EntityId otherEnt
 
 IntersectData AABCollider::IntersectPlane(ColliderComponent& other, EntityId otherEnt)
 {
-	// TODO: IMPLEMENT
-	//AB_WARN("Collision between AAB and Plane not yet implemented!");
-	return IntersectData(false, glm::vec3(0.0f), glm::vec3(0.0f));
+	// TODO: IMPLEMENT - for now trying to use same logic as AAB vs AAB
+	AB_WARN("AAB intersect Plane method no implemented yet!");
+
+	return IntersectData(false, glm::vec3(0.0f), glm::vec3(0.0f), -1);
 }
 
 
@@ -148,9 +149,8 @@ PlaneCollider::PlaneCollider()
 
 void PlaneCollider::InitCollider(MeshComponent* mesh, TransformComponent* tsr)
 {
-	m_Normal = mesh->m_Vertices[0].v_Normals; // every normal is the same, just pick first one
-	m_Distance = glm::distance(tsr->m_Position, glm::vec3(0.0f));
-	m_Center = tsr->m_Position;
+	// IMPLEMENT INIT COLLIDER!!
+	AB_WARN("Plane collider Init not implemented!");
 }
 
 PlaneCollider::PlaneCollider(glm::vec3 normal, float distance)

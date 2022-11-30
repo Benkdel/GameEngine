@@ -93,7 +93,7 @@ namespace Amba {
                             axisSelected = 0;
                     }
 
-                    glm::vec3& entPos = p_CurrentScene->GetComponent<TransformComponent>(entHold)->m_Position;
+                    glm::vec3& entPos = p_CurrentScene->GetComponent<TransformComponent>(entHold)->GetPosition();
 
                     if (m_MousePicker.GetMouseRay() != lastMousePos)
                     {
@@ -175,13 +175,13 @@ namespace Amba {
 
                     //AB_INFO("Is entity Valid: {0}", selectedEntity >> 32);
                     ImGui::SliderFloat3("Model - Position:",
-                        &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_Position[0],
+                        &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->GetPosition()[0],
                         -50.0f, 50.0f, "%.03f");
 
                     ImGui::Text("Input:");
 
                     ImGui::InputFloat3("Model - Position: 2",
-                        &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_Position[0], "%.03f");
+                        &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->GetPosition()[0], "%.03f");
 
                     if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_LEFT))
                         p_CurrentScene->GetComponent<PhysicsComponent>(selectedEntity)->IncreaseForce(glm::vec3(-0.5f, 0.0f, 0.0f));

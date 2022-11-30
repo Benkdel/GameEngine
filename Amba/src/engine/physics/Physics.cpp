@@ -22,7 +22,6 @@ namespace Amba {
 	{
 		for (EntityId ent : SceneView<TransformComponent, MeshComponent>(scene))
 		{
-			// check
 			IntersectData intersect = CheckForCollision(ent, scene);
 			
 			if (intersect.GetDoesIntersect())
@@ -31,11 +30,6 @@ namespace Amba {
 				AB_INFO("DIRECTION: {0}, {1}, {2}", intersect.GetDirection().x, intersect.GetDirection().y, 
 					intersect.GetDirection().z);
 
-				//glm::vec3 overlap = intersect.GetDirection() * 0.5f;
-
-				//scene->GetComponent<TransformComponent>(ent)->m_Position += overlap;
-				//scene->GetComponent<TransformComponent>(intersect.GetOtherEnt())->m_Position -= overlap;
-			
 				// lets try momentum equations
 				// momentum is conserved assuming there is no friction
 				// elastic collision
@@ -50,7 +44,7 @@ namespace Amba {
 
 				// I know objects will collide in X and normal vector pointing to ent is x negative
 				// implement getting real normal from IntersectData
-				glm::vec3 normal = /*glm::vec3(-1.0f, 0.0f, 0.0f);*/ intersect.GetCollisionNorm();
+				glm::vec3 normal = intersect.GetCollisionNorm();
 
 				float e = 1.0f; // 100% elastic
 
@@ -71,7 +65,7 @@ namespace Amba {
 	IntersectData Physics::CheckForCollision(EntityId id, Scene* scene)
 	{
 		int componentID = GetColliderTypeIndex(id, scene);
-
+		
 		if (componentID < 0)
 			return IntersectData(false, glm::vec3(0.0f), glm::vec3(0.0f));
 	
@@ -81,8 +75,12 @@ namespace Amba {
 			return IntersectData(false, glm::vec3(0.0f), glm::vec3(0.0f));
 
 		TransformComponent* tsr = scene->GetComponent<TransformComponent>(id);
-		Cell& cell = scene->m_Spatial2DGrid->GetCell(tsr->m_Position);
+		Cell& cell = scene->m_Spatial2DGrid->GetCell(tsr->GetPosition());
 		ColliderComponent* collider = scene->GetComponentWithId<ColliderComponent>(id, componentID);
+
+		// temp
+		if (collider->GetType() == ColliderComponent::TYPE_PLANE)
+			return IntersectData(false, glm::vec3(0.0f), glm::vec3(0.0f));
 
 		// update collider position (center)
 		collider->TransformCollider(tsr);
@@ -95,9 +93,11 @@ namespace Amba {
 				// check if other entity has collider component
 				ComponentMask otherMask = scene->m_Entities[GetEntityIndex(other)].mask;
 
-				if (otherMask.test(componentID))
+				int otherComponentID = GetColliderTypeIndex(other, scene);
+
+				if (otherMask.test(otherComponentID))
 				{
-					ColliderComponent* otherCollider = scene->GetComponentWithId<ColliderComponent>(other, componentID);
+					ColliderComponent* otherCollider = scene->GetComponentWithId<ColliderComponent>(other, otherComponentID);
 					IntersectData intersect = collider->Intersect(*otherCollider, other);
 
 					if (intersect.GetDoesIntersect())
@@ -111,7 +111,9 @@ namespace Amba {
 		// check planes
 		for (EntityId plane : SceneView<PlaneCollider>(scene))
 		{
-			PlaneCollider* otherCollider = scene->GetComponent<PlaneCollider>(plane);
+			int otherComponentID = GetColliderTypeIndex(plane, scene);
+
+			ColliderComponent* otherCollider = scene->GetComponentWithId<ColliderComponent>(plane, otherComponentID);
 			IntersectData intersect = collider->Intersect(*otherCollider, plane);
 
 			if (intersect.GetDoesIntersect())

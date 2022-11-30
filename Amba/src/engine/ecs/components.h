@@ -46,17 +46,43 @@ class TransformComponent : public Components
 public:
 	TransformComponent() = default;
 
-	glm::vec3 m_Position = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 m_Rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 m_Scale = glm::vec3(1.0f, 1.0f, 1.0f);
-
-	float m_Angle = 90.0f;
+	float m_Radians = 0.0f;
 	float m_Size = 1.0f;
-
-	glm::vec3 m_Velocity = glm::vec3(0.0f);
 
 	int m_CurrentCell = -1.0f;
 	int m_IndexInCell = -1.0f;
+
+	void UpdatePosition(glm::vec3 pos)
+	{
+		m_Position = pos;
+		m_TransformRequired = true;
+	}
+
+	void UpdateRotationAxis(glm::vec3 rotAxis)
+	{
+		m_RotationAxis = rotAxis;
+		m_TransformRequired = true;
+	}
+
+	void UpdateScale(glm::vec3 scale)
+	{
+		m_Scale = scale;
+		m_TransformRequired = true;
+	}
+
+	inline glm::vec3 GetPosition() { return m_Position; };
+	inline glm::vec3 GetRotationAxis() { return m_RotationAxis; };
+	inline glm::vec3 GetScale() { return m_Scale; };
+
+	inline bool IsTransformRequired() { return m_TransformRequired; };
+
+private:
+
+	glm::vec3 m_Position		= glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 m_RotationAxis	= glm::vec3(1.0f, 1.0f, 1.0f);
+	glm::vec3 m_Scale			= glm::vec3(1.0f, 1.0f, 1.0f);
+
+	bool m_TransformRequired = false;
 
 };
 

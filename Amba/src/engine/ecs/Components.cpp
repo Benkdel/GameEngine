@@ -128,7 +128,7 @@ void PhysicsComponent::Integrate(MeshComponent* mesh, TransformComponent* tsr, f
 	acceleration += m_NetForce / m_Mass;
 
 	m_Velocity += acceleration;
-	tsr->m_Position += m_Velocity * dt;
+	tsr->UpdatePosition(tsr->GetPosition() + m_Velocity * dt);
 	
 	m_NetForce = glm::vec3(0.0f);
 }
