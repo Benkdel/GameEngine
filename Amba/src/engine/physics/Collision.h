@@ -49,6 +49,7 @@ public:
 
 	inline glm::vec3 GetMinExtents() { return m_MinExtents; };
 	inline glm::vec3 GetMaxExtents() { return m_MaxExtents; };
+	inline glm::vec3 GetCenter()	 { return m_Center; };
 
 private:
 	glm::vec3 m_MinExtents = glm::vec3(0.0f);

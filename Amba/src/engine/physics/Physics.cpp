@@ -50,7 +50,7 @@ namespace Amba {
 
 				// I know objects will collide in X and normal vector pointing to ent is x negative
 				// implement getting real normal from IntersectData
-				glm::vec3 normal = glm::vec3(-1.0f, 0.0f, 0.0f);//glm::normalize(intersect.GetDirection());
+				glm::vec3 normal = /*glm::vec3(-1.0f, 0.0f, 0.0f);*/ intersect.GetCollisionNorm();
 
 				float e = 1.0f; // 100% elastic
 
@@ -73,12 +73,12 @@ namespace Amba {
 		int componentID = GetColliderTypeIndex(id, scene);
 
 		if (componentID < 0)
-			return IntersectData(false, glm::vec3(0.0f));
+			return IntersectData(false, glm::vec3(0.0f), glm::vec3(0.0f));
 	
 		ComponentMask entMask = scene->m_Entities[GetEntityIndex(id)].mask;
 
 		if (!entMask.test(componentID))
-			return IntersectData(false, glm::vec3(0.0f));
+			return IntersectData(false, glm::vec3(0.0f), glm::vec3(0.0f));
 
 		TransformComponent* tsr = scene->GetComponent<TransformComponent>(id);
 		Cell& cell = scene->m_Spatial2DGrid->GetCell(tsr->m_Position);
@@ -120,7 +120,7 @@ namespace Amba {
 			}
 		}
 
-		return IntersectData(false, glm::vec3(0.0f));
+		return IntersectData(false, glm::vec3(0.0f), glm::vec3(0.0f));
 	}
 
 

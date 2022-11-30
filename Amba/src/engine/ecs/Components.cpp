@@ -74,7 +74,7 @@ IntersectData ColliderComponent::Intersect(const ColliderComponent& other, Entit
 		return _other.IntersectPlane((PlaneCollider&)self, otherEnt);
 	}
 
-	return IntersectData(false, glm::vec3(0.0f));
+	return IntersectData(false, glm::vec3(0.0f), glm::vec3(0.0f));
 }
 
 

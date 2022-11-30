@@ -22,19 +22,21 @@ class IntersectData
 {
 public:
 
-	IntersectData(const bool doesIntersect, const glm::vec3 direction, const EntityId otherEnt = -1) :
-		m_DoesIntersect(doesIntersect), m_Direction(direction), m_OtherEnt(otherEnt) {}
+	IntersectData(const bool doesIntersect, const glm::vec3 direction, const glm::vec3 collisionNorm, const EntityId otherEnt = -1) :
+		m_DoesIntersect(doesIntersect), m_Direction(direction), m_CollisionNorm(collisionNorm), m_OtherEnt(otherEnt) {}
 
-	inline bool GetDoesIntersect()		const { return m_DoesIntersect; };
-	inline float GetDistance()			const { return glm::length(m_Direction); };
-	inline glm::vec3 GetDirection()		const { return m_Direction; };
-	inline EntityId GetOtherEnt()		const { return m_OtherEnt; };
+	inline bool GetDoesIntersect()			const { return m_DoesIntersect; };
+	inline float GetDistance()				const { return glm::length(m_Direction); };
+	inline glm::vec3 GetDirection()			const { return m_Direction; };
+	inline glm::vec3 GetCollisionNorm()		const { return m_CollisionNorm; };
+	inline EntityId GetOtherEnt()			const { return m_OtherEnt; };
 
 private:
 
-	const bool m_DoesIntersect = false;
-	const glm::vec3 m_Direction = glm::vec3(0.0f);
-	const EntityId m_OtherEnt = -1;
+	const bool m_DoesIntersect				= false;
+	const glm::vec3 m_Direction				= glm::vec3(0.0f);
+	const glm::vec3 m_CollisionNorm			= glm::vec3(0.0f);
+	const EntityId m_OtherEnt				= -1;
 };
 
 

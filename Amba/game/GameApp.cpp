@@ -178,8 +178,8 @@ void GameApp::OnUserCreate()
 		GetComponent<TransformComponent>(copy)->m_Position +=
 		glm::vec3(15.0f, 0.0f, 0.0f);
 
-	ResManager::GetScene("exampleScene")->GetComponent<PhysicsComponent>(copy)->m_Mass = 50.0f;
-
+	ResManager::GetScene("exampleScene")->GetComponent<PhysicsComponent>(copy)->m_Mass = 10.0f;
+	
 
 	/*EntityId entities[10];
 	for (int i = 0; i < 10; i++)
