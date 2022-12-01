@@ -28,7 +28,7 @@ namespace Amba {
 	}
 
 	// returns boolean - check if true before using entity (default will return number 0)
-	EntityId MousePicker::SelectEntity(Camera& camera, bool& found)
+	EntityId MousePicker::SelectEntity(Camera& camera)
 	{
 		// shoot ray
 		float shootDistance = 1.0f;
@@ -80,7 +80,6 @@ namespace Amba {
 
 					if (intersect->GetDoesIntersect())
 					{
-						found = true;
 						intersect = nullptr;
 						return ent;
 					}

@@ -23,11 +23,9 @@ namespace Amba {
 
 		inline void UpdateScene(Scene* scene) { p_Scene = scene; };
 
-		EntityId SelectEntity(Camera& camera, bool& found);
+		EntityId SelectEntity(Camera& camera);
 
 		inline glm::vec3 GetMouseRay() { return m_MouseRay; };
-
-
 
 	private:
 		glm::vec3 NormalizeDeviceSpace(glm::vec3 mousePosition);

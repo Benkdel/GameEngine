@@ -31,10 +31,24 @@ namespace Amba {
 		glm::vec4 m_Clear_color;
 
 		inline void UpdateMouseD(double dx, double dy) { m_Yaw = dx; m_Pitch = dy; };
-	
+
+		// static and global variables
+		static EntityId s_SelectedEntity;
+		static EntityId s_EntUnderCursor;
+
+		static std::string GetActiveEntity(EntityId ent);
+
+		enum STATUS
+		{
+			INNACTIVE,
+			ACTIVE
+		};
+
 	private:
 		Scene* p_CurrentScene;
 		MousePicker m_MousePicker;
+
+		int m_Status = 0;
 
 		double m_Yaw = 0.0f;
 		double m_Pitch = 0.0f;

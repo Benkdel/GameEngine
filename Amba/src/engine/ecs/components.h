@@ -74,7 +74,13 @@ public:
 	inline glm::vec3 GetRotationAxis() { return m_RotationAxis; };
 	inline glm::vec3 GetScale() { return m_Scale; };
 
-	inline bool IsTransformRequired() { return m_TransformRequired; };
+	// function for now only should be called from colliders
+	bool IsTransformRequired() 
+	{ 
+		bool temp = m_TransformRequired;
+		m_TransformRequired = false;
+		return temp;
+	};
 
 private:
 
@@ -82,7 +88,7 @@ private:
 	glm::vec3 m_RotationAxis	= glm::vec3(1.0f, 1.0f, 1.0f);
 	glm::vec3 m_Scale			= glm::vec3(1.0f, 1.0f, 1.0f);
 
-	bool m_TransformRequired = false;
+	bool m_TransformRequired = true;
 
 };
 

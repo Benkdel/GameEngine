@@ -17,6 +17,7 @@ namespace Amba {
 			m_EntId = scene->CreateEntity();
 		}
 
+		// check this
 		Entity(Scene* scene, EntityId id)
 		{
 			p_Scene = scene;
@@ -31,7 +32,7 @@ namespace Amba {
 			// Destroy();
 		}
 
-		Entity CopyEntity()
+		Entity CopyEntity(std::string tag = "undefined")
 		{
 			EntityId newEnt = p_Scene->CopyEntity(m_EntId);
 			return Entity(p_Scene, newEnt);

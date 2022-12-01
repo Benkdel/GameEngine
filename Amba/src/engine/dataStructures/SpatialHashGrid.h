@@ -23,7 +23,6 @@ namespace Amba
 		glm::vec3 max = glm::vec3(0.0f);
 	};
 
-
 	class Spatial2DGrid
 	{
 	public:

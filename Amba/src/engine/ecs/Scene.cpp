@@ -177,6 +177,9 @@ namespace Amba {
 		Cell& cell = m_Spatial2DGrid->GetCell(position);
 
 		std::vector<Cell> cellsToCheck;
+		
+		if (!cell.IsCellValid())
+			return cellsToCheck;
 
 		// check if entity is completly inside the cell
 		// for now im using position plus constant but I should use box collider or sphere collider instead

@@ -3,7 +3,7 @@
 using namespace Amba;
 
 // initialice static variables
-std::unordered_map<std::string, Scene*>		ResManager::rm_Scenes;
+std::unordered_map<std::string, Scene*>				ResManager::rm_Scenes;
 std::unordered_map<std::string, Entity>				ResManager::rm_Entities;
 std::unordered_map<std::string, Shader*>			ResManager::rm_Shaders;
 std::unordered_map<std::string, Material*>			ResManager::rm_Materials;

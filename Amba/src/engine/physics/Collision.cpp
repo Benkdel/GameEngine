@@ -130,7 +130,7 @@ IntersectData AABCollider::Intersect(ColliderComponent& other, EntityId otherEnt
 IntersectData AABCollider::IntersectPlane(ColliderComponent& other, EntityId otherEnt)
 {
 	// TODO: IMPLEMENT - for now trying to use same logic as AAB vs AAB
-	AB_WARN("AAB intersect Plane method no implemented yet!");
+	//AB_WARN("AAB intersect Plane method no implemented yet!");
 
 	return IntersectData(false, glm::vec3(0.0f), glm::vec3(0.0f), -1);
 }

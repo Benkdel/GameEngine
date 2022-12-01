@@ -180,8 +180,6 @@ void GameApp::OnUserCreate()
 	ResManager::GetScene("exampleScene")->GetComponent<PhysicsComponent>(copy)->m_Mass = 10.0f;
 		
 
-	ResManager::GetScene("exampleScene")->DestroyEntity(copy);
-
 	// create walls
 	Amba::Plane wall_1(ResManager::GetScene("exampleScene"),
 						glm::vec3(0.0f, 0.0f, 0.0f), // v0
@@ -216,6 +214,7 @@ void GameApp::OnUserCreate()
 	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(walls[2])->UpdatePosition(glm::vec3(40.0f, 0.0f, 0.0f));
 	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(walls[2])->m_Radians = glm::radians(-90.0f);
 
+	wall_1.Destroy();
 	ResManager::GetScene("exampleScene")->DestroyEntity(walls[0]);
 	ResManager::GetScene("exampleScene")->DestroyEntity(walls[1]);
 	ResManager::GetScene("exampleScene")->DestroyEntity(walls[2]);

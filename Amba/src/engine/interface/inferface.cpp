@@ -1,28 +1,15 @@
 #include "inferface.h"
 
+#include <engine/interface/Widgets.h>
 
 #include <engine/io/Keyboard.h>
 #include <engine/io/Mouse.h>
 
-static bool isEntitySelected = false;
-static EntityId selectedEntity;
-static std::string entityName;
-
-float sizeOfRay = 5.0f;
-
-bool entFound = false;
-EntityId entHold;
-
-bool isEntBeingHold = false;
-
-glm::vec3 currentEntPos = glm::vec3(0.0f);
-glm::vec3 lastMousePos = glm::vec3(0.0f);
-
-int axisSelected = 0; /* 0: x, 1: y, 2: z */
-
-glm::vec3 accumForce = glm::vec3(0.0f);
 
 namespace Amba {
+
+    EntityId Interface::s_SelectedEntity = -1;
+    EntityId Interface::s_EntUnderCursor = -1;
 
     const char* glsl_version = "#version 130";
 
@@ -62,61 +49,28 @@ namespace Amba {
             are being set in imgui.ini file for now (I'm not using docking just yet)
         */
 
-        /*
-            MOUSE PICKER SECTION
-            LATER: ORGANIZE INTERFACE FILES
-        */
-
         // update mouse picker
         m_MousePicker.UpdateMousePos(camera);
 
-        if (Amba::Mouse::isMouseLocked())
+        m_Status = (Amba::Mouse::isMouseLocked() == true) ? STATUS::ACTIVE : STATUS::INNACTIVE;
+
+        if (m_Status == STATUS::ACTIVE)
+            s_EntUnderCursor = m_MousePicker.SelectEntity(camera);
+
+        // user input
+        if (m_Status == STATUS::ACTIVE)
         {
-            if (!isEntBeingHold)
-                entHold = m_MousePicker.SelectEntity(camera, entFound);
+            // Select entity
+            if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_P))
+                Interface::s_SelectedEntity = s_EntUnderCursor;
 
-            if (entFound && IsEntityValid(entHold))
-            {
-                if (Amba::Mouse::ButtonWentDown(GLFW_MOUSE_BUTTON_1) || Amba::KeyBoard::KeyWentDown(GLFW_KEY_P))
-                {
-                    isEntBeingHold = !isEntBeingHold;
-                    lastMousePos = m_MousePicker.GetMouseRay();
-                }
-
-                if (isEntBeingHold)
-                {
-                    // change axis
-                    if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_O))
-                    {
-                        axisSelected++;
-                        if (axisSelected > 2)
-                            axisSelected = 0;
-                    }
-
-                    glm::vec3& entPos = p_CurrentScene->GetComponent<TransformComponent>(entHold)->GetPosition();
-
-                    if (m_MousePicker.GetMouseRay() != lastMousePos)
-                    {
-                        glm::vec3 movement = m_MousePicker.GetMouseRay() - lastMousePos;
-
-                        float speed = 10.0f;
-
-                        if (axisSelected == 0)
-                            entPos.x += movement.x * (speed + 50.0f);
-                        else if (axisSelected == 1)
-                            entPos.y += movement.y * speed;
-                        else
-                            entPos.z += movement.z * (speed + 25.0f);
-
-                        currentEntPos = entPos;
-
-                        lastMousePos = m_MousePicker.GetMouseRay();
-                    }
-                }
-
-            }
+            // Apply force - temporal
+            if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_LEFT))
+                p_CurrentScene->GetComponent<PhysicsComponent>(Interface::s_SelectedEntity)->IncreaseForce(glm::vec3(-0.5f, 0.0f, 0.0f));
+            if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_RIGHT))
+                p_CurrentScene->GetComponent<PhysicsComponent>(Interface::s_SelectedEntity)->IncreaseForce(glm::vec3(0.5f, 0.0f, 0.0f));
         }
-
+        
         // runs ImGui interface
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -135,108 +89,14 @@ namespace Amba {
             ImGui::NewLine();
             ImGui::Text("Model Settings");
             ImGui::NewLine();
-
-            // List of models to select
-            ImGui::TextColored(ImVec4(1, 1, 0, 1), "Avaiable Entities:");
-            ImGui::Text("Active Entity: ");
-            ImGui::SameLine();
-            ImGui::Text(std::to_string(selectedEntity).c_str());
-
-            ImGui::BeginListBox("##");
-            {
-                for (EntityId ent : SceneView<MeshComponent, TransformComponent>(p_CurrentScene))
-                {
-                    const bool isSelected = (selectedEntity == ent);
-                    if (ImGui::Selectable(std::to_string(ent).c_str(), isSelected))
-                    {
-                        isEntitySelected = true;
-                        selectedEntity = ent;
-                    }
-                }
-            }
-            ImGui::EndListBox();
-
-            if ((isEntitySelected || isEntBeingHold) && IsEntityValid(selectedEntity))
-            {
-                if (isEntBeingHold)
-                    selectedEntity = entHold;
-
-                EntityId selEnt2 = selectedEntity >> 32;
-                bool hasEntBeingFreed = std::find(p_CurrentScene->m_FreeEntities.begin(), p_CurrentScene->m_FreeEntities.end(), selEnt2)
-                                        != p_CurrentScene->m_FreeEntities.end();
-
-                if (IsEntityValid(selectedEntity) && !hasEntBeingFreed)
-                {
-                    ImGui::Text("Drag:");
-
-                    ImGui::SliderFloat("Model - Size:",
-                        &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_Size,
-                        0.001f, 100.0f, "%.03f");
-
-                    //AB_INFO("Is entity Valid: {0}", selectedEntity >> 32);
-                    ImGui::SliderFloat3("Model - Position:",
-                        &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->GetPosition()[0],
-                        -50.0f, 50.0f, "%.03f");
-
-                    ImGui::Text("Input:");
-
-                    ImGui::InputFloat3("Model - Position: 2",
-                        &p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->GetPosition()[0], "%.03f");
-
-                    if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_LEFT))
-                        p_CurrentScene->GetComponent<PhysicsComponent>(selectedEntity)->IncreaseForce(glm::vec3(-0.5f, 0.0f, 0.0f));
-                    if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_RIGHT))
-                        p_CurrentScene->GetComponent<PhysicsComponent>(selectedEntity)->IncreaseForce(glm::vec3(0.5f, 0.0f, 0.0f));
-
-                    if (ImGui::Button("Duplicate"))
-                    {
-                        p_CurrentScene->CopyEntity(selectedEntity);
-                    }
-
-                    ImGui::Text("Entity is in cell: ");
-                    ImGui::Text(std::to_string(p_CurrentScene->GetComponent<TransformComponent>(selectedEntity)->m_CurrentCell).c_str());
-                }
-                else
-                {
-                    isEntitySelected = false;
-                    isEntBeingHold = false;
-                    selectedEntity = -1;
-                }
-
-            }
             
-            ImGui::NewLine();
-
-            ImGui::Text("Entity selected:");
-            ImGui::NextColumn();
-            if (IsEntityValid(entHold))
-            {
-                ImGui::Text(std::to_string(entHold).c_str());
-            }
-            else
-            {
-                ImGui::Text("No entity");
-            }
-
-            ImGui::NewLine();
-            std::string s = (isEntBeingHold) ? "Entity is being holded" : "No entity is being holded";
-            ImGui::Text(s.c_str());
-            ImGui::NewLine();
-            ImGui::Text("Axis selected: ");
-            ImGui::NextColumn();
-            
-            std::string axis;
-            if (axisSelected == 0)
-                axis = "X";
-            else if (axisSelected == 1)
-                axis = "Y";
-            else
-                axis = "Z";
-            ImGui::Text(axis.c_str());
-
+            ShowActiveEntitiesInScene(p_CurrentScene);
 
             ImGui::End();
         }
+
+
+        //TestWidget();
 
         // Help menu
         {
@@ -251,9 +111,11 @@ namespace Amba {
             ImGui::End();
         }
 
+        
         // Rendering
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
     }
 
     void Interface::Cleanup()
@@ -262,5 +124,12 @@ namespace Amba {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
+    }
+
+    std::string Interface::GetActiveEntity(EntityId ent)
+    {
+        if (Amba::IsEntityValid(ent))
+            return std::to_string(ent);
+        return "-";
     }
 }

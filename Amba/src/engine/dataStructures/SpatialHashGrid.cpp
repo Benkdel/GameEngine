@@ -41,7 +41,7 @@ namespace Amba
 		{
 			for (unsigned int x = 0; x < SPATIAL_GRID_SIDELENGTH; x += m_CellSize)
 			{
-				Cell cell(m_Cells.size());
+				Cell cell(m_Cells.size(), true);
 
 				cell.bottomLeft = glm::vec3(x, 0, z);
 				cell.topLeft = glm::vec3(x, 0, z + m_CellSize);
@@ -71,9 +71,8 @@ namespace Amba
 
 	Cell &Spatial2DGrid::GetCell(glm::vec3 position)
 	{
-
-		if (position.x < 0 || position.z < 0)
-			return m_Cells[0];
+		if (IsOutsideBoundaries(position))
+			return Cell(false);
 
 		int cell_x = position.x / m_CellSize;
 		int cell_z = position.z / m_CellSize;

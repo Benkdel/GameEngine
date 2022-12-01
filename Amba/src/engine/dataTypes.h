@@ -47,9 +47,13 @@ namespace Amba {
 	class Cell
 	{
 	public:
-		Cell() {};
+		Cell() 
+			:m_IsValidCell(true) {};
 
-		Cell(int idx) { m_CellIdx = idx; };
+		Cell(bool valid) { m_IsValidCell = valid; };
+
+		Cell(int idx, bool valid) 
+			: m_CellIdx(idx), m_IsValidCell(valid) {};
 
 		~Cell() {};
 
@@ -63,9 +67,11 @@ namespace Amba {
 		
 		inline int GetCellIdx() { return m_CellIdx; };
 
+		inline bool IsCellValid() { return m_IsValidCell; };
+		
 	private:
-
-		int m_CellIdx;
+		int m_CellIdx = -1;
+		bool m_IsValidCell = true;
 	};
 
 	struct Rotation {

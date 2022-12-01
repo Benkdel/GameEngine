@@ -126,7 +126,7 @@ namespace Amba {
 		std::vector<EntityDesc> m_Entities;
 		std::vector<EntityIndex> m_FreeEntities;
 		std::vector<ComponentPool*> m_ComponentPools;
-	
+
 		Spatial2DGrid* m_Spatial2DGrid;
 	
 		void Cleanup();
