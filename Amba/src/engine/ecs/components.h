@@ -144,7 +144,7 @@ public:
 	void Integrate(MeshComponent* mesh, TransformComponent* tsr, float dt);
 	void CalculateNetForce(glm::vec3 collisionForces = glm::vec3(0.0f));
 
-	void SolveCollision(float impulse, glm::vec3 normal);
+	void SolveCollision(float impulse, glm::vec3 normal, EntityId other = -1);
 
 	void inline ApplyForce(glm::vec3 force)			{ m_AppliedForce = force; };
 	void inline IncreaseForce(glm::vec3 force)		{ m_AppliedForce += force; };
@@ -164,6 +164,7 @@ private:
 	glm::vec3 m_NetForce			= glm::vec3(0.0f);
 	glm::vec3 m_AppliedForce		= glm::vec3(0.0f);
 
+	std::vector<EntityId> m_RecentCollisions;
 	
 	bool m_EntGravityActive = true;
 	

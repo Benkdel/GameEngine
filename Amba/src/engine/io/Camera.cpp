@@ -12,7 +12,7 @@ namespace Amba {
 
     Camera::Camera(glm::vec3 pos)
 	    : m_CameraPos(pos), m_CameraFront(glm::vec3(1.0f, 0.0f, 0.0f)),
-	    m_Pitch(0.0f), m_Yaw(0.0f), m_Speed(2.5f), m_Sensitivity(1.0f), m_FoV(DEFAULT_FOV)
+	    m_Pitch(0.0f), m_Yaw(0.0f), m_Speed(10.5f), m_Sensitivity(1.0f), m_FoV(DEFAULT_FOV)
     {
 	    UpdateCameraVectors();
     }

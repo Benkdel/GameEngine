@@ -41,8 +41,6 @@ private:
 
 
 namespace Amba {
-	
-	// data types
 
 	class Cell
 	{
@@ -73,6 +71,23 @@ namespace Amba {
 		int m_CellIdx = -1;
 		bool m_IsValidCell = true;
 	};
+
+	class GridCell
+	{
+	public:
+
+		GridCell(bool valid, Cell& cell)
+			: m_IsCellValid(valid), m_Cell(cell)
+		{}
+
+		inline bool IsCellValid() { return m_IsCellValid; };
+		inline Cell& GetCell() { return m_Cell; };
+
+	private:
+		bool m_IsCellValid = false;
+		Cell& m_Cell;
+	};
+
 
 	struct Rotation {
 		float angle;

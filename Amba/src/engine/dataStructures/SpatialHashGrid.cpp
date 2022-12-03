@@ -69,15 +69,15 @@ namespace Amba
 		}
 	}
 
-	Cell &Spatial2DGrid::GetCell(glm::vec3 position)
+	GridCell Spatial2DGrid::GetGridCell(glm::vec3 position)
 	{
 		if (IsOutsideBoundaries(position))
-			return Cell(false);
+			return GridCell(false, Cell(false));
 
 		int cell_x = position.x / m_CellSize;
 		int cell_z = position.z / m_CellSize;
 		
-		return m_Cells[cell_z * NUMBER_OF_CELLS + cell_x];
+		return GridCell(true, m_Cells[cell_z * NUMBER_OF_CELLS + cell_x]);
 	}
 
 }

@@ -26,7 +26,7 @@ namespace Amba {
 			
 			if (intersect.GetDoesIntersect())
 			{
-				AB_INFO("COLLISION - Entity: {0} || Dist: {1} ", ent, intersect.GetDistance());
+				AB_INFO("COLLISION - Entity: {0} with Entity {1} || Dist: {2} ", ent, intersect.GetOtherEnt(), intersect.GetDistance());
 				AB_INFO("DIRECTION: {0}, {1}, {2}", intersect.GetDirection().x, intersect.GetDirection().y, 
 					intersect.GetDirection().z);
 
@@ -75,12 +75,13 @@ namespace Amba {
 			return IntersectData(false, glm::vec3(0.0f), glm::vec3(0.0f));
 
 		TransformComponent* tsr = scene->GetComponent<TransformComponent>(id);
-		Cell& cell = scene->m_Spatial2DGrid->GetCell(tsr->GetPosition());
-		ColliderComponent* collider = scene->GetComponentWithId<ColliderComponent>(id, componentID);
 
-		// temp
-		if (collider->GetType() == ColliderComponent::TYPE_PLANE)
+		GridCell gridCell = scene->m_Spatial2DGrid->GetGridCell(tsr->GetPosition());
+		if (!gridCell.IsCellValid())
 			return IntersectData(false, glm::vec3(0.0f), glm::vec3(0.0f));
+
+		Cell& cell = gridCell.GetCell();
+		ColliderComponent* collider = scene->GetComponentWithId<ColliderComponent>(id, componentID);
 
 		// update collider position (center)
 		collider->TransformCollider(tsr);

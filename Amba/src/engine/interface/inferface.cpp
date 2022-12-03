@@ -33,6 +33,11 @@ namespace Amba {
         
         // Set up mouse Picker
         m_MousePicker.SetUp(window->GetWidth(), window->GetHeight());
+
+        m_ScrWidth = window->GetWidth();
+        m_ScrHeight = window->GetHeight();
+
+        p_Window = window;
     }
 
     void Interface::BindScene(Scene* scene)
@@ -42,13 +47,17 @@ namespace Amba {
         m_MousePicker.UpdateScene(p_CurrentScene);
     }
 
-    void Interface::Run(Camera &camera)
-    {
-        /*
-            Positions and sizes of windows
-            are being set in imgui.ini file for now (I'm not using docking just yet)
-        */
 
+    void Interface::ProcessUserInput(Camera& camera)
+    {
+        // check if windows size has changed
+        if (m_ScrHeight != p_Window->GetHeight() || m_ScrWidth != p_Window->GetWidth())
+        {
+            m_ScrHeight = p_Window->GetHeight();
+            m_ScrWidth = p_Window->GetWidth();
+            m_firstRunFlag = true;
+        }
+        
         // update mouse picker
         m_MousePicker.UpdateMousePos(camera);
 
@@ -56,66 +65,83 @@ namespace Amba {
 
         if (m_Status == STATUS::ACTIVE)
             s_EntUnderCursor = m_MousePicker.SelectEntity(camera);
+        else
+        {
+            s_EntUnderCursor = -1;
+            s_SelectedEntity = -1;
+        }
 
         // user input
         if (m_Status == STATUS::ACTIVE)
         {
             // Select entity
-            if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_P))
-                Interface::s_SelectedEntity = s_EntUnderCursor;
+            if (IsEntityValid(s_EntUnderCursor))
+            {
+                if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_P) || Amba::Mouse::ButtonWentDown(GLFW_MOUSE_BUTTON_1))
+                    Interface::s_SelectedEntity = s_EntUnderCursor;
+            }
 
             // Apply force - temporal
-            if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_LEFT))
-                p_CurrentScene->GetComponent<PhysicsComponent>(Interface::s_SelectedEntity)->IncreaseForce(glm::vec3(-0.5f, 0.0f, 0.0f));
-            if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_RIGHT))
-                p_CurrentScene->GetComponent<PhysicsComponent>(Interface::s_SelectedEntity)->IncreaseForce(glm::vec3(0.5f, 0.0f, 0.0f));
+            if (IsEntityValid(Interface::s_SelectedEntity))
+            {
+                if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_LEFT))
+                    p_CurrentScene->GetComponent<PhysicsComponent>(Interface::s_SelectedEntity)->IncreaseForce(glm::vec3(-0.5f, 0.0f, 0.0f));
+                if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_RIGHT))
+                    p_CurrentScene->GetComponent<PhysicsComponent>(Interface::s_SelectedEntity)->IncreaseForce(glm::vec3(0.5f, 0.0f, 0.0f));
+            }
         }
+    }
+
+    void Interface::Run(Camera &camera)
+    {
+        /*
+            Positions and sizes of windows
+            are being set in imgui.ini file for now (I'm not using docking just yet)
+        */
+        
+        ProcessUserInput(camera);
         
         // runs ImGui interface
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // main menu - right column
+
+        /* ========================
+         ========= LAYOUT =========
+         ========================== */
+
+        // main menu - left column
         {
-            ImGui::Begin("Main Menu");
-            ImGui::Text("Background Settings");
-            ImGui::ColorEdit3("clear color", (float*)&m_Clear_color);
+            if (m_firstRunFlag)
+            {
+                float columnWidth = m_ScrWidth * 0.20f;
+                ImGui::SetNextWindowPos(ImVec2{0.0f, 0.0f});
+                ImGui::SetNextWindowSize(ImVec2{ columnWidth, (float)m_ScrHeight });
+            }
 
-            ImGui::Spacing();
-            ImGui::Text("FSP data");
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-            ImGui::NewLine();
-            ImGui::Text("Model Settings");
-            ImGui::NewLine();
+            ImGui::Begin("Menu");
             
+            ShowDiagnosticInfo(p_CurrentScene, m_Clear_color);
             ShowActiveEntitiesInScene(p_CurrentScene);
+            ShowTransform(p_CurrentScene);
+            ShowAdditionalEntitiesData(p_CurrentScene);
+            ShowEntityUnderMouse(p_CurrentScene);
+
+            DebugingMethods(p_CurrentScene);
 
             ImGui::End();
         }
-
-
-        //TestWidget();
-
-        // Help menu
-        {
-            ImGui::Begin("Help Menu");
-
-            ImGui::Text("Help Section");
-            ImGui::Spacing();
-            ImGui::Text("Press F10 to lock/unlock cursor");
-            ImGui::Text("Press Spacebar to go up / ctrl to go down");
-            ImGui::Text("Use AWSD keys to float arround");
-            ImGui::Text("Close Engine using Escape");
-            ImGui::End();
-        }
-
         
+
+
         // Rendering
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
+
+        // set first run flag to false after first loop
+        m_firstRunFlag = false;
     }
 
     void Interface::Cleanup()

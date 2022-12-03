@@ -210,7 +210,6 @@ namespace Amba {
 	};
 
 
-	// work in progress
 	class Plane : public Primitives
 	{
 	public:
@@ -223,6 +222,13 @@ namespace Amba {
 		{
 			AddComponent<MeshComponent>();
 			AddComponent<TransformComponent>();
+
+			float x = (m_V0.x + m_V1.x + m_V2.x + m_V3.x) / 4;
+			float y = (m_V0.y + m_V1.y + m_V2.y + m_V3.y) / 4;
+			float z = (m_V0.z + m_V1.z + m_V2.z + m_V3.z) / 4;
+
+			//GetComponent<TransformComponent>()->
+				//UpdatePosition(glm::vec3(x, y, z));
 
 			MeshComponent* mesh = GetComponent<MeshComponent>();
 

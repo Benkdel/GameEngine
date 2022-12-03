@@ -133,8 +133,22 @@ void PhysicsComponent::Integrate(MeshComponent* mesh, TransformComponent* tsr, f
 	m_NetForce = glm::vec3(0.0f);
 }
 
-void PhysicsComponent::SolveCollision(float impulse, glm::vec3 normal)
+void PhysicsComponent::SolveCollision(float impulse, glm::vec3 normal, EntityId other)
 {
+	if ((other >> 32) != -1)
+	{
+		std::vector<EntityId>::iterator ent = std::find(m_RecentCollisions.begin(), m_RecentCollisions.end(), other);
+		if (ent != m_RecentCollisions.end())
+		{
+			// ent found, skip applyng force until next iteration
+			return;
+		}
+		else {
+			// if not found, then added to avoid next iteration
+			m_RecentCollisions.push_back(other);
+		}
+	}
+
 	m_Velocity = m_Velocity + (impulse / m_Mass) * normal;
 
 	// reset applied force to 0 after collision

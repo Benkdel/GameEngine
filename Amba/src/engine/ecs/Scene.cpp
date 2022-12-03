@@ -52,7 +52,6 @@ namespace Amba {
 		Amba::Physics::SolveCollisions(this);
 		Amba::Physics::ApplyMotion(this, dt);
 		
-		
 	}
 
 	EntityId Scene::CreateEntity()
@@ -136,18 +135,26 @@ namespace Amba {
 			return;
 
 		TransformComponent* tsr = GetComponent<TransformComponent>(id);
-
-		int oldCellIndex		= tsr->m_CurrentCell;
-		int newCellIndex		= m_Spatial2DGrid->GetCell(tsr->GetPosition()).GetCellIdx();
-		int oldIndexInCell		= tsr->m_IndexInCell;
-
-		if (oldCellIndex == newCellIndex)
-			return;
-
-		tsr->m_CurrentCell = newCellIndex;
-		m_Spatial2DGrid->m_Cells[newCellIndex].entities.push_back(id);
-		tsr->m_IndexInCell = m_Spatial2DGrid->m_Cells[newCellIndex].entities.size() - 1;
+		GridCell gridCell = m_Spatial2DGrid->GetGridCell(tsr->GetPosition());
 		
+		int oldCellIndex		= tsr->m_CurrentCell;
+		int oldIndexInCell		= tsr->m_IndexInCell;
+		int newCellIndex		= -1;
+		
+		if (gridCell.IsCellValid())
+		{
+			Cell& cell			= gridCell.GetCell();
+			newCellIndex		= cell.GetCellIdx();
+			tsr->m_CurrentCell	= newCellIndex;
+		
+			// no change == skip
+			if (oldCellIndex == newCellIndex)
+				return;
+
+			cell.entities.push_back(id);
+			tsr->m_IndexInCell = m_Spatial2DGrid->m_Cells[newCellIndex].entities.size() - 1;
+		}
+
 		// delete entity from old cell vector (bookkeeping)
 		if (oldCellIndex >= 0)
 		{
@@ -174,12 +181,13 @@ namespace Amba {
 
 	std::vector<Cell> Scene::GetNearbyCells(glm::vec3 position)
 	{
-		Cell& cell = m_Spatial2DGrid->GetCell(position);
-
+		GridCell gridCell = m_Spatial2DGrid->GetGridCell(position);
 		std::vector<Cell> cellsToCheck;
-		
-		if (!cell.IsCellValid())
+
+		if (!gridCell.IsCellValid())
 			return cellsToCheck;
+
+		Cell& cell = gridCell.GetCell();
 
 		// check if entity is completly inside the cell
 		// for now im using position plus constant but I should use box collider or sphere collider instead
@@ -195,12 +203,34 @@ namespace Amba {
 		bool TL = position.z - tempSize > cell.bottomLeft.z;
 		bool TR = position.z + tempSize < cell.topLeft.z;
 
+
 		if (!BL)
-			cellsToCheck.push_back(m_Spatial2DGrid->GetCell(position - glm::vec3(tempSize, 0.0f, 0.0f)));
+		{
+			GridCell otherGridCell = m_Spatial2DGrid->GetGridCell(position - glm::vec3(tempSize, 0.0f, 0.0f));
+			if (otherGridCell.IsCellValid())
+			{
+				cellsToCheck.push_back(otherGridCell.GetCell());
+			}
+			
+		}
+
 		if (!BR)
-			cellsToCheck.push_back(m_Spatial2DGrid->GetCell(position + glm::vec3(tempSize, 0.0f, 0.0f)));
+		{
+			GridCell otherGridCell = m_Spatial2DGrid->GetGridCell(position - glm::vec3(0.0f, tempSize, 0.0f));
+			if (otherGridCell.IsCellValid())
+			{
+				cellsToCheck.push_back(otherGridCell.GetCell());
+			}
+		}
+
 		if (!TL)
-			cellsToCheck.push_back(m_Spatial2DGrid->GetCell(position - glm::vec3(0.0f, 0.0f, tempSize)));
+		{
+			GridCell otherGridCell = m_Spatial2DGrid->GetGridCell(position - glm::vec3(0.0f, 0.0f, tempSize));
+			if (otherGridCell.IsCellValid())
+			{
+				cellsToCheck.push_back(otherGridCell.GetCell());
+			}
+		}
 
 		return cellsToCheck;
 	}

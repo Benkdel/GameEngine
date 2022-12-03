@@ -17,7 +17,7 @@ namespace Amba {
 			m_EntId = scene->CreateEntity();
 		}
 
-		// check this
+		// check this - method only to be used by copy entity
 		Entity(Scene* scene, EntityId id)
 		{
 			p_Scene = scene;

@@ -12,9 +12,12 @@
 
 namespace Amba {
 
-	void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+	static bool frameBufferCallbackCalled = false;
+
+	void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 	{
 		glViewport(0, 0, width, height);
+		frameBufferCallbackCalled = true;
 	}
 
 	Window::Window(const std::string& title, unsigned int width, unsigned int height)
@@ -47,7 +50,7 @@ namespace Amba {
 		glfwMakeContextCurrent(m_Window);
 
 		// set callbacks
-		glfwSetFramebufferSizeCallback(m_Window, framebuffer_size_callback);
+		glfwSetFramebufferSizeCallback(m_Window, FramebufferSizeCallback);
 		glfwSetKeyCallback(m_Window, KeyBoard::KeyCallback);
 		glfwSetCursorPosCallback(m_Window, Mouse::CursorPosCallback);
 		glfwSetMouseButtonCallback(m_Window, Mouse::MouseButtonCallback);
@@ -79,6 +82,18 @@ namespace Amba {
 	{
 		glfwSwapBuffers(m_Window);
 		glfwPollEvents();
+
+
+		// Update windows size
+		if (frameBufferCallbackCalled)
+		{
+			int width = 0;
+			int height = 0;
+			glfwGetWindowSize(m_Window, &width, &height);
+			m_Width = width;
+			m_Height = height;
+		}
+
 	}
 
 	void Window::SetWindowShouldClose()

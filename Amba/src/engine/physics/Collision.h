@@ -55,6 +55,7 @@ public:
 private:
 	glm::vec3 m_MinExtents = glm::vec3(0.0f);
 	glm::vec3 m_MaxExtents = glm::vec3(0.0f);
+	glm::vec3 m_Normal = glm::vec3(0.0f);
 	
 	glm::vec3 m_Center = glm::vec3(0.0f);
 
@@ -102,8 +103,8 @@ public:
 	inline glm::vec3 GetCenter()	{ return m_Center; };
 
 private:
-	glm::vec3 m_MaxExtents = glm::vec3(0.0f);
 	glm::vec3 m_MinExtents = glm::vec3(0.0f);
+	glm::vec3 m_MaxExtents = glm::vec3(0.0f);
 
 	glm::vec3 m_Normal = glm::vec3(0.0f);
 	float m_Distance = 0.0f;
@@ -121,7 +122,5 @@ private:
 
 		m_MinExtents += m_Center - prevPosition;
 		m_MaxExtents += m_Center - prevPosition;
-
-
 	}
 };

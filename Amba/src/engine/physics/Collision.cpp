@@ -6,12 +6,21 @@
 // ====================== sphere collider implementation ================================
 // ======================================================================================
 
+static glm::vec3 GetNormVector(glm::vec3 vec)
+{
+	if (vec.x == 0 && vec.y == 0 && vec.z == 0)
+		return glm::vec3(1.0f, 0.0f, 0.0f);
+	return glm::normalize(vec);
+}
+
+
 SphereCollider::SphereCollider()
 	: ColliderComponent(ColliderComponent::TYPE_SPHERE) {}
 
 void SphereCollider::InitCollider(MeshComponent* mesh, TransformComponent* tsr)
 {
 	float dist = 0.0f;
+
 	// to reduced radius a bit
 	float SPHERE_COLLIDER_ADJUST = 0.88f;
 
@@ -40,7 +49,7 @@ IntersectData SphereCollider::Intersect(ColliderComponent& other, EntityId other
 	glm::vec3 direction = _other.GetCenter() - m_Center;
 	float centerDistance = glm::length(direction);
 	
-	direction = glm::normalize(direction);
+	direction = GetNormVector(direction);
 
 	float distance = centerDistance - radiusDistance;
 
@@ -57,20 +66,22 @@ IntersectData SphereCollider::IntersectAAB(ColliderComponent& other, EntityId ot
 
 	float distance = glm::length(direction);
 
-	glm::vec3 collNorm = glm::normalize(m_Center - _other.GetCenter());
+	glm::vec3 collNorm = GetNormVector(m_Center - _other.GetCenter());
 	
 	return IntersectData(distance < m_Radius, direction, collNorm, otherEnt);
 }
 
 IntersectData SphereCollider::IntersectPlane(ColliderComponent& other, EntityId otherEnt) const
 {
-	PlaneCollider& _other = (PlaneCollider&)other;
+	/*PlaneCollider& _other = (PlaneCollider&)other;
 	float distanceFromCenter = glm::dot(_other.GetNormal(), m_Center) + _other.GetDistance();
 	distanceFromCenter *= (distanceFromCenter < 0) ? -1 : 1;
 
 	float distanceFromSphere = distanceFromCenter - m_Radius;
 
 	return IntersectData(distanceFromSphere < 0, _other.GetNormal() * distanceFromSphere, _other.GetNormal(), otherEnt);
+	*/
+	return IntersectAAB(other, otherEnt);
 }
 
 
@@ -109,7 +120,7 @@ void AABCollider::InitCollider(MeshComponent* mesh, TransformComponent* tsr)
 	m_MinExtents = min;
 	m_MaxExtents = max;
 }
-
+// check why positions go crazy when objects are on top of each other (something unrealistic but could be a input)
 IntersectData AABCollider::Intersect(ColliderComponent& other, EntityId otherEnt)
 {
 	AABCollider& _other = (AABCollider&)other;
@@ -122,7 +133,7 @@ IntersectData AABCollider::Intersect(ColliderComponent& other, EntityId otherEnt
 	for (int i = 0; i < 3; i++)
 		maxDistance = (direction[i] > maxDistance) ? direction[i] : maxDistance;
 
-	glm::vec3 collNorm = glm::normalize(m_Center - _other.GetCenter());
+	glm::vec3 collNorm = GetNormVector(m_Center - _other.GetCenter());
 
 	return IntersectData(maxDistance < 0, direction, collNorm, otherEnt);
 }
@@ -130,9 +141,10 @@ IntersectData AABCollider::Intersect(ColliderComponent& other, EntityId otherEnt
 IntersectData AABCollider::IntersectPlane(ColliderComponent& other, EntityId otherEnt)
 {
 	// TODO: IMPLEMENT - for now trying to use same logic as AAB vs AAB
-	//AB_WARN("AAB intersect Plane method no implemented yet!");
+	//AB_WARN("AAB intersect Plane method no implemented yet!"); 
+	return Intersect(other, otherEnt);
 
-	return IntersectData(false, glm::vec3(0.0f), glm::vec3(0.0f), -1);
+	//return IntersectData(false, glm::vec3(0.0f), glm::vec3(0.0f), -1);
 }
 
 
@@ -149,8 +161,24 @@ PlaneCollider::PlaneCollider()
 
 void PlaneCollider::InitCollider(MeshComponent* mesh, TransformComponent* tsr)
 {
-	// IMPLEMENT INIT COLLIDER!!
-	AB_WARN("Plane collider Init not implemented!");
+	m_Center = tsr->GetPosition();
+
+	glm::vec3 min = mesh->m_Vertices[0].v_Position;
+	glm::vec3 max = mesh->m_Vertices[0].v_Position;
+
+	// get first normal for now -- temp
+	m_Normal = mesh->m_Vertices[0].v_Normals;
+
+	for (auto& vec : mesh->m_Vertices)
+	{
+		float dist1 = (min.x - vec.v_Position.x + min.y - vec.v_Position.y + min.z - vec.v_Position.z);
+		float dist2 = (max.x - vec.v_Position.x + max.y - vec.v_Position.y + max.z - vec.v_Position.z);
+
+		min = (dist1 > 0) ? vec.v_Position : min;
+		max = (dist2 < 0) ? vec.v_Position : max;
+	}
+	m_MinExtents = min;
+	m_MaxExtents = max;
 }
 
 PlaneCollider::PlaneCollider(glm::vec3 normal, float distance)

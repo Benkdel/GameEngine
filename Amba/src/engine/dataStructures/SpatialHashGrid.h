@@ -37,7 +37,7 @@ namespace Amba
 		// vector to do main operations
 		std::vector<Cell> m_Cells;
 
-		Cell &GetCell(glm::vec3 position);
+		GridCell GetGridCell(glm::vec3 position);
 		
 		// for drawing
 		bool m_RenderGrid;

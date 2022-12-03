@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+#include <imgui_internal.h>
 
 #include <engine/Window.h>
 #include <engine/renderer/Renderer.h>
@@ -23,6 +24,7 @@ namespace Amba {
 		void Setup(Window* window);
 
 		void Run(Camera& camera);
+		void ProcessUserInput(Camera& camera);
 
 		void BindScene(Scene* scene);
 
@@ -48,10 +50,18 @@ namespace Amba {
 		Scene* p_CurrentScene;
 		MousePicker m_MousePicker;
 
+		Window* p_Window;
+
 		int m_Status = 0;
 
 		double m_Yaw = 0.0f;
 		double m_Pitch = 0.0f;
+
+		unsigned int m_ScrWidth;
+		unsigned int m_ScrHeight;
+
+		bool m_firstRunFlag = true;
+
 	};
 
 }

@@ -78,7 +78,7 @@ void RenderSkyBox(Amba::Camera& cam, glm::mat4 perspective);
 void GameApp::OnUserCreate()
 {
 	// we need to initialize application - Create GLFW window
-	Init("Resurge", 1280, 760);
+	Init("Resurge", 1920, 1080);
 	AB_INFO("Window init succesfully");
 
 	// Create a Scene
@@ -88,29 +88,17 @@ void GameApp::OnUserCreate()
 	BindScene(ResManager::GetScene("exampleScene"));
 
 	ResManager::CreateShader("game/res/shaders/simpleVS.glsl", "game/res/shaders/simpleFS.glsl", "simpleShader");
-
-	ResManager::GenTexture("game/res/textures/envirorment/terrain/forest_terrain_1.png", "terrainTexture");
-	ResManager::GetTexture("terrainTexture")->LoadTexture(false);
-
-	ResManager::GenTexture("game/res/textures/wall.jpg", "wall");
-	ResManager::GetTexture("wall")->LoadTexture(false);
-
-	ResManager::CreateShader("game/res/shaders/simpleVS.glsl", "game/res/shaders/simpleFS.glsl", "terrain");
-
-
-	Amba::Entity terrain(ResManager::GetScene("exampleScene"));
-	ConfigureTerrain(terrain);
-
-	
 	ResManager::CreateShader("src/engine/res/shaders/pbrVS.glsl", "src/engine/res/shaders/pbrFS.glsl", "pbrLighting");
 
-
+	//Amba::Entity terrain(ResManager::GetScene("exampleScene"));
+	//ConfigureTerrain(terrain);
+	
 	// basic PBR lighting
 	Amba::Sphere pbrSphere(ResManager::GetScene("exampleScene"), 2.0f, 36, 36);
 	pbrSphere.Init();
 	pbrSphere.AddComponent<SphereCollider>();
 	pbrSphere.InitCollider();
-	pbrSphere.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(0.0f, 0.0f, 0.0f));
+	pbrSphere.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(10.0f, 0.0f, 10.0f));
 
 	pbrSphere.GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("pbrLighting");
 
@@ -152,26 +140,13 @@ void GameApp::OnUserCreate()
 	cube.GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("pbrLighting");
 	cube.AddComponent<AABCollider>();
 	cube.InitCollider();
-	cube.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(10.0f, 0.0f, 0.0f));
+	cube.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(20.0f, 0.0f, 0.0f));
 	 
 	PhysicsComponent* cubePhysics = cube.AddComponent<PhysicsComponent>();
 	cubePhysics->m_Mass = 20.0f;
 	cubePhysics->ApplyForce(glm::vec3(0.0f, 0.0f, 0.0f));
 	cubePhysics = nullptr;
 
-	PhysicsComponent* spherePhysics = pbrSphere.AddComponent<PhysicsComponent>();
-	spherePhysics->m_Mass = 80.0f;
-	spherePhysics->ApplyForce(glm::vec3(0.0f, 0.0f, 0.0f));
-	spherePhysics = nullptr;
-
-	// fow now. add physics component to plane
-	PhysicsComponent* terrainPhysics = terrain.AddComponent<PhysicsComponent>();
-	terrainPhysics->m_Mass = 1000000000.0f;
-	terrainPhysics->ToggleEntGravity(false);
-	terrainPhysics = nullptr;
-
-	terrain.Destroy();
-	pbrSphere.Destroy();
 	
 	EntityId copy = ResManager::GetScene("exampleScene")->CopyEntity(cube.GetEntId());
 	ResManager::GetScene("exampleScene")->
@@ -180,46 +155,37 @@ void GameApp::OnUserCreate()
 	ResManager::GetScene("exampleScene")->GetComponent<PhysicsComponent>(copy)->m_Mass = 10.0f;
 		
 
-	// create walls
+	// create walls - for now enter in object space to not mess up with transformations and scale it
 	Amba::Plane wall_1(ResManager::GetScene("exampleScene"),
-						glm::vec3(0.0f, 0.0f, 0.0f), // v0
-						glm::vec3(0.0f, 0.0f, 10.0f), // v1
-						glm::vec3(10.0f, 0.0f, 10.0f), // v2
-						glm::vec3(10.0f, 0.0f, 0.0f), // v3
+						glm::vec3(0.0f, -0.5f, -0.5f), // v0
+						glm::vec3(0.0f,  0.5f, -0.5f), // v1
+						glm::vec3(0.0f,  0.5f,  0.5f), // v2
+						glm::vec3(0.0f, -0.5f,  0.5f), // v3
 						5);
 	wall_1.Init();
 	wall_1.GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("pbrLighting");
-
-	wall_1.GetComponent<TransformComponent>()->m_Radians = glm::radians(90.0f);
-	wall_1.GetComponent<TransformComponent>()->UpdateRotationAxis(glm::vec3(0.0f, 0.0f, 1.0f));
-	wall_1.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(0.0f, -2.0f, 0.0f));
 	wall_1.AddComponent<PlaneCollider>();
 	wall_1.InitCollider();
 	wall_1.AddComponent<PhysicsComponent>();
 	wall_1.GetComponent<PhysicsComponent>()->m_Mass = 100000000.0f;
 
-	// create 3 more walls
-	EntityId walls[3];
-	for (int i = 0; i < 3; i++)
-		walls[i] = ResManager::GetScene("exampleScene")->CopyEntity(wall_1.GetEntId());
+	// create walls
+	Amba::Plane wall_2(ResManager::GetScene("exampleScene"),
+		glm::vec3(0.0f, -0.5f, -0.5f), // v0
+		glm::vec3(0.0f, 0.5f, -0.5f), // v1
+		glm::vec3(0.0f, 0.5f, 0.5f), // v2
+		glm::vec3(0.0f, -0.5f, 0.5f), // v3
+		5);
+	wall_2.Init();
+	wall_2.GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("pbrLighting");
+	wall_2.AddComponent<PlaneCollider>();
+	wall_2.InitCollider();
+	wall_2.AddComponent<PhysicsComponent>();
+	wall_2.GetComponent<PhysicsComponent>()->m_Mass = 100000000.0f;
+	wall_2.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(10.0f, 0.0f, 0.0f));
 
-	// second wall
-	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(walls[0])->UpdatePosition(glm::vec3(40.0f, -2.0f, 0.0f));
+	pbrSphere.Destroy();
 
-	// third wall
-	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(walls[1])->m_Radians = glm::radians(180.0f);
-	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(walls[1])->UpdatePosition(glm::vec3(0.0f, 0.0f, 40.0f));
-
-	// fourth wall
-	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(walls[2])->UpdatePosition(glm::vec3(40.0f, 0.0f, 0.0f));
-	ResManager::GetScene("exampleScene")->GetComponent<TransformComponent>(walls[2])->m_Radians = glm::radians(-90.0f);
-
-	wall_1.Destroy();
-	ResManager::GetScene("exampleScene")->DestroyEntity(walls[0]);
-	ResManager::GetScene("exampleScene")->DestroyEntity(walls[1]);
-	ResManager::GetScene("exampleScene")->DestroyEntity(walls[2]);
-
-	
 	/*EntityId entities[10];
 	for (int i = 0; i < 10; i++)
 	{
@@ -276,6 +242,10 @@ void GameApp::OnUserUpdate()
 
 void ConfigureTerrain(Amba::Entity& terrain)
 {
+	ResManager::GenTexture("game/res/textures/envirorment/terrain/forest_terrain_1.png", "terrainTexture");
+	ResManager::GetTexture("terrainTexture")->LoadTexture(false);
+	ResManager::CreateShader("game/res/shaders/simpleVS.glsl", "game/res/shaders/simpleFS.glsl", "terrain");
+
 	terrain.AddComponent<MeshComponent>();
 	terrain.AddComponent<TransformComponent>();
 
