@@ -148,11 +148,11 @@ void GameApp::OnUserCreate()
 	cubePhysics = nullptr;
 
 	
-	EntityId copy = ResManager::GetScene("exampleScene")->CopyEntity(cube.GetEntId());
-	ResManager::GetScene("exampleScene")->
-		GetComponent<TransformComponent>(copy)->UpdatePosition(
-		glm::vec3(25.0f, 0.0f, 0.0f));
-	ResManager::GetScene("exampleScene")->GetComponent<PhysicsComponent>(copy)->m_Mass = 10.0f;
+	//EntityId copy = ResManager::GetScene("exampleScene")->CopyEntity(cube.GetEntId());
+	//ResManager::GetScene("exampleScene")->
+	//	GetComponent<TransformComponent>(copy)->UpdatePosition(
+	//	glm::vec3(25.0f, 0.0f, 0.0f));
+	//ResManager::GetScene("exampleScene")->GetComponent<PhysicsComponent>(copy)->m_Mass = 10.0f;
 		
 
 	// create walls - for now enter in object space to not mess up with transformations and scale it
@@ -164,10 +164,11 @@ void GameApp::OnUserCreate()
 						5);
 	wall_1.Init();
 	wall_1.GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("pbrLighting");
-	wall_1.AddComponent<PlaneCollider>();
+	wall_1.AddComponent<AABCollider>();
 	wall_1.InitCollider();
 	wall_1.AddComponent<PhysicsComponent>();
-	wall_1.GetComponent<PhysicsComponent>()->m_Mass = 100000000.0f;
+	wall_1.GetComponent<PhysicsComponent>()->m_Mass = 100000000000000000000.0f;
+	wall_1.GetComponent<TransformComponent>()->UpdateScale(glm::vec3(0.0f, 5.0f, 10.0f));
 
 	// create walls
 	Amba::Plane wall_2(ResManager::GetScene("exampleScene"),
@@ -178,13 +179,15 @@ void GameApp::OnUserCreate()
 		5);
 	wall_2.Init();
 	wall_2.GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("pbrLighting");
-	wall_2.AddComponent<PlaneCollider>();
+	wall_2.AddComponent<AABCollider>();
 	wall_2.InitCollider();
 	wall_2.AddComponent<PhysicsComponent>();
-	wall_2.GetComponent<PhysicsComponent>()->m_Mass = 100000000.0f;
-	wall_2.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(10.0f, 0.0f, 0.0f));
+	wall_2.GetComponent<PhysicsComponent>()->m_Mass = 10000000000000000000000.0f;
+	wall_2.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(30.0f, 0.0f, 0.0f));
+	wall_2.GetComponent<TransformComponent>()->UpdateScale(glm::vec3(0.0f, 5.0f, 10.0f));
 
 	pbrSphere.Destroy();
+	
 
 	/*EntityId entities[10];
 	for (int i = 0; i < 10; i++)

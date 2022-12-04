@@ -55,8 +55,8 @@ namespace Amba {
 
 				AB_INFO("Impulse: {0}", impulse);
 
-				scene->GetComponent<PhysicsComponent>(ent)->SolveCollision(impulse, normal);
-				scene->GetComponent<PhysicsComponent>(intersect.GetOtherEnt())->SolveCollision(-impulse, normal);
+				scene->GetComponent<PhysicsComponent>(ent)->SolveCollision(impulse, normal, intersect.GetOtherEnt());
+				scene->GetComponent<PhysicsComponent>(intersect.GetOtherEnt())->SolveCollision(-impulse, normal, ent);
 			
 			}
 		}
