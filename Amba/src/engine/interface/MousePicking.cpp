@@ -3,7 +3,7 @@
 namespace Amba {
 
 	MousePicker::MousePicker()
-		: m_MouseRay(glm::vec3(0.0f)), p_Scene(nullptr), m_ScrHeight(0.0f), m_ScrWidth(0.0f)
+		: m_MouseRay(glm::vec3(0.0f)), p_Scene(nullptr), m_ScrHeight(0), m_ScrWidth(0)
 	{
 	}
 
@@ -16,7 +16,7 @@ namespace Amba {
 	static double yaw = 0.0f;
 	static double pitch = 0.0f;
 
-	void MousePicker::UpdateMousePos(Camera& camera)
+	void MousePicker::UpdateMousePos(Camera* camera)
 	{
 		double mouseX = Mouse::GetMouseX();
 		double mouseY = Mouse::GetMouseY();
@@ -28,7 +28,7 @@ namespace Amba {
 	}
 
 	// returns boolean - check if true before using entity (default will return number 0)
-	EntityId MousePicker::SelectEntity(Camera& camera)
+	EntityId MousePicker::SelectEntity(Camera* camera)
 	{
 		// shoot ray
 		float shootDistance = 1.0f;
@@ -37,7 +37,7 @@ namespace Amba {
 
 		EntityId default = -1;
 
-		glm::vec3 ray = camera.GetCamPos();
+		glm::vec3 ray = camera->GetCamPos();
 		glm::vec3 step = m_MouseRay * shootDistance;
 
 		// create collider for mouse
@@ -106,11 +106,11 @@ namespace Amba {
 		return glm::vec4(mousePos.x, mousePos.y, -1.0f, 0.0f);
 	}
 
-	glm::vec4 MousePicker::EyeSpace(glm::vec4 mousePos, Camera& camera)
+	glm::vec4 MousePicker::EyeSpace(glm::vec4 mousePos, Camera* camera)
 	{
 		//float focalLength = 1.0f / (tanf(glm::radians(camera.GetZoom() / 2.0f)));
 		//float aspectRatio = (float)m_ScrHeight / (float)m_ScrWidth;
-		glm::mat4 projMatrix = glm::perspective(glm::radians(camera.GetZoom()), (float)m_ScrWidth / (float)m_ScrHeight, NEAR_PLANE, FAR_PLANE);
+		glm::mat4 projMatrix = glm::perspective(glm::radians(camera->GetZoom()), (float)m_ScrWidth / (float)m_ScrHeight, NEAR_PLANE, FAR_PLANE);
 		glm::mat4 InvertedProjectionMatrix = glm::inverse(projMatrix);
 		glm::vec4 transformed = InvertedProjectionMatrix * mousePos;
 		
@@ -118,9 +118,9 @@ namespace Amba {
 		//return glm::vec4(mousePos.x / focalLength, (mousePos.y * aspectRatio) / focalLength, 1.0f, 0.0f);
 	}
 
-	glm::vec3 MousePicker::WorldSpace(glm::vec4 mousePos, Camera& camera)
+	glm::vec3 MousePicker::WorldSpace(glm::vec4 mousePos, Camera* camera)
 	{
-		glm::mat4 InvertedViewMatrix = glm::inverse(camera.GetViewMatrix());
+		glm::mat4 InvertedViewMatrix = glm::inverse(camera->GetViewMatrix());
 		glm::vec4 transformed = InvertedViewMatrix * mousePos;
 		glm::vec3 mouseRay = glm::vec3(transformed.x, transformed.y, transformed.z);
 		mouseRay = glm::normalize(mouseRay);

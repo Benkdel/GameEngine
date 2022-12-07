@@ -1,7 +1,7 @@
 # pragma once
 
 #include <engine/dataTypes.h>
-#include <engine/ecs/Entcs.h>
+#include <engine/ecs/Entity.h>
 
 static float vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -72,7 +72,6 @@ namespace Amba {
 		void Init()
 		{
 			AddComponent<MeshComponent>();
-			AddComponent<TransformComponent>();
 			
 			MeshComponent* mesh = GetComponent<MeshComponent>();
 
@@ -120,7 +119,6 @@ namespace Amba {
 		void Init()
 		{
 			AddComponent<MeshComponent>();
-			AddComponent<TransformComponent>();
 
 			MeshComponent* mesh = GetComponent<MeshComponent>();
 
@@ -128,8 +126,8 @@ namespace Amba {
 			float nx, ny, nz, lengthInv = 1.0f / m_Radius;		// normal
 			float s, t;											// texCoord
 
-			float sectorStep = 2 * PI_VALUE / m_Sectors;
-			float stackStep = PI_VALUE / m_Stacks;
+			float sectorStep = 2.0f * PI_VALUE / (float)m_Sectors;
+			float stackStep = PI_VALUE / (float)m_Stacks;
 			float sectorAngle, stackAngle;
 
 			for (int i = 0; i <= m_Stacks; ++i)
@@ -221,7 +219,6 @@ namespace Amba {
 		void Init()
 		{
 			AddComponent<MeshComponent>();
-			AddComponent<TransformComponent>();
 
 			MeshComponent* mesh = GetComponent<MeshComponent>();
 
@@ -292,7 +289,6 @@ namespace Amba {
 		glm::vec3 m_V2 = glm::vec3(0.0f);
 		glm::vec3 m_V3 = glm::vec3(0.0f);
 		unsigned int m_Division = 0;
-
 
 	};
 

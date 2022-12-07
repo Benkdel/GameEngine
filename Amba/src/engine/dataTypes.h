@@ -42,6 +42,15 @@ private:
 
 namespace Amba {
 
+	static float s_InfiniteMassValue = 1000000.0f;
+
+	struct ViewPortData
+	{
+		unsigned int m_Width;
+		unsigned int m_Height;
+		bool m_HasChanged = false;
+	};
+
 	class Cell
 	{
 	public:

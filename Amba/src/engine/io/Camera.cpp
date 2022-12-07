@@ -10,9 +10,10 @@ namespace Amba {
 
     static glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
-    Camera::Camera(glm::vec3 pos)
+    Camera::Camera(glm::vec3 pos, float nearPlane, float farPlane)
 	    : m_CameraPos(pos), m_CameraFront(glm::vec3(1.0f, 0.0f, 0.0f)),
-	    m_Pitch(0.0f), m_Yaw(0.0f), m_Speed(10.5f), m_Sensitivity(1.0f), m_FoV(DEFAULT_FOV)
+	    m_Pitch(0.0f), m_Yaw(0.0f), m_Speed(10.5f), m_Sensitivity(1.0f), m_FoV(DEFAULT_FOV),
+        m_NearPlane(nearPlane), m_FarPlane(farPlane)
     {
 	    UpdateCameraVectors();
     }
@@ -29,6 +30,11 @@ namespace Amba {
 		    m_Pitch = -89.0f;
 
 	    UpdateCameraVectors();
+    }
+
+    void Camera::NewUpdateCameraPos(glm::vec3 pos, double dt)
+    {
+        m_CameraPos = pos;
     }
 
     void Camera::UpdateCameraPos(CameraMotion direction, double dt)
@@ -68,6 +74,12 @@ namespace Amba {
         else { // > 45.0f
             m_FoV = DEFAULT_FOV;
         }
+    }
+
+    glm::mat4 Camera::GetPerspective(ViewPortData vp)
+    {
+        return glm::perspective(glm::radians(GetZoom()),
+            (float)vp.m_Width / (float)vp.m_Height, m_NearPlane, m_FarPlane);
     }
 
     glm::mat4 Camera::GetViewMatrix()

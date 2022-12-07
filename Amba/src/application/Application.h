@@ -14,7 +14,6 @@
 #include <engine/ecs/Primitives.h>
 
 
-
 namespace Amba {
 
 class Application
@@ -40,12 +39,6 @@ class Application
 
 		void SetWindowShouldClose();
 
-		// cameras
-		unsigned int AB_ActiveCamera;
-		Amba::Camera AB_Cameras[5];
-
-		glm::mat4 AB_Perspective;
-
 		Scene* p_ActiveScene;
 
 	private:
@@ -53,7 +46,6 @@ class Application
 		Amba::Interface* p_Interface;
 
 		void ProcessInput();
-
 
 	protected:
 		double AB_TimeElapsed;

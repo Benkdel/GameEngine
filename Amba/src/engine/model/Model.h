@@ -6,32 +6,33 @@
 
 namespace Amba {
 
+	class Entity;
+	
 	class Model {
 	public:
-		Model();
-		~Model();
+		//Model();
+		//~Model();
 
-		void LoadModel(const std::string& path);
+		static void LoadModel(const std::string& path, Entity* parentEntity);
 
-		void Cleanup();
-
-		std::vector<EntityId> m_Entities;
+		// void Cleanup();
 
 	private:
-		std::vector<Mesh> m_Meshes;
-		std::vector<Texture> m_TexturesLoaded;
+		static void InitUtils();
+		static void ResetUtils();
 
-		std::string m_Directory;
-		void processNode(ABImp::Node* node, ABImp::Importer* data);
-		Mesh processMesh(ABImp::Mesh* mesh, ABImp::Node* node);
+		struct Utils
+		{
+			std::string m_Directory;
+			std::vector<Texture*> m_TexturesLoaded;	
+		};
 
-		std::vector<Texture> LoadTextures(std::string uri, std::string texName);
+		static Utils* s_Utils;
 
-		float m_Size;
-		glm::vec3 m_Translation;
+		static void ProcessNode(ABImp::Node* node, ABImp::Importer* data, Entity* parentEntity);
+		static void ProcessMesh(ABImp::Mesh* mesh, ABImp::Node* node, Entity* ent);
+		static Texture* LoadTextures(std::string uri, std::string texName);
 
-		friend class Renderer;
-		friend class Interface;
 	};
 
 }

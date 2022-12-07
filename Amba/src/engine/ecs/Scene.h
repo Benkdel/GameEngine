@@ -8,6 +8,8 @@
 #include <engine/dataStructures/SpatialHashGrid.h>
 #include <engine/dataTypes.h>
 
+#include <unordered_map>
+
 #include <bitset>
 #include <vector>
 
@@ -16,8 +18,13 @@ typedef std::bitset<MAX_COMPONENTS> ComponentMask;
 
 static int GetColliderTypeIndex(EntityId id, Amba::Scene* scene);
 
+#define EDITOR_CAMERA_TAG "EditorCamera"
 
 namespace Amba {
+
+
+	// forward declarator
+	class Entity;
 
 	// entity handlers
 	EntityId CreateEntityId(EntityIndex index, EntityVersion version);
@@ -47,7 +54,25 @@ namespace Amba {
 		EntityId CreateEntity();
 		EntityId CopyEntity(EntityId id);
 		void DestroyEntity(EntityId id);
-		
+
+		void AddTag(EntityId id, std::string tag);
+		std::string GetTag(const EntityId id);
+		EntityId GetEntity(const std::string& tag);
+		void ModifyTag(const EntityId id, const std::string& newTag);
+		void DeleteTag(const EntityId id);
+
+
+	public: // camera handler
+
+		void AddCameraObject(Entity* entity, bool primary);
+		void SetActiveCamera(Entity* entity);
+		void SetActiveCamera(EntityId id);
+		void DeleteCamera(Entity* entity);
+		Camera* GetActiveCamera();
+		inline const ViewPortData& GetViewPortData() const { return m_ViewPortData; };
+
+	public: // templates
+
 		template <typename T>
 		bool EntHasComponent(EntityId id)
 		{
@@ -89,6 +114,9 @@ namespace Amba {
 		template <typename T>
 		T* GetComponentWithId(EntityId id, int componentId)
 		{
+			if (componentId < 0)
+				return nullptr;
+
 			if (!m_Entities[GetEntityIndex(id)].mask.test(componentId))
 				return nullptr;
 
@@ -128,12 +156,21 @@ namespace Amba {
 		std::vector<ComponentPool*> m_ComponentPools;
 
 		Spatial2DGrid* m_Spatial2DGrid;
+
+		std::unordered_map<EntityId, std::string> m_EntityTag;
+		std::unordered_map<std::string, EntityId> m_TagEntity;
 	
 		void Cleanup();
 
 	private:
 
+		std::vector<EntityId> m_AvailableCameras;
+		EntityId m_ActiveCamera;
 
+		// viewport data
+		ViewPortData m_ViewPortData;
+
+		friend class Application;
 	};
 
 

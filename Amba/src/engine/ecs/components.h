@@ -5,6 +5,7 @@
 #include <engine/material/Material.h>
 #include <engine/renderer/Texture.h>
 #include <engine/model/Model.h>
+#include <engine/io/Camera.h>
 
 #include <engine/renderer/Buffers.h>
 
@@ -25,15 +26,28 @@ public:
 };
 
 
+class TagComponent : public Components
+{
+public:
+
+	TagComponent() 
+		: m_Tag("Undefined") {}
+
+
+private:
+	std::string m_Tag;
+};
+
+
 class MeshComponent : public Components
 {
 public:
 	MeshComponent() = default;
 
-	std::vector<Amba::Vertex>	m_Vertices;
-	std::vector<unsigned int>	m_Indices;
-	Amba::Material*				p_Material = nullptr;
-	Amba::Texture*				p_Texture = nullptr; // for now only one texture
+	std::vector<Amba::Vertex>		m_Vertices;
+	std::vector<unsigned int>		m_Indices;
+	Amba::Material*					p_Material = nullptr;
+	std::vector<Amba::Texture*>		m_Textures;
 
 	Amba::VertexBufferLayout layout;
 
@@ -49,8 +63,8 @@ public:
 	float m_Radians = 0.0f;
 	float m_Size = 1.0f;
 
-	int m_CurrentCell = -1.0f;
-	int m_IndexInCell = -1.0f;
+	int m_CurrentCell = -1;
+	int m_IndexInCell = -1;
 
 	void UpdatePosition(glm::vec3 pos)
 	{
@@ -70,12 +84,18 @@ public:
 		m_TransformRequired = true;
 	}
 
+	void SetTransformMatrix(glm::mat4 mat4)
+	{
+		m_TransformMatrix = mat4;
+	}
+
 	inline glm::vec3 GetPosition() { return m_Position; };
 	inline glm::vec3 GetRotationAxis() { return m_RotationAxis; };
 	inline glm::vec3 GetScale() { return m_Scale; };
+	inline glm::mat4 GetTrsMatrix() { return m_TransformMatrix; };
 
 	// function for now only should be called from colliders
-	bool IsTransformRequired() 
+	bool IsTransformRequired()
 	{ 
 		bool temp = m_TransformRequired;
 		m_TransformRequired = false;
@@ -87,6 +107,8 @@ private:
 	glm::vec3 m_Position		= glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 m_RotationAxis	= glm::vec3(1.0f, 1.0f, 1.0f);
 	glm::vec3 m_Scale			= glm::vec3(1.0f, 1.0f, 1.0f);
+
+	glm::mat4 m_TransformMatrix = glm::mat4(1.0f);
 
 	bool m_TransformRequired = true;
 
@@ -144,7 +166,8 @@ public:
 	void Integrate(MeshComponent* mesh, TransformComponent* tsr, float dt);
 	void CalculateNetForce(glm::vec3 collisionForces = glm::vec3(0.0f));
 
-	void SolveCollision(float impulse, glm::vec3 normal, EntityId other = -1);
+	// should this go to integrate?
+	void ApplyCollisionResults(float impulse, glm::vec3 normal, EntityId other = -1);
 
 	void inline ApplyForce(glm::vec3 force)			{ m_AppliedForce = force; };
 	void inline IncreaseForce(glm::vec3 force)		{ m_AppliedForce += force; };
@@ -168,6 +191,20 @@ private:
 	
 	bool m_EntGravityActive = true;
 	
+
+};
+
+class CameraComponent : public Components
+{
+public:
+
+	CameraComponent()
+		: m_Camera(new Amba::Camera()) {}
+
+	Amba::Camera* GetCamera() { return m_Camera; };
+
+private:
+	Amba::Camera* m_Camera;
 
 };
 

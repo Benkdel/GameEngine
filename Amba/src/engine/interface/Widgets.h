@@ -11,6 +11,7 @@ namespace Amba {
 	void ShowTransform(Scene* scene);
 	void ShowAdditionalEntitiesData(Scene* scene);
 	void ShowEntityUnderMouse(Scene* scene);
+	void ShowCameraSelection(Scene* scene, Camera* activeCamera, bool& editorsCameraActive);
 
 	// basic widgets methods
 	void TransformWidget(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.f);

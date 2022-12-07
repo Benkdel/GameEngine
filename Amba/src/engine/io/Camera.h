@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <engine/dataTypes.h>
 
 namespace Amba {
 
@@ -13,13 +14,19 @@ namespace Amba {
 	class Camera
 	{
 	public:
-		Camera(glm::vec3 pos = glm::vec3(10.0f, 5.0f, 25.0f));
+
+		Camera(glm::vec3 pos = glm::vec3(10.0f, 5.0f, 25.0f), float nearPlane = 0.1f, float farPlane = 100.0f);
 
 		void UpdateCameraDirection(double dx, double dy);
+
+		// temp
+		void NewUpdateCameraPos(glm::vec3 pos, double dt);
 
 		void UpdateCameraPos(CameraMotion direction, double dt);
 
 		void UpdateCameraZoom(double dy);
+
+		glm::mat4 GetPerspective(ViewPortData vp);
 
 		glm::mat4 GetViewMatrix();
 
@@ -41,7 +48,10 @@ namespace Amba {
 		float m_Sensitivity;
 		float m_FoV;
 
+		float m_NearPlane;
+		float m_FarPlane;
+
 		void UpdateCameraVectors();
-};
+	};
 
 }

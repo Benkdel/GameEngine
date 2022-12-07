@@ -5,6 +5,8 @@
 #include <GLAD/glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <engine/dataTypes.h>
+
 namespace Amba {
 
 	static bool s_GLFWInitialized = false;
@@ -15,7 +17,7 @@ namespace Amba {
 		Window(const std::string& title = "", unsigned int width = 1280, unsigned int height = 760);
 		~Window();
 
-		void OnUpdate();
+		ViewPortData OnUpdate();
 		void ShutDown();
 
 		void SetWindowShouldClose();

@@ -133,7 +133,7 @@ void PhysicsComponent::Integrate(MeshComponent* mesh, TransformComponent* tsr, f
 	m_NetForce = glm::vec3(0.0f);
 }
 
-void PhysicsComponent::SolveCollision(float impulse, glm::vec3 normal, EntityId other)
+void PhysicsComponent::ApplyCollisionResults(float impulse, glm::vec3 normal, EntityId other)
 {
 	if ((other >> 32) != EntityIndex(-1))
 	{
@@ -150,7 +150,7 @@ void PhysicsComponent::SolveCollision(float impulse, glm::vec3 normal, EntityId 
 		}
 	}
 
-	if (m_Mass > 1000000.0f)
+	if (m_Mass >= Amba::s_InfiniteMassValue)
 		return;
 
 	m_Velocity = m_Velocity + (impulse / m_Mass) * normal;

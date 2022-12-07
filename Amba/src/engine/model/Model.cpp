@@ -1,53 +1,63 @@
 #include "Model.h"
 
 #include <engine/core.h>
-#include <engine/ecs/Entcs.h>
+#include <engine/ecs/Entity.h>
+
+#include <engine/ResourceManager.h>
 
 namespace Amba {
     
-    Model::Model()
-    : m_Size(1.0f), m_Translation(glm::vec3(1.0f))
-    {
-    }
+    Model::Utils* Model::s_Utils = new Model::Utils;
 
-    Model::~Model()
+    void Model::LoadModel(const std::string& path, Entity* parentEntity)
     {
-    }
-
-    void Model::Cleanup()
-    {
-    }
-
-    void Model::LoadModel(const std::string& path)
-    {
-        ABImp::Importer* importer = new ABImp::Importer();  
+        ABImp::Importer* importer = new ABImp::Importer();
         importer->LoadData(path);
 
-        m_Directory = path.substr(0, path.find_last_of('/') + 1);
+        s_Utils->m_Directory = path.substr(0, path.find_last_of('/') + 1);
 
-        processNode(&importer->m_Nodes[0], importer);
+        ProcessNode(&importer->m_Nodes[0], importer, parentEntity);
+
+        ResetUtils();
      }
 
-    void Model::processNode(ABImp::Node* node, ABImp::Importer* data)
+    void Model::ProcessNode(ABImp::Node* node, ABImp::Importer* data, Entity* parentEntity)
     {
         // process all the node's meshes (if any)
+        Entity* current = parentEntity;
+        AB_ASSERT(!(current == NULL), "Entity is null!");
+
+        unsigned int counter = 1;
+
         for (unsigned int i = 0; i < data->m_Nodes.size(); i++)
         {
             ABImp::Node* node = &data->m_Nodes[i];
+            
             for (unsigned j = 0; j < node->meshes.size(); j++)
             {
+                current->AddComponent<MeshComponent>();
+                
                 ABImp::Mesh* mesh = &data->m_Meshes[node->meshes[j]];
-                m_Meshes.push_back(processMesh(mesh, node));
+                
+                ProcessMesh(mesh, node, current);
+
+                if (current->p_Child == nullptr)
+                {
+                    // create child and advance current node to it
+                    current->p_Child = new Entity(current->GetScene(), "Child[" + std::to_string(counter++) + "]");
+                    AB_ASSERT(!(current->p_Child == NULL), "Error allocating memory!");
+                    current = current->p_Child;
+                }
             }
         }
     }
 
-    Mesh Model::processMesh(ABImp::Mesh* mesh, ABImp::Node *node)
+    void Model::ProcessMesh(ABImp::Mesh* mesh, ABImp::Node *node, Entity* ent)
     {
         // data to fill
         std::vector<Vertex> vertices;
         std::vector<unsigned int> indices;
-        std::vector<Texture> textures;
+        std::vector<Texture*> textures;
         
         size_t nVertex = mesh->vertices.size();
 
@@ -74,41 +84,47 @@ namespace Amba {
         if (mesh->material.uri.size() > 0)
         {
             // for now I am only using 1 texture for each mesh
-            std::vector<Texture> temp;
+            std::vector<Texture*> temp;
             if (mesh->material.uri.find(ABImp::TexType::NORMAL) != mesh->material.uri.end())
             {
-                temp = LoadTextures(mesh->material.uri[ABImp::TexType::NORMAL], "texture");
-                textures.insert(textures.end(), temp.begin(), temp.end());
+                textures.push_back(LoadTextures(mesh->material.uri[ABImp::TexType::NORMAL], "texture"));
             }
 
             if (mesh->material.uri.find(ABImp::TexType::PBR_METALLIC) != mesh->material.uri.end())
             {
-                temp = LoadTextures(mesh->material.uri[ABImp::TexType::PBR_METALLIC], "texture");
-                textures.insert(textures.end(), temp.begin(), temp.end());
+                textures.push_back(LoadTextures(mesh->material.uri[ABImp::TexType::PBR_METALLIC], "texture"));
             }
             if (mesh->material.uri.find(ABImp::TexType::METALLIC) != mesh->material.uri.end())
             {
-                temp = LoadTextures(mesh->material.uri[ABImp::TexType::METALLIC], "texture");
-                textures.insert(textures.end(), temp.begin(), temp.end());
+                textures.push_back(LoadTextures(mesh->material.uri[ABImp::TexType::METALLIC], "texture"));
             }
         
-            return Mesh(vertices, indices, textures, node->tsrMatrix);
+            ent->GetComponent<MeshComponent>()->m_Textures = textures;            
         }
-        return Mesh(vertices, indices, node->tsrMatrix);
+        
+        ent->GetComponent<MeshComponent>()->m_Vertices = vertices;
+        ent->GetComponent<MeshComponent>()->m_Indices = indices;
+        ent->GetComponent<TransformComponent>()->SetTransformMatrix(node->tsrMatrix);
     }
 
-    std::vector<Texture> Model::LoadTextures(std::string uri, std::string texName)
+    void Model::ResetUtils()
+    {
+        s_Utils->m_Directory = "";
+        s_Utils->m_TexturesLoaded.clear();
+    }
+
+    Texture* Model::LoadTextures(std::string uri, std::string texName)
     {
         // for now only one texture for every mesh
 
-        std::vector<Texture> textures;
+        Texture* texture;
         bool skip = false;
 
-        for (unsigned int i = 0; i < m_TexturesLoaded.size(); i++)
+        for (unsigned int i = 0; i < s_Utils->m_TexturesLoaded.size(); i++)
         {
-            if (std::strcmp(m_TexturesLoaded[i].GetPath().data(), uri.c_str()) == 0)
+            if (std::strcmp(s_Utils->m_TexturesLoaded[i]->GetPath().data(), uri.c_str()) == 0)
             {
-                textures.push_back(m_TexturesLoaded[i]);
+                texture = s_Utils->m_TexturesLoaded[i];
                 skip = true;
                 break;
             }
@@ -116,11 +132,12 @@ namespace Amba {
 
         if (!skip)
         {
-            Texture texture(m_Directory + uri);
-            texture.LoadTexture(false);
-            textures.push_back(texture);
-            m_TexturesLoaded.push_back(texture);
+            ResManager::GenTexture(s_Utils->m_Directory + uri, texName + uri);
+            texture = ResManager::GetTexture(texName + uri);
+            texture->LoadTexture(false);
+            
+            s_Utils->m_TexturesLoaded.push_back(texture);
         }
-        return textures;
+        return texture;
     }
 }

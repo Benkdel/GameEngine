@@ -8,8 +8,9 @@
 
 namespace Amba {
 
-    EntityId Interface::s_SelectedEntity = -1;
-    EntityId Interface::s_EntUnderCursor = -1;
+    EntityId Interface::s_SelectedEntity            = -1;
+    EntityId Interface::s_EntUnderCursor            = -1;
+    EntityId Interface::s_SelectedCameraEntity      = -1;
 
     const char* glsl_version = "#version 130";
 
@@ -45,10 +46,12 @@ namespace Amba {
         // check if scene is null, where?
         p_CurrentScene = scene;
         m_MousePicker.UpdateScene(p_CurrentScene);
+
+        p_EditorCamera = scene->GetComponent<CameraComponent>(scene->GetEntity(EDITOR_CAMERA_TAG))->GetCamera();
+        p_ActiveCamera = p_EditorCamera;
     }
 
-
-    void Interface::ProcessUserInput(Camera& camera)
+    void Interface::ProcessUserInput(Camera* camera, double dt)
     {
         // check if windows size has changed
         if (m_ScrHeight != p_Window->GetHeight() || m_ScrWidth != p_Window->GetWidth())
@@ -90,22 +93,26 @@ namespace Amba {
                     p_CurrentScene->GetComponent<PhysicsComponent>(Interface::s_SelectedEntity)->IncreaseForce(glm::vec3(0.5f, 0.0f, 0.0f));
             }
         }
+
+        // proces camera controller input - only if camera is active
+        // temp, always true and default:
+        if (m_IsEditorCameraActive && IsEntityValid(Interface::s_SelectedCameraEntity))
+        {
+            glm::vec3 pos = p_CurrentScene->GetComponent<TransformComponent>(Interface::s_SelectedCameraEntity)->GetPosition();
+            EditorCamController::ProcessInput(pos, camera, dt);
+            p_CurrentScene->GetComponent<TransformComponent>(Interface::s_SelectedCameraEntity)->UpdatePosition(pos);
+        }
     }
 
-    void Interface::Run(Camera &camera)
+    void Interface::Run(double dt)
     {
-        /*
-            Positions and sizes of windows
-            are being set in imgui.ini file for now (I'm not using docking just yet)
-        */
         
-        ProcessUserInput(camera);
+        ProcessUserInput(p_ActiveCamera, dt);
         
         // runs ImGui interface
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-
 
         /* ========================
          ========= LAYOUT =========
@@ -127,6 +134,7 @@ namespace Amba {
             ShowTransform(p_CurrentScene);
             ShowAdditionalEntitiesData(p_CurrentScene);
             ShowEntityUnderMouse(p_CurrentScene);
+            ShowCameraSelection(p_CurrentScene, p_ActiveCamera, m_IsEditorCameraActive);
 
             DebugingMethods(p_CurrentScene);
 
@@ -142,6 +150,9 @@ namespace Amba {
 
         // set first run flag to false after first loop
         m_firstRunFlag = false;
+
+
+        // if editor camera is active, set boolean to false
     }
 
     void Interface::Cleanup()
@@ -158,4 +169,12 @@ namespace Amba {
             return std::to_string(ent);
         return "-";
     }
+
+    std::string Interface::GetActiveEntityTag(EntityId ent, Scene* scene)
+    {
+        if (Amba::IsEntityValid(ent))
+            return scene->GetTag(ent);
+        return "-";
+    }
+
 }

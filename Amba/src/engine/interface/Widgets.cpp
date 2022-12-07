@@ -1,8 +1,16 @@
 #include "Widgets.h"
 
-static glm::vec3 position = glm::vec3(0.0f);
-static glm::vec3 rotation = glm::vec3(0.0f);
-static glm::vec3 scale = glm::vec3(0.0f);
+#include <engine/dataTypes.h>
+
+static glm::vec3 s_Position       = glm::vec3(0.0f);
+static glm::vec3 s_Rotation       = glm::vec3(0.0f);
+static glm::vec3 s_Scale          = glm::vec3(0.0f);
+
+static glm::vec3 s_CamPosition    = glm::vec3(0.0f);
+static glm::vec3 s_CamRotation    = glm::vec3(0.0f);
+static glm::vec3 s_CamScaling     = glm::vec3(0.0f);
+
+static EntityId s_PrevActiveCam = -1;
 
 namespace Amba {
 
@@ -22,17 +30,19 @@ namespace Amba {
         ImGui::TextColored(ImVec4(1, 1, 0, 1), "Avaiable Entities:");
         ImGui::Text("Active Entity: ");
         ImGui::SameLine();
-        ImGui::Text(Interface::GetActiveEntity(Interface::s_SelectedEntity).c_str());
+        ImGui::Text(Interface::GetActiveEntityTag(Interface::s_SelectedEntity, scene).c_str());
 
+        // create an entity wraper for editors camera
         if (ImGui::CollapsingHeader("Active Scene"))
         {
             if (ImGui::TreeNode("Scene Hierarchy"))
             {
                 EntityId selected = -1;
-                for (EntityId ent : SceneView<>(scene))
+                // TODO, should I implement an EditorComponent instead of using mesh to only get those into scene h?
+                for (EntityId ent : SceneView<MeshComponent>(scene))
                 {
-                    std::string name = "Ent: " + std::to_string(ent);
-                    if (ImGui::Selectable(name.c_str(), selected == ent))
+                    std::string tag = scene->GetTag(ent);
+                    if (ImGui::Selectable(tag.c_str(), selected == ent))
                         Interface::s_SelectedEntity = ent;
                 }
                 ImGui::TreePop();
@@ -56,17 +66,17 @@ namespace Amba {
                 if (ImGui::TreeNode("Transform"))
                 {
                     // position
-                    position = tsr->GetPosition();
-                    TransformWidget("Position: ", position);
-                    tsr->UpdatePosition(position);
+                    s_Position = tsr->GetPosition();
+                    TransformWidget("Position: ", s_Position);
+                    tsr->UpdatePosition(s_Position);
                     // rotation
-                    rotation = tsr->GetRotationAxis();
-                    TransformWidget("Rotation: ", rotation);
-                    tsr->UpdateRotationAxis(rotation);
+                    s_Rotation = tsr->GetRotationAxis();
+                    TransformWidget("Rotation: ", s_Rotation);
+                    tsr->UpdateRotationAxis(s_Rotation);
                     // scaling
-                    scale = tsr->GetScale();
-                    TransformWidget("Scaling: ", scale);
-                    tsr->UpdateScale(scale);
+                    s_Scale = tsr->GetScale();
+                    TransformWidget("Scaling: ", s_Scale);
+                    tsr->UpdateScale(s_Scale);
 
                     if (collider != nullptr)
                     {
@@ -78,8 +88,6 @@ namespace Amba {
             }
         }
     }
-
-    
 
     void ShowAdditionalEntitiesData(Scene* scene)
     {
@@ -116,6 +124,72 @@ namespace Amba {
             ImGui::SameLine();
             ImGui::Text(std::to_string(Interface::s_EntUnderCursor).c_str());
         }
+    }
+
+    void ShowCameraSelection(Scene* scene, Camera* activeCamera, bool& editorsCameraActive)
+    {
+        ImGui::TextColored(ImVec4(1, 1, 0, 1), "Avaiable Cameras:");
+        ImGui::Text("Active Camera: ");
+        ImGui::SameLine();
+        ImGui::Text((Interface::GetActiveEntityTag(Interface::s_SelectedCameraEntity, scene)).c_str());
+
+        if (!IsEntityValid(Interface::s_SelectedCameraEntity))
+        {
+            Interface::s_SelectedCameraEntity = scene->GetEntity(EDITOR_CAMERA_TAG);
+            s_PrevActiveCam = Interface::s_SelectedCameraEntity;
+        }
+
+        if (ImGui::CollapsingHeader("Camera Selection"))
+        {
+            if (ImGui::TreeNode("Cameras"))
+            {
+                EntityId selected = -1;
+                for (EntityId ent : SceneView<CameraComponent>(scene))
+                {
+                    std::string tag = scene->GetTag(ent);
+                    if (ImGui::Selectable(tag.c_str(), selected == ent))
+                        Interface::s_SelectedCameraEntity = ent;
+                }
+                ImGui::TreePop();
+            }
+        }
+
+        // set new camera as primary
+        if (IsEntityValid(Interface::s_SelectedCameraEntity))
+        {
+            // update selected camera
+            if (Interface::s_SelectedCameraEntity != s_PrevActiveCam)
+            {
+                activeCamera = scene->GetComponent<CameraComponent>(Interface::s_SelectedCameraEntity)->GetCamera();
+                scene->SetActiveCamera(Interface::s_SelectedCameraEntity);
+
+                if (Interface::GetActiveEntityTag(Interface::s_SelectedCameraEntity, scene) == EDITOR_CAMERA_TAG)
+                    editorsCameraActive = true;
+                else
+                    editorsCameraActive = false;
+            
+                s_PrevActiveCam = Interface::s_SelectedCameraEntity;
+            }
+
+            TransformComponent* tsr = scene->GetComponent<TransformComponent>(Interface::s_SelectedCameraEntity);
+            if (ImGui::TreeNode("Camera Transform"))
+            {
+                // position
+                s_CamPosition = tsr->GetPosition();
+                TransformWidget("CamPosition: ", s_CamPosition);
+                tsr->UpdatePosition(s_CamPosition);
+                // rotation
+                s_CamRotation = tsr->GetRotationAxis();
+                TransformWidget("CamRotation: ", s_CamRotation);
+                tsr->UpdateRotationAxis(s_Rotation);
+                // scaling
+                s_CamScaling = tsr->GetScale();
+                TransformWidget("CamScaling: ", s_CamScaling);
+                tsr->UpdateScale(s_CamScaling);
+
+                ImGui::TreePop();
+            }
+        }        
     }
 
 }

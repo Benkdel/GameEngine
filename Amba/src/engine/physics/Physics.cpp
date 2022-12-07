@@ -26,9 +26,9 @@ namespace Amba {
 			
 			if (intersect.GetDoesIntersect())
 			{
-				AB_INFO("COLLISION - Entity: {0} with Entity {1} || Dist: {2} ", ent, intersect.GetOtherEnt(), intersect.GetDistance());
-				AB_INFO("DIRECTION: {0}, {1}, {2}", intersect.GetDirection().x, intersect.GetDirection().y, 
-					intersect.GetDirection().z);
+				//AB_INFO("COLLISION - Entity: {0} with Entity {1} || Dist: {2} ", ent, intersect.GetOtherEnt(), intersect.GetDistance());
+				//AB_INFO("DIRECTION: {0}, {1}, {2}", intersect.GetDirection().x, intersect.GetDirection().y, 
+				//	intersect.GetDirection().z);
 
 				// lets try momentum equations
 				// momentum is conserved assuming there is no friction
@@ -53,10 +53,10 @@ namespace Amba {
 
 				float impulse = numerator / denominator;
 
-				AB_INFO("Impulse: {0}", impulse);
+				//AB_INFO("Impulse: {0}", impulse);
 
-				scene->GetComponent<PhysicsComponent>(ent)->SolveCollision(impulse, normal, intersect.GetOtherEnt());
-				scene->GetComponent<PhysicsComponent>(intersect.GetOtherEnt())->SolveCollision(-impulse, normal, ent);
+				scene->GetComponent<PhysicsComponent>(ent)->ApplyCollisionResults(impulse, normal, intersect.GetOtherEnt());
+				scene->GetComponent<PhysicsComponent>(intersect.GetOtherEnt())->ApplyCollisionResults(-impulse, normal, ent);
 			
 			}
 		}
@@ -110,7 +110,7 @@ namespace Amba {
 		}
 
 		// check planes
-		for (EntityId plane : SceneView<PlaneCollider>(scene))
+		for (EntityId plane : SceneView<PlaneCollider, PhysicsComponent>(scene))
 		{
 			int otherComponentID = GetColliderTypeIndex(plane, scene);
 

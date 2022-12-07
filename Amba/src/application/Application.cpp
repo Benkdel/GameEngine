@@ -32,14 +32,15 @@ namespace Amba {
 		p_Interface = new Interface();
 		p_Interface->Setup(p_Window);
 
-		// set active camera to 0 - default camera
-		AB_ActiveCamera = 0;
 	}
 
 	void Application::BindScene(Scene* scene)
 	{
 		p_ActiveScene = scene;
 		p_Interface->BindScene(scene);
+
+		// initialize viewport data in Scene to be used with cameras and rendering
+		p_ActiveScene->m_ViewPortData = ViewPortData({ m_ScrWidth, m_ScrHeight, false });
 	}
 
 	// method to be override by user
@@ -73,7 +74,7 @@ namespace Amba {
 
 	void Application::InterfaceHandler()
 	{
-		p_Interface->Run(AB_Cameras[AB_ActiveCamera]);
+		p_Interface->Run(AB_DeltaTime);
 	}
 
 	void Application::SetWindowShouldClose()
@@ -97,87 +98,27 @@ namespace Amba {
 			AB_DeltaTime = AB_TimeElapsed - lastTime;
 			lastTime = AB_TimeElapsed;
 
-			AB_Perspective = glm::perspective(glm::radians(AB_Cameras[AB_ActiveCamera].GetZoom()), (float)m_ScrWidth / (float)m_ScrHeight, NEAR_PLANE, FAR_PLANE);
-
 			// method used by user
 			OnUserUpdate();
 			
 			// run interface - ImGui
 			InterfaceHandler();
 
-			p_Window->OnUpdate();
-
+			ViewPortData vp = p_Window->OnUpdate();
+			if (vp.m_HasChanged)
+				p_ActiveScene->m_ViewPortData = vp;
+			
 			ProcessInput();
-
 		}
 
 		delete p_Window;
 		p_Interface->Cleanup();
 	}
 
-
 	void Application::ProcessInput()
 	{
 		if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_ESCAPE))
 			SetWindowShouldClose();
-
-		// Camera movements
-		if (Amba::KeyBoard::Key(GLFW_KEY_W))
-		{
-			AB_Cameras[AB_ActiveCamera].UpdateCameraPos(Amba::CameraMotion::FORWARD, AB_DeltaTime);
-		}
-
-		if (Amba::KeyBoard::Key(GLFW_KEY_W))
-		{
-			AB_Cameras[AB_ActiveCamera].UpdateCameraPos(Amba::CameraMotion::FORWARD, AB_DeltaTime);
-		}
-
-		if (Amba::KeyBoard::Key(GLFW_KEY_S))
-		{
-			AB_Cameras[AB_ActiveCamera].UpdateCameraPos(Amba::CameraMotion::BACKWARD, AB_DeltaTime);
-		}
-
-		if (Amba::KeyBoard::Key(GLFW_KEY_D))
-		{
-			AB_Cameras[AB_ActiveCamera].UpdateCameraPos(Amba::CameraMotion::RIGHT, AB_DeltaTime);
-		}
-
-		if (Amba::KeyBoard::Key(GLFW_KEY_A))
-		{
-			AB_Cameras[AB_ActiveCamera].UpdateCameraPos(Amba::CameraMotion::LEFT, AB_DeltaTime);
-		}
-
-		if (Amba::KeyBoard::Key(GLFW_KEY_SPACE))
-		{
-			AB_Cameras[AB_ActiveCamera].UpdateCameraPos(Amba::CameraMotion::UP, AB_DeltaTime);
-		}
-
-		if (Amba::KeyBoard::Key(GLFW_KEY_LEFT_CONTROL))
-		{
-			AB_Cameras[AB_ActiveCamera].UpdateCameraPos(Amba::CameraMotion::DOWN, AB_DeltaTime);
-		}
-
-		// mouse movement
-		double dx = Amba::Mouse::GetDX();
-		double dy = Amba::Mouse::GetDY();
-		
-		// not sure if this is necessary - mouse dx and dy to interface? used them for testing only
-		p_Interface->UpdateMouseD(dx, dy);
-
-		if (!Amba::Mouse::isMouseLocked())
-		{
-			if (dx != 0 || dy != 0)
-			{
-				AB_Cameras[AB_ActiveCamera].UpdateCameraDirection(dx, dy);
-			}
-		}
-
-		// zoom
-		double scrollDy = Amba::Mouse::GetScrollDY();
-		if (scrollDy != 0)
-		{
-			AB_Cameras[AB_ActiveCamera].UpdateCameraZoom(scrollDy);
-		}
 
 		// lock/unlock mouse
 		if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_F10))

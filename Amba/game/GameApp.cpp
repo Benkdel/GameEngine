@@ -73,7 +73,7 @@ Amba::Cube* cube;
 
 void ConfigureTerrain(Amba::Entity& ent);
 void ConfigureSkyBox();
-void RenderSkyBox(Amba::Camera& cam, glm::mat4 perspective);
+void RenderSkyBox(Amba::Camera* cam, Amba::Scene* scene);
 
 void GameApp::OnUserCreate()
 {
@@ -82,29 +82,31 @@ void GameApp::OnUserCreate()
 	AB_INFO("Window init succesfully");
 
 	// Create a Scene
-	ResManager::CreateScene("exampleScene");
+	Amba::Scene* sampleScene = ResManager::CreateScene("exampleScene", true);
 
 	// Bind current scene
-	BindScene(ResManager::GetScene("exampleScene"));
+	BindScene(sampleScene);
 
-	ResManager::CreateShader("game/res/shaders/simpleVS.glsl", "game/res/shaders/simpleFS.glsl", "simpleShader");
-	ResManager::CreateShader("src/engine/res/shaders/pbrVS.glsl", "src/engine/res/shaders/pbrFS.glsl", "pbrLighting");
+	Amba::Shader* simpleShader = ResManager::CreateShader("game/res/shaders/simpleVS.glsl", "game/res/shaders/simpleFS.glsl", "simpleShader");
+	Amba::Shader* pbrShader = ResManager::CreateShader("src/engine/res/shaders/pbrVS.glsl", "src/engine/res/shaders/pbrFS.glsl", "pbrLighting");
 
-	//Amba::Entity terrain(ResManager::GetScene("exampleScene"));
-	//ConfigureTerrain(terrain);
+	// create main camera:
+	Amba::Entity* broadViewCam = ResManager::CreateEntity("broadViewCam");
+	broadViewCam->AddComponent<CameraComponent>();
+	broadViewCam->AddTag("camaraPlayer");
+	sampleScene->AddCameraObject(broadViewCam, false);
+
 	
 	// basic PBR lighting
-	Amba::Sphere pbrSphere(ResManager::GetScene("exampleScene"), 2.0f, 36, 36);
+	Amba::Sphere pbrSphere(sampleScene, 2.0f, 36, 36);
 	pbrSphere.Init();
 	pbrSphere.AddComponent<SphereCollider>();
 	pbrSphere.InitCollider();
 	pbrSphere.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(10.0f, 0.0f, 10.0f));
 
-	pbrSphere.GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("pbrLighting");
+	pbrSphere.GetComponent<MeshComponent>()->p_Shader = simpleShader;
 
 	// set all uniforms and light positions
-	Amba::Shader* pbrShader = ResManager::GetShader("pbrLighting");
-	
 	pbrShader->Bind();
 	pbrShader->SetUniform3f("u_Albedo", glm::vec3(0.0f, 0.5f, 0.0f));
 	pbrShader->SetUniform1f("u_Ao", 1.0f);
@@ -133,114 +135,76 @@ void GameApp::OnUserCreate()
 		pbrShader->SetUniform3f("u_LightPositions[" + std::to_string(i) + "]", newPos);
 		pbrShader->SetUniform3f("u_LightColors[" + std::to_string(i) + "]", lightColors[i]);
 	}
-	pbrShader = nullptr;
 
-	Amba::Cube cube(ResManager::GetScene("exampleScene"));
+	Amba::Cube cube(sampleScene);
 	cube.Init();
-	cube.GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("pbrLighting");
+	cube.GetComponent<MeshComponent>()->p_Shader = pbrShader;
 	cube.AddComponent<AABCollider>();
 	cube.InitCollider();
 	cube.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(20.0f, 0.0f, 0.0f));
-	 
+
+	cube.AddTag("BaseCube");
+
 	PhysicsComponent* cubePhysics = cube.AddComponent<PhysicsComponent>();
-	cubePhysics->m_Mass = 20.0f;
+	cubePhysics->m_Mass = 30.0f;
 	cubePhysics->ApplyForce(glm::vec3(0.0f, 0.0f, 0.0f));
 	cubePhysics = nullptr;
-
 	
-	//EntityId copy = ResManager::GetScene("exampleScene")->CopyEntity(cube.GetEntId());
-	//ResManager::GetScene("exampleScene")->
-	//	GetComponent<TransformComponent>(copy)->UpdatePosition(
-	//	glm::vec3(25.0f, 0.0f, 0.0f));
-	//ResManager::GetScene("exampleScene")->GetComponent<PhysicsComponent>(copy)->m_Mass = 10.0f;
-		
+	Amba::Entity cubeCopy = cube.CopyEntity("NewCube");
+	cubeCopy.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(15.0f, 0.0f, 0.0f));
+	cubeCopy.GetComponent<PhysicsComponent>()->m_Mass = 10.0f;
 
 	// create walls - for now enter in object space to not mess up with transformations and scale it
-	Amba::Plane wall_1(ResManager::GetScene("exampleScene"),
+	Amba::Plane wall_1(sampleScene,
 						glm::vec3(0.0f, -0.5f, -0.5f), // v0
 						glm::vec3(0.0f,  0.5f, -0.5f), // v1
 						glm::vec3(0.0f,  0.5f,  0.5f), // v2
 						glm::vec3(0.0f, -0.5f,  0.5f), // v3
 						5);
 	wall_1.Init();
-	wall_1.GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("pbrLighting");
+	wall_1.GetComponent<MeshComponent>()->p_Shader = pbrShader;
 	wall_1.AddComponent<AABCollider>();
 	wall_1.InitCollider();
 	wall_1.AddComponent<PhysicsComponent>();
-	wall_1.GetComponent<PhysicsComponent>()->m_Mass = 100000000000000000000.0f;
+	wall_1.GetComponent<PhysicsComponent>()->m_Mass = Amba::s_InfiniteMassValue;
 	wall_1.GetComponent<TransformComponent>()->UpdateScale(glm::vec3(0.0f, 5.0f, 10.0f));
 
+	wall_1.AddTag("Wall1");
+
 	// create walls
-	Amba::Plane wall_2(ResManager::GetScene("exampleScene"),
+	Amba::Plane wall_2(sampleScene,
 		glm::vec3(0.0f, -0.5f, -0.5f), // v0
 		glm::vec3(0.0f, 0.5f, -0.5f), // v1
 		glm::vec3(0.0f, 0.5f, 0.5f), // v2
 		glm::vec3(0.0f, -0.5f, 0.5f), // v3
 		5);
 	wall_2.Init();
-	wall_2.GetComponent<MeshComponent>()->p_Shader = ResManager::GetShader("pbrLighting");
+	wall_2.GetComponent<MeshComponent>()->p_Shader = pbrShader;
 	wall_2.AddComponent<AABCollider>();
 	wall_2.InitCollider();
 	wall_2.AddComponent<PhysicsComponent>();
-	wall_2.GetComponent<PhysicsComponent>()->m_Mass = 10000000000000000000000.0f;
+	wall_2.GetComponent<PhysicsComponent>()->m_Mass = Amba::s_InfiniteMassValue;
 	wall_2.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(30.0f, 0.0f, 0.0f));
 	wall_2.GetComponent<TransformComponent>()->UpdateScale(glm::vec3(0.0f, 5.0f, 10.0f));
 
+	wall_2.AddTag("Wall2");
+
 	pbrSphere.Destroy();
 	
-
-	/*EntityId entities[10];
-	for (int i = 0; i < 10; i++)
-	{
-		entities[i] = ResManager::GetScene("exampleScene")->CopyEntity(cube.GetEntId());
-		ResManager::GetScene("exampleScene")->
-					GetComponent<TransformComponent>(entities[i])->m_Position = 
-																		glm::vec3(5.0f * (float)i, 10.0f, 10.0f * (float)(i / 5));
-	}*/
-
-	// How I envision my gameObject API
-	// I want to create a character
-	/*
-	*   
-	*	(return a reference)
-		GameObject player1 = ResManager::CreateGameObject("player1");
-
-		player1.LoadModel("path"); (will have multiple entities)
-
-		or 
-
-		
-		
-		player1.Getcomponent<MeshComponent>();
-
-		player1.AddMaterial(
-
-	
-	
-	*/
-
 	ConfigureSkyBox();
 
 }
 
 void GameApp::OnUserUpdate()
 {
-	// pass camera and Scene to renderer
-	Amba::Renderer::BeginScene(AB_Cameras[0], ResManager::GetScene("exampleScene"));
-
-	// for now setting cam
+	Amba::Scene* activeScene = ResManager::GetScene("exampleScene");
+	
 	ResManager::GetShader("pbrLighting")->Bind();
-	ResManager::GetShader("pbrLighting")->SetUniform3f("u_CamPos", AB_Cameras[0].GetCamPos());
+	ResManager::GetShader("pbrLighting")->SetUniform3f("u_CamPos", activeScene->GetActiveCamera()->GetCamPos());
 
-	Amba::Renderer::DrawActiveScene(ResManager::GetShader("simpleShader"), AB_Perspective);
-
-
-	ResManager::GetScene("exampleScene")->Update(AB_DeltaTime);
+	ResManager::GetScene("exampleScene")->Update((float)AB_DeltaTime);
 	
-
-
-	RenderSkyBox(AB_Cameras[0], AB_Perspective);
-	
+	RenderSkyBox(activeScene->GetActiveCamera(), activeScene);
 }
 
 void ConfigureTerrain(Amba::Entity& terrain)
@@ -296,7 +260,7 @@ void ConfigureTerrain(Amba::Entity& terrain)
 	}
 	indices = nullptr;
 
-	terrain.GetComponent<MeshComponent>()->p_Texture = ResManager::GetTexture("terrainTexture");
+	terrain.GetComponent<MeshComponent>()->m_Textures.push_back(ResManager::GetTexture("terrainTexture"));
 
 	Amba::VertexBufferLayout layoutTerrain;
 	layoutTerrain.Push<float>(3);
@@ -327,9 +291,10 @@ void ConfigureSkyBox()
 
 }
 
-void RenderSkyBox(Amba::Camera& cam, glm::mat4 perspective)
+void RenderSkyBox(Amba::Camera* cam, Amba::Scene* scene)
 {
 
+	glm::mat4 perspective = cam->GetPerspective(scene->GetViewPortData());
 	// skybox - remember to always draw this last!!
 	glBindVertexArray(0);
 	unsigned int skyboxVAO, skyboxVBO;
@@ -342,7 +307,7 @@ void RenderSkyBox(Amba::Camera& cam, glm::mat4 perspective)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
 	ResManager::GetShader("skybox")->Bind();
-	glm::mat4 view = glm::mat4(glm::mat3(cam.GetViewMatrix()));
+	glm::mat4 view = glm::mat4(glm::mat3(cam->GetViewMatrix()));
 	ResManager::GetShader("skybox")->SetUniform4mat("u_View", view);
 	ResManager::GetShader("skybox")->SetUniform4mat("u_Projection", perspective);
 	glBindVertexArray(skyboxVAO);

@@ -78,7 +78,7 @@ namespace Amba {
 
 	Window::~Window() {}
 
-	void Window::OnUpdate()
+	ViewPortData Window::OnUpdate()
 	{
 		glfwSwapBuffers(m_Window);
 		glfwPollEvents();
@@ -92,7 +92,10 @@ namespace Amba {
 			glfwGetWindowSize(m_Window, &width, &height);
 			m_Width = width;
 			m_Height = height;
+			return ViewPortData({ m_Width, m_Height, true });
 		}
+
+		return ViewPortData({ m_Width, m_Height, false });
 
 	}
 
