@@ -2,7 +2,6 @@
 
 #include <engine/ecs/Scene.h>
 
-
 namespace Amba {
 
 	glm::vec3 Physics::m_Gravity = glm::vec3(0.0f, -9.8f, 0.0f);

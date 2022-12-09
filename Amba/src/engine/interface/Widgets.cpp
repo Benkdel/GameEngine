@@ -6,6 +6,8 @@ static glm::vec3 s_Position       = glm::vec3(0.0f);
 static glm::vec3 s_Rotation       = glm::vec3(0.0f);
 static glm::vec3 s_Scale          = glm::vec3(0.0f);
 
+static float s_RotRadians         = 0.0f;
+
 static glm::vec3 s_CamPosition    = glm::vec3(0.0f);
 static glm::vec3 s_CamRotation    = glm::vec3(0.0f);
 static glm::vec3 s_CamScaling     = glm::vec3(0.0f);
@@ -41,7 +43,7 @@ namespace Amba {
                 // TODO, should I implement an EditorComponent instead of using mesh to only get those into scene h?
                 for (EntityId ent : SceneView<MeshComponent>(scene))
                 {
-                    std::string tag = scene->GetTag(ent);
+                    std::string tag = scene->GetComponent<TagComponent>(ent)->m_Tag;
                     if (ImGui::Selectable(tag.c_str(), selected == ent))
                         Interface::s_SelectedEntity = ent;
                 }
@@ -69,15 +71,21 @@ namespace Amba {
                     s_Position = tsr->GetPosition();
                     TransformWidget("Position: ", s_Position);
                     tsr->UpdatePosition(s_Position);
-                    // rotation
-                    s_Rotation = tsr->GetRotationAxis();
-                    TransformWidget("Rotation: ", s_Rotation);
-                    tsr->UpdateRotationAxis(s_Rotation);
                     // scaling
                     s_Scale = tsr->GetScale();
-                    TransformWidget("Scaling: ", s_Scale);
+                    TransformWidget("Scaling: ", s_Scale, 1.0f);
                     tsr->UpdateScale(s_Scale);
-
+                    // rotation axis
+                    s_Rotation = tsr->GetRotationAxis();
+                    TransformWidget("Rotation: ", s_Rotation, 0.0f);
+                    if (s_Rotation == glm::vec3(0.0f))
+                        s_Rotation.x = 1.0f;
+                    tsr->UpdateRotationAxis(s_Rotation);
+                    // rotation angle
+                    s_RotRadians = tsr->GetRotAngle();
+                    SingleFloatWidget("Rotation Angle: ", s_RotRadians, 0.0f, 150.f);
+                    tsr->UpdateRotAngle(s_RotRadians);
+                    
                     if (collider != nullptr)
                     {
                         collider->TransformCollider(tsr);
@@ -135,7 +143,7 @@ namespace Amba {
 
         if (!IsEntityValid(Interface::s_SelectedCameraEntity))
         {
-            Interface::s_SelectedCameraEntity = scene->GetEntity(EDITOR_CAMERA_TAG);
+            Interface::s_SelectedCameraEntity = scene->GetEntityByTag(EDITOR_CAMERA_TAG);
             s_PrevActiveCam = Interface::s_SelectedCameraEntity;
         }
 
@@ -146,7 +154,7 @@ namespace Amba {
                 EntityId selected = -1;
                 for (EntityId ent : SceneView<CameraComponent>(scene))
                 {
-                    std::string tag = scene->GetTag(ent);
+                    std::string tag = scene->GetComponent<TagComponent>(ent)->m_Tag;
                     if (ImGui::Selectable(tag.c_str(), selected == ent))
                         Interface::s_SelectedCameraEntity = ent;
                 }
@@ -197,6 +205,38 @@ namespace Amba {
 
 // Basic Widget methods
 namespace Amba {
+
+    void SingleFloatWidget(const std::string& label, float& value, float resetValue, float columnWidth)
+    {
+        ImGui::PushID(label.c_str());
+
+        ImGui::Columns(2);
+        ImGui::SetColumnWidth(0, columnWidth);
+        ImGui::Text(label.c_str());
+        ImGui::NextColumn();
+
+        ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+
+        float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+        ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+        if (ImGui::Button("F", buttonSize))
+            value = resetValue;
+        ImGui::PopStyleColor(3);
+
+        ImGui::SameLine();
+        ImGui::DragFloat("##F", &value, 0.1f);
+        ImGui::PopItemWidth();
+        ImGui::SameLine();
+
+        ImGui::PopStyleVar();
+        ImGui::Columns(1);
+        ImGui::PopID();
+    }
 
     void TransformWidget(const std::string& label, glm::vec3& values, float resetValue, float columnWidth)
     {

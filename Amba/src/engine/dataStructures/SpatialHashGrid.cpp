@@ -2,7 +2,6 @@
 
 #include <engine/renderer/Renderer.h>
 
-
 namespace Amba
 {
 	static Shader* shader;
@@ -79,6 +78,7 @@ namespace Amba
 		
 		return GridCell(true, m_Cells[cell_z * NUMBER_OF_CELLS + cell_x]);
 	}
+
 
 }
 

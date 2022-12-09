@@ -2,20 +2,21 @@
 
 #include <engine/ecs/Scene.h>
 
-
 namespace Amba {
-		
+	
+	
+
+
 	class Entity
 	{
 	public:
 		
 		Entity() = default;
-		Entity(Scene* scene, std::string tag = "undefined");
-		Entity(Scene* scene, EntityId id, std::string tag = "undefined");
+		Entity(Scene* scene, EntityId id = -1);
 
 		~Entity();
 
-		Entity CopyEntity(std::string tag = "undefined");
+		Entity CopyEntity();
 		void Destroy();
 
 		inline EntityId GetEntId() { return m_EntId; };
@@ -23,15 +24,7 @@ namespace Amba {
 
 		bool InitCollider();
 
-		// tags
-		void AddTag(const std::string tag);
-		std::string GetTag();
-		void DeleteTag();
-		void ModifyTag(std::string newTag);
-
-		// how????
 		Entity* p_Child = nullptr;
-
 
 	public: // templates
 
@@ -62,7 +55,8 @@ namespace Amba {
 			AB_ASSERT(IsEntityValid(m_EntId), "Entity is invalid");
 			return p_Scene->EntHasComponent<T>(m_EntId);
 		}
-		
+
+
 		operator bool() const { return IsEntityValid(m_EntId); };
 
 	private:

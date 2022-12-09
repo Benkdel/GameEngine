@@ -34,6 +34,7 @@ namespace Amba {
 		return (id >> 32) != EntityIndex(-1);
 	}
 
+
 	/* ===================================================================================== */
 
 	void Scene::Update(float dt)
@@ -73,55 +74,20 @@ namespace Amba {
 		EntityId cam = CreateEntity();
 		AddComponent<TransformComponent>(cam);
 		AddComponent<CameraComponent>(cam);
-		AddTag(cam, EDITOR_CAMERA_TAG);
+		AddComponent<TagComponent>(cam);
+		GetComponent<TagComponent>(cam)->m_Tag = EDITOR_CAMERA_TAG;
 		SetActiveCamera(cam);
 	}
 
-	void Scene::AddTag(const EntityId id, const std::string tag)
+	EntityId Scene::GetEntityByTag(const std::string& tag)
 	{
-		// save tags to unordered_map for easy access
-		m_EntityTag.insert(std::pair<EntityId, std::string>(id, tag));
-		m_TagEntity.insert(std::pair<std::string, EntityId>(tag, id));
-	
-		// create component
-		//AB_ASSERT(!EntHasComponent<TagComponent>(id), "Entity already has component");
-		//AddComponent<TagComponent>(id);
-		//GetComponent<TagComponent>(id)->m_Tag = tag;
-	}
 
-	std::string Scene::GetTag(const EntityId id)
-	{
-		if (m_EntityTag.find(id) == m_EntityTag.end())
-			return "undefined";
-		return m_EntityTag[id];
-	}
-
-	EntityId Scene::GetEntity(const std::string& tag)
-	{
-		if (m_TagEntity.find(tag) == m_TagEntity.end())
-			return -1;
-		return m_TagEntity[tag];
-	}
-
-	void Scene::ModifyTag(const EntityId id, const std::string& newTag)
-	{
-		// create component
-		//AB_ASSERT(EntHasComponent<TagComponent>(id), "Entity does not have component");
-		//GetComponent<TagComponent>(id)->m_Tag = newTag;
-
-		DeleteTag(id);
-		AddTag(id, newTag);
-	}
-
-	void Scene::DeleteTag(const EntityId id)
-	{
-		// create component
-		//AB_ASSERT(EntHasComponent<TagComponent>(id), "Entity does not have component");
-		//GetComponent<TagComponent>(id)->m_Tag = "undefined";
-
-		std::string tag = m_EntityTag[id];
-		m_EntityTag.erase(id);
-		m_TagEntity.erase(tag);
+		for (EntityId ent : SceneView<TagComponent>(this))
+		{
+			if (GetComponent<TagComponent>(ent)->m_Tag == tag)
+				return ent;
+		}
+		return -1;
 	}
 
 	EntityId Scene::CreateEntity()
@@ -162,19 +128,21 @@ namespace Amba {
 				PlaneCollider*			planeColl	= dynamic_cast<PlaneCollider*>((Components*)component);
 				PhysicsComponent*		physics		= dynamic_cast<PhysicsComponent*>((Components*)component);
 				CameraComponent*		camera		= dynamic_cast<CameraComponent*>((Components*)component);
+				ControllerComponent*	controller	= dynamic_cast<ControllerComponent*>((Components*)component);
 				TagComponent*			tag			= dynamic_cast<TagComponent*>((Components*)component);
 				AudioComponent*			audio		= dynamic_cast<AudioComponent*>((Components*)component);
 
-				if		(mesh != NULL)		*AddComponent<MeshComponent>(target)		= *GetComponent<MeshComponent>(source);
-				else if (tsr != NULL)		*AddComponent<TransformComponent>(target)	= *GetComponent<TransformComponent>(source);
-				else if (spColl != NULL)	*AddComponent<SphereCollider>(target)		= *GetComponent<SphereCollider>(source);
-				else if (aabColl != NULL)	*AddComponent<AABCollider>(target)			= *GetComponent<AABCollider>(source);
-				else if (planeColl != NULL)	*AddComponent<PlaneCollider>(target)		= *GetComponent<PlaneCollider>(source);
-				else if (physics != NULL)	*AddComponent<PhysicsComponent>(target)		= *GetComponent<PhysicsComponent>(source);
-				else if (camera != NULL)	*AddComponent<CameraComponent>(target)		= *GetComponent<CameraComponent>(source);
-				else if (tag != NULL)		*AddComponent<TagComponent>(target)			= *GetComponent<TagComponent>(source);
-				else if (audio != NULL)		*AddComponent<AudioComponent>(target)		= *GetComponent<AudioComponent>(source);
-				else						AB_WARN("Component not recognized!");
+				if (mesh != NULL)			    *AddComponent<MeshComponent>(target) = *GetComponent<MeshComponent>(source);
+				else if (tsr != NULL)			*AddComponent<TransformComponent>(target) = *GetComponent<TransformComponent>(source);
+				else if (spColl != NULL)		*AddComponent<SphereCollider>(target) = *GetComponent<SphereCollider>(source);
+				else if (aabColl != NULL)		*AddComponent<AABCollider>(target) = *GetComponent<AABCollider>(source);
+				else if (planeColl != NULL)		*AddComponent<PlaneCollider>(target) = *GetComponent<PlaneCollider>(source);
+				else if (physics != NULL)		*AddComponent<PhysicsComponent>(target) = *GetComponent<PhysicsComponent>(source);
+				else if (camera != NULL)		*AddComponent<CameraComponent>(target) = *GetComponent<CameraComponent>(source);
+				else if (tag != NULL)			*AddComponent<TagComponent>(target) = *GetComponent<TagComponent>(source);
+				else if (controller != NULL)	*AddComponent<ControllerComponent>(target) = *GetComponent<ControllerComponent>(source);
+				else if (audio != NULL)			*AddComponent<AudioComponent>(target)		= *GetComponent<AudioComponent>(source);
+				else							AB_WARN("Component not recognized!");
 			}
 		}
 		return target;
@@ -220,7 +188,6 @@ namespace Amba {
 	{
 		AB_ASSERT(EntHasComponent<CameraComponent>(id), "Invalid Camera Object");
 		m_ActiveCamera = id;
-		AB_INFO("Active camera tag: {0} - entId: {1}", GetTag(id), m_ActiveCamera);
 	}
 
 	Camera* Scene::GetActiveCamera()
@@ -304,66 +271,11 @@ namespace Amba {
 		Cell& cell = gridCell.GetCell();
 
 		// check if entity is completly inside the cell
-		// for now im using position plus constant but I should use box collider or sphere collider instead
-		// center plus radius or collision box, maight be easier
+		// WARNING: for now this only works for entities smaller than cells
 
 		cellsToCheck.push_back(cell);
-
-		// very simple for now just to do tests, improve this later
-
-		float tempSize = 1.0f;
-		bool BL = position.x - tempSize > cell.bottomLeft.x;
-		bool BR = position.x + tempSize < cell.bottomRight.x;
-		bool TL = position.z - tempSize > cell.bottomLeft.z;
-		bool TR = position.z + tempSize < cell.topLeft.z;
-
-
-		if (!BL)
-		{
-			GridCell otherGridCell = m_Spatial2DGrid->GetGridCell(position - glm::vec3(tempSize, 0.0f, 0.0f));
-			if (otherGridCell.IsCellValid())
-			{
-				cellsToCheck.push_back(otherGridCell.GetCell());
-			}
-			
-		}
-
-		if (!BR)
-		{
-			GridCell otherGridCell = m_Spatial2DGrid->GetGridCell(position - glm::vec3(0.0f, tempSize, 0.0f));
-			if (otherGridCell.IsCellValid())
-			{
-				cellsToCheck.push_back(otherGridCell.GetCell());
-			}
-		}
-
-		if (!TL)
-		{
-			GridCell otherGridCell = m_Spatial2DGrid->GetGridCell(position - glm::vec3(0.0f, 0.0f, tempSize));
-			if (otherGridCell.IsCellValid())
-			{
-				cellsToCheck.push_back(otherGridCell.GetCell());
-			}
-		}
-
+		
 		return cellsToCheck;
-	}
-
-	void Scene::FindNearEntities(EntityId id)
-	{
-		glm::vec3 entPosition = GetComponent<TransformComponent>(id)->GetPosition();
-
-		std::vector<Cell> cellsToCheck = GetNearbyCells(entPosition);
-
-		// find all entities in cells and change their color (implement this option in shader)
-		for (auto cell : cellsToCheck)
-		{
-			for (auto ent : cell.entities)
-			{
-				if (ent != id)
-					this->GetComponent<TransformComponent>(ent)->m_Size = 0.2f;
-			}
-		}
 	}
 
 

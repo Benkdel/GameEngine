@@ -4,26 +4,20 @@
 
 namespace Amba {
 
-	Entity::Entity(Scene* scene, std::string tag)
+	Entity::Entity(Scene* scene, EntityId id)
 	{
 		p_Scene = scene;
-		m_EntId = scene->CreateEntity();
 
-		if (std::strcmp(tag.c_str(), "undefined") != 0)
-			AddTag(tag);
+		if (IsEntityValid(id))
+		{
+			m_EntId = id;
+			return;
+		}
+		else
+			m_EntId = scene->CreateEntity();
 
 		// every entity should have a transform
 		AddComponent<TransformComponent>();
-	}
-
-	// check this - method only to be used by copy entity
-	Entity::Entity(Scene* scene, EntityId id, std::string tag)
-	{
-		p_Scene = scene;
-		m_EntId = id;
-
-		if (std::strcmp(tag.c_str(), "undefined") != 0)
-			AddTag(tag);
 	}
 
 	Entity::~Entity()
@@ -34,20 +28,18 @@ namespace Amba {
 		// Destroy();
 	}
 
-	Entity Entity::CopyEntity(std::string tag)
+	Entity Entity::CopyEntity()
 	{
 		EntityId newEnt = p_Scene->CopyEntity(m_EntId);
-		return Entity(p_Scene, newEnt, tag);
+		return Entity(p_Scene, newEnt);
 	}
 
 	void Entity::Destroy()
 	{
 		p_Scene->DestroyEntity(m_EntId);
-		p_Scene->DeleteTag(m_EntId);
 		p_Scene = nullptr;
 		m_EntId = -1;
 	}
-
 
 	bool Entity::InitCollider()
 	{
@@ -74,25 +66,4 @@ namespace Amba {
 
 		return true;
 	}
-
-	void Entity::AddTag(const std::string tag)
-	{
-		p_Scene->AddTag(m_EntId, tag);
-	}
-
-	std::string Entity::GetTag()
-	{
-		return p_Scene->GetTag(m_EntId);
-	}
-
-	void Entity::DeleteTag()
-	{
-		p_Scene->DeleteTag(m_EntId);
-	}
-
-	void Entity::ModifyTag(std::string newTag)
-	{
-		p_Scene->ModifyTag(m_EntId, newTag);
-	}
-
 }

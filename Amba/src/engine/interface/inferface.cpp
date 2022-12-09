@@ -47,7 +47,7 @@ namespace Amba {
         p_CurrentScene = scene;
         m_MousePicker.UpdateScene(p_CurrentScene);
 
-        p_EditorCamera = scene->GetComponent<CameraComponent>(scene->GetEntity(EDITOR_CAMERA_TAG))->GetCamera();
+        p_EditorCamera = scene->GetComponent<CameraComponent>(scene->GetEntityByTag(EDITOR_CAMERA_TAG))->GetCamera();
         p_ActiveCamera = p_EditorCamera;
     }
 
@@ -62,7 +62,8 @@ namespace Amba {
         }
         
         // update mouse picker
-        m_MousePicker.UpdateMousePos(camera);
+        if (m_IsEditorCameraActive)
+            m_MousePicker.UpdateMousePos(camera);
 
         m_Status = (Amba::Mouse::isMouseLocked() == true) ? STATUS::ACTIVE : STATUS::INNACTIVE;
 
@@ -173,7 +174,7 @@ namespace Amba {
     std::string Interface::GetActiveEntityTag(EntityId ent, Scene* scene)
     {
         if (Amba::IsEntityValid(ent))
-            return scene->GetTag(ent);
+            return scene->GetComponent<TagComponent>(ent)->m_Tag;
         return "-";
     }
 

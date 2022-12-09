@@ -92,7 +92,7 @@ namespace Amba {
 			glm::mat4 transform = trs->GetTrsMatrix();
 			transform = glm::translate(transform, trs->GetPosition());
 			transform = glm::scale(transform, trs->GetScale());
-			transform = glm::rotate(transform, trs->m_Radians, trs->GetRotationAxis());
+			transform = glm::rotate(transform, trs->GetRotAngle(), trs->GetRotationAxis());
 			sh->SetUniform4mat("u_Transform", transform);
 
 			VertexArray va;

@@ -33,8 +33,6 @@ public:
 	TagComponent() 
 		: m_Tag("Undefined") {}
 
-
-private:
 	std::string m_Tag;
 };
 
@@ -60,9 +58,6 @@ class TransformComponent : public Components
 public:
 	TransformComponent() = default;
 
-	float m_Radians = 0.0f;
-	float m_Size = 1.0f;
-
 	int m_CurrentCell = -1;
 	int m_IndexInCell = -1;
 
@@ -84,6 +79,11 @@ public:
 		m_TransformRequired = true;
 	}
 
+	void UpdateRotAngle(float radians)
+	{
+		m_Radians = radians;
+	}
+
 	void SetTransformMatrix(glm::mat4 mat4)
 	{
 		m_TransformMatrix = mat4;
@@ -93,6 +93,7 @@ public:
 	inline glm::vec3 GetRotationAxis() { return m_RotationAxis; };
 	inline glm::vec3 GetScale() { return m_Scale; };
 	inline glm::mat4 GetTrsMatrix() { return m_TransformMatrix; };
+	inline float GetRotAngle() { return m_Radians; };
 
 	// function for now only should be called from colliders
 	bool IsTransformRequired()
@@ -105,8 +106,10 @@ public:
 private:
 
 	glm::vec3 m_Position		= glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 m_RotationAxis	= glm::vec3(1.0f, 1.0f, 1.0f);
+	glm::vec3 m_RotationAxis	= glm::vec3(1.0f, 0.0f, 0.0f);
 	glm::vec3 m_Scale			= glm::vec3(1.0f, 1.0f, 1.0f);
+
+	float m_Radians = 0.0f;
 
 	glm::mat4 m_TransformMatrix = glm::mat4(1.0f);
 
@@ -201,6 +204,8 @@ public:
 	CameraComponent()
 		: m_Camera(new Amba::Camera()) {}
 
+
+
 	Amba::Camera* GetCamera() { return m_Camera; };
 
 private:
@@ -208,6 +213,19 @@ private:
 
 };
 
+
+class ControllerComponent : public Components
+{
+public:
+
+	ControllerComponent() = default;
+
+
+
+private:
+
+
+};
 
 class AudioComponent : public Components
 {

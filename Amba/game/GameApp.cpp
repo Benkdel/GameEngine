@@ -91,10 +91,11 @@ void GameApp::OnUserCreate()
 	Amba::Shader* pbrShader = ResManager::CreateShader("src/engine/res/shaders/pbrVS.glsl", "src/engine/res/shaders/pbrFS.glsl", "pbrLighting");
 
 	// create main camera:
-	Amba::Entity* broadViewCam = ResManager::CreateEntity("broadViewCam");
-	broadViewCam->AddComponent<CameraComponent>();
-	broadViewCam->AddTag("camaraPlayer");
-	sampleScene->AddCameraObject(broadViewCam, false);
+	Amba::Entity broadViewCam(sampleScene);
+	broadViewCam.AddComponent<CameraComponent>();
+	broadViewCam.AddComponent<TagComponent>();
+	broadViewCam.GetComponent<TagComponent>()->m_Tag = "camaraPlayer";
+	sampleScene->AddCameraObject(&broadViewCam, false);
 
 	
 	// basic PBR lighting
@@ -142,17 +143,18 @@ void GameApp::OnUserCreate()
 	cube.AddComponent<AABCollider>();
 	cube.InitCollider();
 	cube.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(20.0f, 0.0f, 0.0f));
-
-	cube.AddTag("BaseCube");
+	cube.AddComponent<TagComponent>();
+	cube.GetComponent<TagComponent>()->m_Tag = "BaseCube";
 
 	PhysicsComponent* cubePhysics = cube.AddComponent<PhysicsComponent>();
 	cubePhysics->m_Mass = 30.0f;
 	cubePhysics->ApplyForce(glm::vec3(0.0f, 0.0f, 0.0f));
 	cubePhysics = nullptr;
 	
-	Amba::Entity cubeCopy = cube.CopyEntity("NewCube");
+	Amba::Entity cubeCopy = cube.CopyEntity();
 	cubeCopy.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(15.0f, 0.0f, 0.0f));
 	cubeCopy.GetComponent<PhysicsComponent>()->m_Mass = 10.0f;
+	cubeCopy.GetComponent<TagComponent>()->m_Tag = "cubeCopy";
 
 	// create walls - for now enter in object space to not mess up with transformations and scale it
 	Amba::Plane wall_1(sampleScene,
@@ -168,8 +170,8 @@ void GameApp::OnUserCreate()
 	wall_1.AddComponent<PhysicsComponent>();
 	wall_1.GetComponent<PhysicsComponent>()->m_Mass = Amba::s_InfiniteMassValue;
 	wall_1.GetComponent<TransformComponent>()->UpdateScale(glm::vec3(0.0f, 5.0f, 10.0f));
-
-	wall_1.AddTag("Wall1");
+	wall_1.AddComponent<TagComponent>();
+	wall_1.GetComponent<TagComponent>()->m_Tag = "Wall1";
 
 	// create walls
 	Amba::Plane wall_2(sampleScene,
@@ -186,15 +188,22 @@ void GameApp::OnUserCreate()
 	wall_2.GetComponent<PhysicsComponent>()->m_Mass = Amba::s_InfiniteMassValue;
 	wall_2.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(30.0f, 0.0f, 0.0f));
 	wall_2.GetComponent<TransformComponent>()->UpdateScale(glm::vec3(0.0f, 5.0f, 10.0f));
-
-	wall_2.AddTag("Wall2");
+	wall_2.AddComponent<TagComponent>();
+	wall_2.GetComponent<TagComponent>()->m_Tag = "Wall2";
 
 	pbrSphere.Destroy();
 	
+	Amba::Entity player = cube.CopyEntity();
+	player.GetComponent<TagComponent>()->m_Tag = "player";
+	player.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(0.0f, 0.0f, 10.0f));
+	
+	// attach one entity to the other?
+
+
 	ConfigureSkyBox();
 
 }
-
+bool first = true;
 void GameApp::OnUserUpdate()
 {
 	Amba::Scene* activeScene = ResManager::GetScene("exampleScene");
@@ -204,6 +213,50 @@ void GameApp::OnUserUpdate()
 
 	ResManager::GetScene("exampleScene")->Update((float)AB_DeltaTime);
 	
+	EntityId player = activeScene->GetEntityByTag("player"); 
+	EntityId camPlayer = activeScene->GetEntityByTag("camaraPlayer");
+
+	/* simulate a sticky camera to player - this is working somewhat properly */
+
+	// shoud all this be done in scene? in a new system? or in components?
+	
+	// first step would be to asign a camara follow system
+	// 1) need to define offset from object is following
+	if (first)
+	{
+		glm::vec3 offset = glm::vec3(-4.0f, 1.5f, 0.0f);
+
+		// set first position
+		activeScene->GetComponent<TransformComponent>(camPlayer)->UpdatePosition(
+			activeScene->GetComponent<TransformComponent>(player)->GetPosition() +
+			offset);
+		first = false;
+	}
+
+	// i need to have a player controller or something like that
+	// also, add camera rotation (not scaling) to work. same for entities
+	// I think it issomething to do with angle not being there
+	if (Amba::KeyBoard::Key(GLFW_KEY_W))
+	{
+
+		// 2) then, calculate the difference in position so the camera can follow
+		// 3) were should all this be??
+
+		// player moves
+		glm::vec3 pos = activeScene->GetComponent<TransformComponent>(player)->GetPosition();
+		glm::vec3 prevPos = pos;
+		pos += glm::vec3(0.0f, 0.0f, 1.0f) * (float)AB_DeltaTime;
+		activeScene->GetComponent<TransformComponent>(player)->UpdatePosition(pos);
+	
+		glm::vec3 changeInPosition = pos - prevPos;
+
+		// camera follows
+		glm::vec3 camPos = activeScene->GetComponent<TransformComponent>(camPlayer)->GetPosition();
+		camPos += changeInPosition;
+		activeScene->GetComponent<TransformComponent>(camPlayer)->UpdatePosition(camPos);
+		
+	}
+
 	RenderSkyBox(activeScene->GetActiveCamera(), activeScene);
 }
 
@@ -267,7 +320,7 @@ void ConfigureTerrain(Amba::Entity& terrain)
 	layoutTerrain.Push<float>(3);
 	layoutTerrain.Push<float>(2);
 	terrain.GetComponent<MeshComponent>()->layout = layoutTerrain;
-	terrain.GetComponent<TransformComponent>()->m_Size = 0.033f;
+	terrain.GetComponent<TransformComponent>()->UpdateScale(glm::vec3(0.033f));
 
 	terrain.AddComponent<PlaneCollider>();
 	terrain.InitCollider();

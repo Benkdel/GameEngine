@@ -23,14 +23,14 @@ static int GetColliderTypeIndex(EntityId id, Amba::Scene* scene);
 namespace Amba {
 
 
-	// forward declarator
-	class Entity;
-
 	// entity handlers
 	EntityId CreateEntityId(EntityIndex index, EntityVersion version);
 	EntityIndex GetEntityIndex(EntityId id);
 	EntityVersion GetEntityVersion(EntityId id);
 	bool IsEntityValid(EntityId id);
+
+	// forward declarator
+	class Entity;
 
 	class Scene 
 	{
@@ -42,25 +42,11 @@ namespace Amba {
 
 		void Update(float dt);
 
-
-	public: // spatial grid methods
-	
 		void AssignEntity(EntityId id);
 		std::vector<Cell> GetNearbyCells(glm::vec3 position);
 		void FindNearEntities(EntityId id);
-
-	public: // entity handling section
 	
-		EntityId CreateEntity();
-		EntityId CopyEntity(EntityId id);
-		void DestroyEntity(EntityId id);
-
-		void AddTag(EntityId id, std::string tag);
-		std::string GetTag(const EntityId id);
-		EntityId GetEntity(const std::string& tag);
-		void ModifyTag(const EntityId id, const std::string& newTag);
-		void DeleteTag(const EntityId id);
-
+		EntityId GetEntityByTag(const std::string& tag);
 
 	public: // camera handler
 
@@ -92,6 +78,7 @@ namespace Amba {
 		template<typename T>
 		T* AddComponent(EntityId id)
 		{
+			AB_ASSERT(IsEntityValid(id), "Invalid EntityId");
 			int componentId = GetComponentId<T>();
 
 			if (m_ComponentPools.size() <= componentId)
@@ -114,6 +101,7 @@ namespace Amba {
 		template <typename T>
 		T* GetComponentWithId(EntityId id, int componentId)
 		{
+			AB_ASSERT(IsEntityValid(id), "Invalid EntityId");
 			if (componentId < 0)
 				return nullptr;
 
@@ -127,6 +115,7 @@ namespace Amba {
 		template<typename T>
 		T* GetComponent(EntityId id)
 		{
+			AB_ASSERT(IsEntityValid(id), "Invalid EntityId");
 			int componentId = GetComponentId<T>();
 			if (!m_Entities[GetEntityIndex(id)].mask.test(componentId))
 				return nullptr;
@@ -138,6 +127,7 @@ namespace Amba {
 		template<typename T>
 		void RemoveComponent(EntityId id)
 		{
+			AB_ASSERT(IsEntityValid(id), "Invalid EntityId");
 			if (m_Entities[GetEntityIndex(id)].id != id)
 				return;
 
@@ -157,12 +147,13 @@ namespace Amba {
 
 		Spatial2DGrid* m_Spatial2DGrid;
 
-		std::unordered_map<EntityId, std::string> m_EntityTag;
-		std::unordered_map<std::string, EntityId> m_TagEntity;
-	
 		void Cleanup();
 
 	private:
+
+		EntityId CreateEntity();
+		EntityId CopyEntity(EntityId id);
+		void DestroyEntity(EntityId id);
 
 		std::vector<EntityId> m_AvailableCameras;
 		EntityId m_ActiveCamera;
@@ -171,6 +162,7 @@ namespace Amba {
 		ViewPortData m_ViewPortData;
 
 		friend class Application;
+		friend class Entity;
 	};
 
 

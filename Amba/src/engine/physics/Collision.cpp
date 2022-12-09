@@ -105,7 +105,7 @@ void AABCollider::InitCollider(MeshComponent* mesh, TransformComponent* tsr)
 		// transform vertex
 		glm::mat4 matrix = glm::mat4(1.0f);
 		matrix = glm::translate(matrix, m_Center);
-		matrix = glm::scale(matrix, glm::vec3(tsr->m_Size));
+		matrix = glm::scale(matrix, tsr->GetScale());
 		glm::vec4 v4 = matrix * glm::vec4(vec.v_Position, 1.0f);
 
 		glm::vec3 tsrVertexPosition = glm::vec3(v4.x, v4.y, v4.z);

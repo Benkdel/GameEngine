@@ -44,9 +44,9 @@ namespace Amba {
                 if (current->p_Child == nullptr)
                 {
                     // create child and advance current node to it
-                    current->p_Child = new Entity(current->GetScene(), "Child[" + std::to_string(counter++) + "]");
-                    AB_ASSERT(!(current->p_Child == NULL), "Error allocating memory!");
-                    current = current->p_Child;
+                    //current->p_Child = new Entity(current->GetScene(), "Child[" + std::to_string(counter++) + "]");
+                   // AB_ASSERT(!(current->p_Child == NULL), "Error allocating memory!");
+                   // current = current->p_Child;
                 }
             }
         }
