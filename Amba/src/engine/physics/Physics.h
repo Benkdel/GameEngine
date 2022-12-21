@@ -14,18 +14,27 @@ namespace Amba {
 	{
 	public:
 
-		static void SolveCollisions(Scene* scene);
-		static void ApplyMotion(Scene* scene, float dt);
+		Physics();
+		~Physics();
 
-		static void inline ActivateGravity(bool status) { m_IsGravityOn = status; };
-		static bool inline IsGravityOn() { return m_IsGravityOn; };
-		static glm::vec3 inline GetGravity() { return m_Gravity; };
+		void SolveCollisions(Scene* scene);
+		void ApplyMotion(Scene* scene, float dt);
 
+		void inline ActivateGravity(bool status) { m_IsGravityOn = status; };
+		bool inline IsGravityOn() { return m_IsGravityOn; };
+		glm::vec3 inline GetGravity() { return m_Gravity; };
+
+		inline void BindSpatialGrid(Spatial2DGrid* grid) { p_SpatialGrid = grid; };
+
+		Spatial2DGrid* p_SpatialGrid;
+	
 	private:
-		static IntersectData CheckForCollision(EntityId id, Scene* scene);
-		static bool m_IsGravityOn;
+		IntersectData CheckForCollision(EntityId id, Scene* scene);
+		bool m_IsGravityOn;
 
-		static glm::vec3 m_Gravity;
+		glm::vec3 m_Gravity;
+
+		friend class Scene;
 	};
 
 }

@@ -1,6 +1,6 @@
 #include "Collision.h"
 
-#include <engine/ecs/Scene.h>
+#include <engine/scene/Scene.h>
 
 // ======================================================================================
 // ====================== sphere collider implementation ================================

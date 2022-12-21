@@ -1,15 +1,25 @@
 #include "Physics.h"
 
-#include <engine/ecs/Scene.h>
+#include <engine/scene/Scene.h>
 
 namespace Amba {
 
-	glm::vec3 Physics::m_Gravity = glm::vec3(0.0f, -9.8f, 0.0f);
-	bool Physics::m_IsGravityOn = false;
+	Physics::Physics()
+	: m_Gravity(glm::vec3(0.0f, -9.8f, 0.0f)),
+		m_IsGravityOn(false)
+	{
+		// init spatial grid
+		p_SpatialGrid = new Spatial2DGrid();
+	}
+
+	Physics::~Physics()
+	{
+		AB_WARN("Physics object destructor called");
+	}
 
 	void Physics::ApplyMotion(Scene* scene, float dt)
 	{
-		for (EntityId ent : SceneView<TransformComponent, PhysicsComponent>(scene))
+		for (EntityId ent : EntityGroup<TransformComponent, PhysicsComponent>(scene->p_EntHandler))
 		{
 			scene->GetComponent<PhysicsComponent>(ent)
 						->Integrate(scene->GetComponent<MeshComponent>(ent),
@@ -19,7 +29,7 @@ namespace Amba {
 
 	void Physics::SolveCollisions(Scene* scene)
 	{
-		for (EntityId ent : SceneView<TransformComponent, MeshComponent>(scene))
+		for (EntityId ent : EntityGroup<TransformComponent, MeshComponent>(scene->p_EntHandler))
 		{
 			IntersectData intersect = CheckForCollision(ent, scene);
 			
@@ -68,14 +78,15 @@ namespace Amba {
 		if (componentID < 0)
 			return IntersectData(false, glm::vec3(0.0f), glm::vec3(0.0f));
 	
-		ComponentMask entMask = scene->m_Entities[GetEntityIndex(id)].mask;
+		ComponentMask entMask = scene->p_EntHandler->m_Entities[
+			scene->p_EntHandler->GetEntityIndex(id)].mask;
 
 		if (!entMask.test(componentID))
 			return IntersectData(false, glm::vec3(0.0f), glm::vec3(0.0f));
 
 		TransformComponent* tsr = scene->GetComponent<TransformComponent>(id);
 
-		GridCell gridCell = scene->m_Spatial2DGrid->GetGridCell(tsr->GetPosition());
+		GridCell gridCell = p_SpatialGrid->GetGridCell(tsr->GetPosition());
 		if (!gridCell.IsCellValid())
 			return IntersectData(false, glm::vec3(0.0f), glm::vec3(0.0f));
 
@@ -91,7 +102,8 @@ namespace Amba {
 			if (id != other)
 			{
 				// check if other entity has collider component
-				ComponentMask otherMask = scene->m_Entities[GetEntityIndex(other)].mask;
+				ComponentMask otherMask = scene->p_EntHandler->m_Entities[
+					scene->p_EntHandler->GetEntityIndex(other)].mask;
 
 				int otherComponentID = GetColliderTypeIndex(other, scene);
 
@@ -109,7 +121,7 @@ namespace Amba {
 		}
 
 		// check planes
-		for (EntityId plane : SceneView<PlaneCollider, PhysicsComponent>(scene))
+		for (EntityId plane : EntityGroup<PlaneCollider, PhysicsComponent>(scene->p_EntHandler))
 		{
 			int otherComponentID = GetColliderTypeIndex(plane, scene);
 

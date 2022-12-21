@@ -27,36 +27,6 @@ namespace Amba {
 		glDrawElements(GL_TRIANGLES, ib->GetCount(), GL_UNSIGNED_INT, nullptr);
 	}
 
-#ifdef AB_ENABLE_ASSERTS
-	void Renderer::DrawGrid(Scene* scene, const glm::mat4& perspective, const glm::mat4& transform)
-	{
-		Shader shader("src/engine/res/shaders/gridVS.glsl", "src/engine/res/shaders/gridFS.glsl");
-
-		shader.Bind();
-		shader.SetUniform4mat("u_ViewProjection", m_SceneData->ViewProjectionMatrix); // this should not be called every frame?
-		shader.SetUniform4mat("u_Perspective", perspective);
-		shader.SetUniform4mat("u_Transform", glm::mat4(1.0f));
-
-		shader.SetUniform4f("u_Color", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-
-		Spatial2DGrid grid = *scene->m_Spatial2DGrid;
-
-		Amba::VertexArray va;
-		Amba::VertexBuffer vbo(&grid.m_Vertices[0], (unsigned int)grid.m_Vertices.size() * sizeof(glm::vec3));
-
-		Amba::VertexBufferLayout layout;
-		layout.Push<float>(3);
-		
-		va.AddBuffer(&vbo, layout);
-		IndexBuffer ib(&grid.m_Indices[0], (unsigned int)grid.m_Indices.size());
-		
-		va.Bind();
-		ib.Bind();
-
-		glDrawElements(GL_LINES, ib.GetCount(), GL_UNSIGNED_INT, nullptr);
-	}
-#endif
-
 	void Renderer::DrawTriangles(const VertexArray* va, unsigned int count, Shader* shader, const glm::mat4& perspective, const glm::mat4& transform)
 	{
 		shader->Bind();
@@ -72,7 +42,7 @@ namespace Amba {
 		// need to optimize sorting entities by shader so I minimize bind / unbind
 		Shader* sh;
 
-		for (EntityId ent : SceneView<MeshComponent>(m_SceneData->m_Scene))
+		for (EntityId ent : EntityGroup<MeshComponent>(m_SceneData->m_Scene->p_EntHandler))
 		{
 			MeshComponent *mesh = m_SceneData->m_Scene->GetComponent<MeshComponent>(ent);
 			TransformComponent* trs = m_SceneData->m_Scene->GetComponent<TransformComponent>(ent);

@@ -6,8 +6,8 @@
 
 #include <GLAD/glad.h>
 
-#include <engine/ecs/Scene.h>
-#include <engine/ecs/Entity.h>
+#include <engine/scene/Scene.h>
+#include <engine/scene/Entity.h>
 #include <engine/renderer/Buffers.h>
 #include <engine/material/Material.h>
 #include <engine/renderer/Texture.h>

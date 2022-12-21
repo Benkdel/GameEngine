@@ -2,7 +2,7 @@
 
 #include <engine/io/Keyboard.h>
 #include <engine/io/Mouse.h>
-
+#include <engine/core.h>
 
 namespace Amba {
 	

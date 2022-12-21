@@ -44,6 +44,7 @@ namespace Amba {
     void Interface::BindScene(Scene* scene)
     {
         // check if scene is null, where?
+        AB_ASSERT(!scene==NULL, "Trying to bind a NULL scene");
         p_CurrentScene = scene;
         m_MousePicker.UpdateScene(p_CurrentScene);
 
@@ -79,14 +80,14 @@ namespace Amba {
         if (m_Status == STATUS::ACTIVE)
         {
             // Select entity
-            if (IsEntityValid(s_EntUnderCursor))
+            if (EntityHandler::IsEntityValid(s_EntUnderCursor))
             {
                 if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_P) || Amba::Mouse::ButtonWentDown(GLFW_MOUSE_BUTTON_1))
                     Interface::s_SelectedEntity = s_EntUnderCursor;
             }
 
             // Apply force - temporal
-            if (IsEntityValid(Interface::s_SelectedEntity))
+            if (EntityHandler::IsEntityValid(Interface::s_SelectedEntity))
             {
                 if (Amba::KeyBoard::KeyWentDown(GLFW_KEY_LEFT))
                     p_CurrentScene->GetComponent<PhysicsComponent>(Interface::s_SelectedEntity)->IncreaseForce(glm::vec3(-0.5f, 0.0f, 0.0f));
@@ -97,7 +98,7 @@ namespace Amba {
 
         // proces camera controller input - only if camera is active
         // temp, always true and default:
-        if (m_IsEditorCameraActive && IsEntityValid(Interface::s_SelectedCameraEntity))
+        if (m_IsEditorCameraActive && EntityHandler::IsEntityValid(Interface::s_SelectedCameraEntity))
         {
             glm::vec3 pos = p_CurrentScene->GetComponent<TransformComponent>(Interface::s_SelectedCameraEntity)->GetPosition();
             EditorCamController::ProcessInput(pos, camera, dt);
@@ -166,14 +167,14 @@ namespace Amba {
 
     std::string Interface::GetActiveEntity(EntityId ent)
     {
-        if (Amba::IsEntityValid(ent))
+        if (EntityHandler::IsEntityValid(ent))
             return std::to_string(ent);
         return "-";
     }
 
     std::string Interface::GetActiveEntityTag(EntityId ent, Scene* scene)
     {
-        if (Amba::IsEntityValid(ent))
+        if (EntityHandler::IsEntityValid(ent))
             return scene->GetComponent<TagComponent>(ent)->m_Tag;
         return "-";
     }

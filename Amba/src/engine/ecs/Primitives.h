@@ -1,7 +1,7 @@
 # pragma once
 
 #include <engine/dataTypes.h>
-#include <engine/ecs/Entity.h>
+#include <engine/scene/Entity.h>
 
 static float vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,

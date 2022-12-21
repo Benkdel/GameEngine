@@ -2,7 +2,7 @@
 
 #include <engine/dataTypes.h>
 #include <engine/dataStructures/SpatialHashGrid.h>
-#include <engine/ecs/Scene.h>
+#include <engine/scene/Scene.h>
 
 #include <engine/io/Camera.h>
 

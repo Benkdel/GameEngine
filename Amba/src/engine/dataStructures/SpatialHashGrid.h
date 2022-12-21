@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <glm/glm.hpp>
+#include <engine/dataStructures/Cells.h>
 #include <engine/dataTypes.h>
 
 #define SPATIAL_GRID_SIDELENGTH 200
@@ -17,6 +19,8 @@
 namespace Amba
 {
 
+	class Scene;
+
 	struct Boundaries
 	{
 		glm::vec3 min = glm::vec3(0.0f);
@@ -29,20 +33,14 @@ namespace Amba
 
 		Spatial2DGrid();
 
-		// create grid so it starts from negative to positive and center of grid is in center of screen. is this a good idea?
-		Spatial2DGrid(bool renderGrid);
-
 		~Spatial2DGrid();
 
 		// vector to do main operations
 		std::vector<Cell> m_Cells;
 
 		GridCell GetGridCell(glm::vec3 position);
-
-		// for drawing
-		bool m_RenderGrid;
-		std::vector<glm::vec3> m_Vertices;
-		std::vector<unsigned int> m_Indices;
+		void AssignEntity(EntityId id, Scene* scene);
+		std::vector<Cell> GetNearbyCells(glm::vec3 position);
 		
 		bool IsOutsideBoundaries(glm::vec3 position);
 		

@@ -9,7 +9,7 @@
 
 #include <engine/importer/Importer.h>
 
-#include <engine/ecs/Scene.h>
+#include <engine/scene/Scene.h>
 
 unsigned int cubemapTexture;
 
@@ -75,6 +75,8 @@ void ConfigureTerrain(Amba::Entity& ent);
 void ConfigureSkyBox();
 void RenderSkyBox(Amba::Camera* cam, Amba::Scene* scene);
 
+Amba::Physics* physics;
+
 void GameApp::OnUserCreate()
 {
 	// we need to initialize application - Create GLFW window
@@ -83,6 +85,9 @@ void GameApp::OnUserCreate()
 
 	// Create a Scene
 	Amba::Scene* sampleScene = ResManager::CreateScene("exampleScene", true);
+
+	// create a physics system
+	physics = new Amba::Physics();
 
 	// Bind current scene
 	BindScene(sampleScene);
@@ -198,6 +203,46 @@ void GameApp::OnUserCreate()
 	player.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(0.0f, 0.0f, 10.0f));
 	
 	// attach one entity to the other?
+
+	/*
+		Scene 
+			needs:
+				Reference of Entity class
+
+			holds:
+				Vector of entities
+				component pool
+
+				Scene 1 (introduction)
+
+				Scene 2 (first stage of the game - )
+	
+				
+		Physics System - shared by all scenes?  
+			needs: 
+				reference to scene
+				reference of some sort of grid / spatial entities org
+
+			holds:
+				physics variables (gravity, etc)
+				
+
+			methods:
+				applies physics to entities in a scene using components information
+
+			when do I need entities assigned?
+				when AddComponent<ColliderComponent>()
+				
+	
+		Spatial 2D grid:
+			needs:
+				reference to cell
+
+
+	
+	*/
+
+
 
 
 	ConfigureSkyBox();

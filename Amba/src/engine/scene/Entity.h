@@ -1,12 +1,9 @@
 #pragma once
 
-#include <engine/ecs/Scene.h>
+#include <engine/scene/Scene.h>
 
 namespace Amba {
 	
-	
-
-
 	class Entity
 	{
 	public:
@@ -23,8 +20,6 @@ namespace Amba {
 		inline Scene* GetScene() { return p_Scene; };
 
 		bool InitCollider();
-
-		Entity* p_Child = nullptr;
 
 	public: // templates
 
@@ -52,12 +47,11 @@ namespace Amba {
 		template<typename T>
 		bool HasComponent()
 		{
-			AB_ASSERT(IsEntityValid(m_EntId), "Entity is invalid");
+			AB_ASSERT(EntityHandler::IsEntityValid(m_EntId), "Entity is invalid");
 			return p_Scene->EntHasComponent<T>(m_EntId);
 		}
 
-
-		operator bool() const { return IsEntityValid(m_EntId); };
+		operator bool() const { return p_Scene->p_EntHandler->IsEntityValid(m_EntId); };
 
 	private:
 		EntityId m_EntId = -1;

@@ -41,7 +41,7 @@ namespace Amba {
             {
                 EntityId selected = -1;
                 // TODO, should I implement an EditorComponent instead of using mesh to only get those into scene h?
-                for (EntityId ent : SceneView<MeshComponent>(scene))
+                for (EntityId ent : EntityGroup<MeshComponent>(scene->p_EntHandler))
                 {
                     std::string tag = scene->GetComponent<TagComponent>(ent)->m_Tag;
                     if (ImGui::Selectable(tag.c_str(), selected == ent))
@@ -54,7 +54,7 @@ namespace Amba {
 
     void ShowTransform(Scene* scene)
     {
-        if (IsEntityValid(Interface::s_SelectedEntity))
+        if (EntityHandler::IsEntityValid(Interface::s_SelectedEntity))
         {
             TransformComponent* tsr = scene->GetComponent<TransformComponent>(Interface::s_SelectedEntity);
             if (tsr == nullptr)
@@ -99,7 +99,7 @@ namespace Amba {
 
     void ShowAdditionalEntitiesData(Scene* scene)
     {
-        if (!IsEntityValid(Interface::s_SelectedEntity))
+        if (!EntityHandler::IsEntityValid(Interface::s_SelectedEntity))
             return;
 
         ImGui::NewLine();
@@ -110,7 +110,7 @@ namespace Amba {
         if (tsr == nullptr)
             return;
 
-        GridCell gridCell = scene->m_Spatial2DGrid->GetGridCell(tsr->GetPosition());
+        GridCell gridCell = scene->p_PhysicsEngine->p_SpatialGrid->GetGridCell(tsr->GetPosition());
         
         int cellIdx = -1;
 
@@ -125,7 +125,7 @@ namespace Amba {
 
     void ShowEntityUnderMouse(Scene* scene)
     {
-        if (IsEntityValid(Interface::s_EntUnderCursor))
+        if (EntityHandler::IsEntityValid(Interface::s_EntUnderCursor))
         {
             ImGui::NewLine();
             ImGui::Text("Entity being hovered: ");
@@ -141,7 +141,7 @@ namespace Amba {
         ImGui::SameLine();
         ImGui::Text((Interface::GetActiveEntityTag(Interface::s_SelectedCameraEntity, scene)).c_str());
 
-        if (!IsEntityValid(Interface::s_SelectedCameraEntity))
+        if (!EntityHandler::IsEntityValid(Interface::s_SelectedCameraEntity))
         {
             Interface::s_SelectedCameraEntity = scene->GetEntityByTag(EDITOR_CAMERA_TAG);
             s_PrevActiveCam = Interface::s_SelectedCameraEntity;
@@ -152,7 +152,7 @@ namespace Amba {
             if (ImGui::TreeNode("Cameras"))
             {
                 EntityId selected = -1;
-                for (EntityId ent : SceneView<CameraComponent>(scene))
+                for (EntityId ent : EntityGroup<CameraComponent>(scene->p_EntHandler))
                 {
                     std::string tag = scene->GetComponent<TagComponent>(ent)->m_Tag;
                     if (ImGui::Selectable(tag.c_str(), selected == ent))
@@ -163,7 +163,7 @@ namespace Amba {
         }
 
         // set new camera as primary
-        if (IsEntityValid(Interface::s_SelectedCameraEntity))
+        if (EntityHandler::IsEntityValid(Interface::s_SelectedCameraEntity))
         {
             // update selected camera
             if (Interface::s_SelectedCameraEntity != s_PrevActiveCam)
@@ -333,7 +333,7 @@ namespace Amba {
     void ColliderData(Scene* scene)
     {
 
-        if (!IsEntityValid(Interface::s_SelectedEntity))
+        if (!scene->p_EntHandler->IsEntityValid(Interface::s_SelectedEntity))
             return;
 
         ImGui::NewLine();

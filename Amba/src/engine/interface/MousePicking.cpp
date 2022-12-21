@@ -52,7 +52,7 @@ namespace Amba {
 			tsr.UpdatePosition(ray);
 			mouseCollider.TransformCollider(&tsr);
 
-			std::vector<Cell> cellsToCheck = p_Scene->GetNearbyCells(ray);
+			std::vector<Cell> cellsToCheck = p_Scene->p_PhysicsEngine->p_SpatialGrid->GetNearbyCells(ray);
 
 			for (auto& cell : cellsToCheck)
 			{
@@ -62,7 +62,8 @@ namespace Amba {
 					int componentID = GetColliderTypeIndex(ent, p_Scene);
 					if (componentID < 0)
 						continue;
-					ComponentMask entMask = p_Scene->m_Entities[GetEntityIndex(ent)].mask;
+					ComponentMask entMask = p_Scene->p_EntHandler->m_Entities[
+										p_Scene->p_EntHandler->GetEntityIndex(ent)].mask;
 					if (!entMask.test(componentID))
 						continue;
 					// -------------------------------------------------------------------

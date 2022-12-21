@@ -99,10 +99,10 @@ void PhysicsComponent::CalculateNetForce(glm::vec3 collisionForces)
 		add gravity if activated
 		---------------------------------------------------
 	*/
-	if (Amba::Physics::IsGravityOn() && m_EntGravityActive)
-	{
-		force += Amba::Physics::GetGravity();
-	}
+	//if (Amba::Physics::IsGravityOn() && m_EntGravityActive)
+	//{
+	//	force += Amba::Physics::GetGravity();
+	//}
 
 	/*
 		add forces resulting from collision or restrictions

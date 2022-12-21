@@ -3,12 +3,13 @@
 #include <engine/ResourceManager.h>
 
 namespace Amba {
+	
 
 	Entity::Entity(Scene* scene, EntityId id)
 	{
 		p_Scene = scene;
 
-		if (IsEntityValid(id))
+		if (scene->p_EntHandler->IsEntityValid(id))
 		{
 			m_EntId = id;
 			return;
@@ -24,7 +25,7 @@ namespace Amba {
 	{
 		// Im not destroying this because when class goes out of scope I still have
 		// the EntityId types in the scene class
-
+		AB_INFO("Entity {0} destroid ", m_EntId);
 		// Destroy();
 	}
 
@@ -48,7 +49,7 @@ namespace Amba {
 		if (componentID < 0)
 			return false;
 
-		ComponentMask entMask = p_Scene->m_Entities[GetEntityIndex(m_EntId)].mask;
+		ComponentMask entMask = p_Scene->p_EntHandler->m_Entities[p_Scene->p_EntHandler->GetEntityIndex(m_EntId)].mask;
 
 		if (!entMask.test(componentID))
 			return false;

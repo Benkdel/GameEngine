@@ -36,6 +36,7 @@ namespace Amba {
 
 	void Application::BindScene(Scene* scene)
 	{
+		AB_ASSERT(!scene==NULL, "Trying to bind a NULL scene");
 		p_ActiveScene = scene;
 		p_Interface->BindScene(scene);
 
