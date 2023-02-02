@@ -36,6 +36,23 @@ namespace Amba {
 
 		}
 
+		// check entities with fathers and update as offset?
+		// what can I do do with scale? rotation? this is just position for now
+		for (auto& ent : ResManager::rm_Entities)
+		{
+			Entity* current = ent.second;
+
+			if (current->p_Father != nullptr)
+			{
+				glm::vec3 fatherPosition = current->p_Father->GetComponent<TransformComponent>()->GetPosition();
+
+				current->GetComponent<TransformComponent>()->UpdatePosition(
+					current->GetComponent<TransformComponent>()->GetPosition() +
+					fatherPosition);
+			}
+
+		}
+
 		// render - for now im using simple shader as default, which is being loaded in game app
 		// TODO: change so it loads a base shader at begining and use it as defaul, or always ask for shaders in 
 		// entities that have render component (also TODO)

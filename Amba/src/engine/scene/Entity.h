@@ -9,6 +9,7 @@ namespace Amba {
 	public:
 		
 		Entity() = default;
+		Entity(const Entity& other) = delete;
 		Entity(Scene* scene, EntityId id = -1);
 
 		~Entity();
@@ -16,10 +17,15 @@ namespace Amba {
 		Entity CopyEntity();
 		void Destroy();
 
+		void AddChildren(Entity* ent);
+
 		inline EntityId GetEntId() { return m_EntId; };
 		inline Scene* GetScene() { return p_Scene; };
 
 		bool InitCollider();
+
+		Entity* p_Father = nullptr;
+		std::vector<Entity*> m_Entities;
 
 	public: // templates
 

@@ -31,6 +31,7 @@ public:
 	
 	static Amba::Scene*		CreateScene(const std::string& name, bool active);
 	static Amba::Entity*	CreateEntity(const std::string& name, Amba::Scene* scene = nullptr);
+	static Amba::Entity*	CopyEntity(const std::string& name, Amba::Entity& entity);
 	static Amba::Shader*	CreateShader(const char* vsPath, const char* fsPath, const std::string& name);
 	static Amba::Material*	CreateMaterial(const std::string& name);
 	static Amba::Texture*	GenTexture(const std::string& filePat, const std::string& name);

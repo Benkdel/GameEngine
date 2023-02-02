@@ -52,6 +52,11 @@ public:
 	Amba::Shader* p_Shader = nullptr;
 };
 
+// change this so we can have
+// local and global positions
+// and think what to do with collider transforms
+// maybe flag should be in other place
+
 
 class TransformComponent : public Components
 {
@@ -204,15 +209,12 @@ public:
 	CameraComponent()
 		: m_Camera(new Amba::Camera()) {}
 
-
-
 	Amba::Camera* GetCamera() { return m_Camera; };
 
 private:
 	Amba::Camera* m_Camera;
 
 };
-
 
 class ControllerComponent : public Components
 {
@@ -226,6 +228,7 @@ private:
 
 
 };
+
 
 class AudioComponent : public Components
 {

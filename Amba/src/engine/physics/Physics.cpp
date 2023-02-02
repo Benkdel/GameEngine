@@ -62,8 +62,6 @@ namespace Amba {
 
 				float impulse = numerator / denominator;
 
-				//AB_INFO("Impulse: {0}", impulse);
-
 				scene->GetComponent<PhysicsComponent>(ent)->ApplyCollisionResults(impulse, normal, intersect.GetOtherEnt());
 				scene->GetComponent<PhysicsComponent>(intersect.GetOtherEnt())->ApplyCollisionResults(-impulse, normal, ent);
 			
@@ -136,9 +134,6 @@ namespace Amba {
 
 		return IntersectData(false, glm::vec3(0.0f), glm::vec3(0.0f));
 	}
-
-
-
 }
 
 

@@ -96,12 +96,11 @@ void GameApp::OnUserCreate()
 	Amba::Shader* pbrShader = ResManager::CreateShader("src/engine/res/shaders/pbrVS.glsl", "src/engine/res/shaders/pbrFS.glsl", "pbrLighting");
 
 	// create main camera:
-	Amba::Entity broadViewCam(sampleScene);
-	broadViewCam.AddComponent<CameraComponent>();
-	broadViewCam.AddComponent<TagComponent>();
-	broadViewCam.GetComponent<TagComponent>()->m_Tag = "camaraPlayer";
-	sampleScene->AddCameraObject(&broadViewCam, false);
-
+	Amba::Entity* playerCamera = ResManager::CreateEntity("cameraPlayer", sampleScene);
+	playerCamera->AddComponent<CameraComponent>();
+	playerCamera->AddComponent<TagComponent>();
+	playerCamera->GetComponent<TagComponent>()->m_Tag = "cameraPlayer";
+	sampleScene->AddCameraObject(playerCamera, false);
 	
 	// basic PBR lighting
 	Amba::Sphere pbrSphere(sampleScene, 2.0f, 36, 36);
@@ -196,59 +195,28 @@ void GameApp::OnUserCreate()
 	wall_2.AddComponent<TagComponent>();
 	wall_2.GetComponent<TagComponent>()->m_Tag = "Wall2";
 
+	
 	pbrSphere.Destroy();
+
+	Amba::Entity* player = ResManager::CopyEntity("player", cube);
+	player->GetComponent<TagComponent>()->m_Tag = "player";
+	player->GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(0.0f, 0.0f, 10.0f));
+	player->GetComponent<PhysicsComponent>()->m_Mass *= 0.5f;
 	
-	Amba::Entity player = cube.CopyEntity();
-	player.GetComponent<TagComponent>()->m_Tag = "player";
-	player.GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(0.0f, 0.0f, 10.0f));
-	
-	// attach one entity to the other?
 
-	/*
-		Scene 
-			needs:
-				Reference of Entity class
-
-			holds:
-				Vector of entities
-				component pool
-
-				Scene 1 (introduction)
-
-				Scene 2 (first stage of the game - )
-	
-				
-		Physics System - shared by all scenes?  
-			needs: 
-				reference to scene
-				reference of some sort of grid / spatial entities org
-
-			holds:
-				physics variables (gravity, etc)
-				
-
-			methods:
-				applies physics to entities in a scene using components information
-
-			when do I need entities assigned?
-				when AddComponent<ColliderComponent>()
-				
-	
-		Spatial 2D grid:
-			needs:
-				reference to cell
-
-
-	
-	*/
-
-
+	// add camera as children of palyer
+	player->AddChildren(playerCamera);
+	playerCamera->GetComponent<TransformComponent>()->UpdatePosition(glm::vec3(-4.0f, 1.5f, 0.0f));
+	// once added as children, position will be handled as offset of parent.
+	// for now in physics system.
 
 
 	ConfigureSkyBox();
 
 }
-bool first = true;
+
+bool first = false;
+
 void GameApp::OnUserUpdate()
 {
 	Amba::Scene* activeScene = ResManager::GetScene("exampleScene");
@@ -258,8 +226,8 @@ void GameApp::OnUserUpdate()
 
 	ResManager::GetScene("exampleScene")->Update((float)AB_DeltaTime);
 	
-	EntityId player = activeScene->GetEntityByTag("player"); 
-	EntityId camPlayer = activeScene->GetEntityByTag("camaraPlayer");
+	EntityId player = activeScene->GetEntityByTag("player");
+	EntityId camPlayer = activeScene->GetEntityByTag("cameraPlayer");
 
 	/* simulate a sticky camera to player - this is working somewhat properly */
 
@@ -269,13 +237,13 @@ void GameApp::OnUserUpdate()
 	// 1) need to define offset from object is following
 	if (first)
 	{
-		glm::vec3 offset = glm::vec3(-4.0f, 1.5f, 0.0f);
+		//glm::vec3 offset = glm::vec3(-4.0f, 1.5f, 0.0f);
 
 		// set first position
-		activeScene->GetComponent<TransformComponent>(camPlayer)->UpdatePosition(
-			activeScene->GetComponent<TransformComponent>(player)->GetPosition() +
-			offset);
-		first = false;
+		//activeScene->GetComponent<TransformComponent>(camPlayer)->UpdatePosition(
+		//	activeScene->GetComponent<TransformComponent>(player)->GetPosition() +
+		//	offset);
+		//first = false;
 	}
 
 	// i need to have a player controller or something like that

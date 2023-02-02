@@ -28,6 +28,13 @@ Entity* ResManager::CreateEntity(const std::string& name, Scene* scene)
 	return rm_Entities[name];
 }
 
+Entity* ResManager::CopyEntity(const std::string& name, Entity& entity)
+{
+	rm_Entities.insert(std::pair<std::string, Entity*>(name, new Entity()));
+	*rm_Entities[name] = entity.CopyEntity();
+	return rm_Entities[name];
+}
+
 Shader* ResManager::CreateShader(const char* vsPath, const char* fsPath, const std::string& name)
 {
 	rm_Shaders.insert(std::pair<std::string, Shader*>(name, new Shader(vsPath, fsPath)));

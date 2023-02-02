@@ -42,6 +42,11 @@ namespace Amba {
 		m_EntId = -1;
 	}
 
+	void Entity::AddChildren(Entity* ent)
+	{
+		m_Entities.push_back(ent);
+	}
+
 	bool Entity::InitCollider()
 	{
 		int componentID = GetColliderTypeIndex(m_EntId, p_Scene);
